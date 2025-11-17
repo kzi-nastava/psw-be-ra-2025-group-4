@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using Explorer.BuildingBlocks.Core.Domain;
 
 namespace Explorer.Tours.Core.Domain
 {
     public enum TourStatus
     {
-        Draft
+        Draft,
+        Published, 
+        Archived
     }
 
     public enum TourDifficulty
@@ -15,7 +18,7 @@ namespace Explorer.Tours.Core.Domain
         Hard
     }
 
-    public class Tour
+    public class Tour : Entity
     {
         public int Id { get; set; }
         public string Name { get; private set; }
