@@ -25,7 +25,8 @@ namespace Explorer.Blog.Infrastructure.Database.Repositories
 
         public PagedResult<DigitalDiary> GetPagedByTourist(long touristId, int page, int pageSize)
         {
-            var task = _dbSet.GetPagedById(page, pageSize);
+            var query = _dbSet.Where(d => d.TouristId == touristId);
+            var task = query.GetPagedById(page, pageSize);
             task.Wait();
             return task.Result;
         }

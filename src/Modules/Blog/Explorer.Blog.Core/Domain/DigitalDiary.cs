@@ -9,14 +9,18 @@ namespace Explorer.Blog.Core.Domain
 {
     public class DigitalDiary : Entity
     {
+        public long TouristId { get; private set; }
         public string Title { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public string Status { get; private set; } 
         public string Country { get; private set; }
         public string? City { get; private set; }
 
-        public DigitalDiary(string title, DateTime createdAt, string status, string country, string? city)
+        public DigitalDiary(long touristId, string title, DateTime createdAt, string status, string country, string? city)
         {
+            if (touristId == 0)
+                throw new ArgumentException("Invalid TouristId.");
+
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Invalid Title.");
 

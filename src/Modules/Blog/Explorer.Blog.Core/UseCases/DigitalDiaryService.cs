@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.Blog.Core.UseCases
 {
@@ -29,6 +30,7 @@ namespace Explorer.Blog.Core.UseCases
             var status = string.IsNullOrWhiteSpace(dto.Status) ? "Draft" : dto.Status;
 
             var entity = new DigitalDiary(
+                touristId: dto.TouristId,
                 title: dto.Title,
                 createdAt: createdAt,
                 status: status,
@@ -66,10 +68,8 @@ namespace Explorer.Blog.Core.UseCases
 
         public DigitalDiaryDto Update(DigitalDiaryDto dto)
         {
-            if (dto.Id <= 0) throw new ArgumentException("Invalid Id.");
-
             var existing = _repository.GetById(dto.Id) ??
-                           throw new InvalidOperationException($"Digital diary {dto.Id} not found.");
+                           throw new NotFoundException("Not found: " + dto.Id);
 
             if (!string.IsNullOrWhiteSpace(dto.Title) && dto.Title != existing.Title)
                 existing.UpdateTitle(dto.Title);
