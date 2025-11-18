@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using Explorer.BuildingBlocks.Core.UseCases;
+﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Author;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,8 +21,7 @@ public class TourController : ControllerBase
     [HttpGet]
     public ActionResult<PagedResult<TourDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
     {
-        var result = _tourService.GetPaged(page, pageSize);
-        return Ok(result);
+        return Ok(_tourService.GetPaged(page, pageSize));
     }
 
     [HttpGet("{id:int}")]
@@ -40,19 +37,13 @@ public class TourController : ControllerBase
     [HttpPost]
     public ActionResult<TourDto> Create([FromBody] TourDto tour)
     {
-        if (tour == null)
-            return BadRequest();
-
         var createdTour = _tourService.Create(tour);
         return CreatedAtAction(nameof(GetById), new { id = createdTour.Id }, createdTour);
     }
 
-    [HttpPut("{id:int}")]
-    public ActionResult<TourDto> Update(int id, [FromBody] TourDto tour)
+    [HttpPut]
+    public ActionResult<TourDto> Update([FromBody] TourDto tour)
     {
-        if (tour == null || id != tour.Id)
-            return BadRequest();
-
         var updatedTour = _tourService.Update(tour);
         if (updatedTour == null)
             return NotFound();
