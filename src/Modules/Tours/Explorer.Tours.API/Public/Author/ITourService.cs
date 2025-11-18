@@ -1,15 +1,14 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 
-namespace Explorer.Tours.API.Public.Author
+namespace Explorer.Tours.API.Public
 {
     public interface ITourService
     {
-        PagedResult<TourDto> GetPaged(int page, int pageSize);
-        TourDto GetById(int id);
-        IEnumerable<TourDto> GetByAuthor(int authorId);
-        TourDto Create(TourDto tour);
-        TourDto Update(TourDto tour);
-        void Delete(int id);
+        PagedResult<TourDto> GetPagedByAuthor(int authorId, int page, int pageSize);
+        TourDto GetByIdForAuthor(int authorId, int id);
+        TourDto Create(CreateUpdateTourDto dto, int authorId);
+        TourDto Update(int id, CreateUpdateTourDto dto, int authorId);
+        void DeleteForAuthor(int authorId, int id);
     }
 }

@@ -39,7 +39,24 @@ namespace Explorer.Tours.Core.Domain
 
             Validate();
         }
+        public void SetStatus(TourStatus status)
+        {
+            Status = status;
+        }
 
+        public void SetPrice(decimal price)
+        {
+            Price = price;
+        }
+
+        public void Update(string name, string description, TourDifficulty difficulty, List<string> tags)
+        {
+            Name = name;
+            Description = description;
+            Difficulty = difficulty;
+            Tags = tags ?? new List<string>();
+            Validate();
+        }
         private void Validate()
         {
             if (string.IsNullOrWhiteSpace(Name))

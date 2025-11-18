@@ -1,6 +1,6 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Author;
+using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,47 +18,51 @@ public class TourController : ControllerBase
         _tourService = tourService;
     }
 
+    private int GetAuthorId()
+    {
+        var id = User.FindFirst("id")?.Value;
+
+        if (id != null) return int.Parse(id);
+
+        var pid = User.FindFirst("personId")?.Value;
+
+        return int.Parse(pid ?? throw new Exception("No user id found"));
+    }
+
+
+
+
     [HttpGet]
     public ActionResult<PagedResult<TourDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
     {
-        return Ok(_tourService.GetPaged(page, pageSize));
+        return Ok(_tourService.GetPagedByAuthor(GetAuthorId(), page, pageSize));
     }
 
     [HttpGet("{id:int}")]
     public ActionResult<TourDto> GetById(int id)
     {
-        var tour = _tourService.GetById(id);
-        if (tour == null)
-            return NotFound();
-
+        var tour = _tourService.GetByIdForAuthor(GetAuthorId(), id);
         return Ok(tour);
     }
 
     [HttpPost]
-    public ActionResult<TourDto> Create([FromBody] TourDto tour)
+    public ActionResult<TourDto> Create([FromBody] CreateUpdateTourDto dto)
     {
-        var createdTour = _tourService.Create(tour);
-        return CreatedAtAction(nameof(GetById), new { id = createdTour.Id }, createdTour);
+        var created = _tourService.Create(dto, GetAuthorId());
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    [HttpPut]
-    public ActionResult<TourDto> Update([FromBody] TourDto tour)
+    [HttpPut("{id:int}")]
+    public ActionResult<TourDto> Update(int id, [FromBody] CreateUpdateTourDto dto)
     {
-        var updatedTour = _tourService.Update(tour);
-        if (updatedTour == null)
-            return NotFound();
-
-        return Ok(updatedTour);
+        var updated = _tourService.Update(id, dto, GetAuthorId());
+        return Ok(updated);
     }
 
     [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
-        var exists = _tourService.GetById(id);
-        if (exists == null)
-            return NotFound();
-
-        _tourService.Delete(id);
+        _tourService.DeleteForAuthor(GetAuthorId(), id);
         return NoContent();
     }
 }

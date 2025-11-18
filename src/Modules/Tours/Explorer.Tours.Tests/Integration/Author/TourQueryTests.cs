@@ -1,7 +1,7 @@
 ﻿using Explorer.API.Controllers.Author;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Author;
+using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -40,7 +40,7 @@ public class TourQueryTests : BaseToursIntegrationTest
     {
         return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>())
         {
-            ControllerContext = BuildContext("-1")
+            ControllerContext = BuildContext("2")
         };
     }
 }

@@ -3,7 +3,7 @@ using System.Linq;
 using Explorer.API.Controllers.Author;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Author;
+using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
@@ -25,14 +25,11 @@ public class TourCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        var newTour = new TourDto
+        var newTour = new CreateUpdateTourDto
         {
             Name = "New tour",
             Description = "Test description",
             Difficulty = TourDtoDifficulty.Easy,
-            AuthorId = 2,
-            Price = 10,
-            Status = 0,
             Tags = new List<string>()
         };
 
@@ -53,7 +50,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        var invalidTour = new TourDto
+        var invalidTour = new CreateUpdateTourDto
         {
             Description = "Missing name"
         };
@@ -68,31 +65,27 @@ public class TourCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        var updatedTour = new TourDto
+        var dto = new CreateUpdateTourDto
         {
-            Id = 1,
             Name = "Updated tour",
             Description = "New description",
             Difficulty = TourDtoDifficulty.Medium,
-            AuthorId = 2,
-            Price = 20,
-            Status = 0,
             Tags = new List<string>()
         };
 
-        var result = ((ObjectResult)controller.Update(updatedTour).Result)?.Value as TourDto;
+        var result = ((ObjectResult)controller.Update(1, dto).Result)?.Value as TourDto;
 
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(updatedTour.Id);
-        result.Name.ShouldBe(updatedTour.Name);
-        result.Description.ShouldBe(updatedTour.Description);
-        result.Difficulty.ShouldBe(updatedTour.Difficulty);
+        result.Id.ShouldBe(1);
+        result.Name.ShouldBe(dto.Name);
+        result.Description.ShouldBe(dto.Description);
+        result.Difficulty.ShouldBe(dto.Difficulty);
 
-        var storedTour = dbContext.Tours.AsNoTracking().FirstOrDefault(t => t.Id == updatedTour.Id);
+        var storedTour = dbContext.Tours.AsNoTracking().FirstOrDefault(t => t.Id == 1);
         storedTour.ShouldNotBeNull();
-        storedTour.Name.ShouldBe(updatedTour.Name);
-        storedTour.Description.ShouldBe(updatedTour.Description);
-        storedTour.Difficulty.ShouldBe((TourDifficulty)updatedTour.Difficulty);
+        storedTour.Name.ShouldBe(dto.Name);
+        storedTour.Description.ShouldBe(dto.Description);
+        storedTour.Difficulty.ShouldBe((TourDifficulty)dto.Difficulty);
     }
 
     [Fact]
@@ -101,20 +94,15 @@ public class TourCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        var invalidTour = new TourDto
+        var dto = new CreateUpdateTourDto
         {
-            Id = -1000,
             Name = "Test",
-            Description = "Some description", 
+            Description = "Some description",
             Difficulty = TourDtoDifficulty.Easy,
-            AuthorId = 2,
-            Price = 0,
-            Status = 0,
             Tags = new List<string>()
         };
-        ;
 
-        Should.Throw<NotFoundException>(() => controller.Update(invalidTour));
+        Should.Throw<NotFoundException>(() => controller.Update(-1000, dto));
     }
 
     [Fact]
@@ -146,7 +134,7 @@ public class TourCommandTests : BaseToursIntegrationTest
     {
         return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>())
         {
-            ControllerContext = BuildContext("-1")
+            ControllerContext = BuildContext("2")
         };
     }
 }

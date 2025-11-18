@@ -2,15 +2,24 @@
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.Core.Domain;
 
-namespace Explorer.Tours.Core.Mappers;
-
-public class ToursProfile : Profile
+namespace Explorer.Tours.Core.Mappers
 {
-    public ToursProfile()
+    public class ToursProfile : Profile
     {
-        CreateMap<EquipmentDto, Equipment>().ReverseMap();
+        public ToursProfile()
+        {
+            CreateMap<EquipmentDto, Equipment>().ReverseMap();
 
-        CreateMap<Tour, TourDto>().ReverseMap();
+            CreateMap<TourStatus, TourDtoStatus>().ConvertUsing(src => (TourDtoStatus)src);
+            CreateMap<TourDtoStatus, TourStatus>().ConvertUsing(src => (TourStatus)src);
 
+            CreateMap<Tour, TourDto>().ReverseMap();
+
+            CreateMap<CreateUpdateTourDto, Tour>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.AuthorId, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.Price, opt => opt.Ignore());
+        }
     }
 }
