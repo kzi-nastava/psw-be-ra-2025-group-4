@@ -29,4 +29,10 @@
     <ProjectReference Include="..\..\..\Explorer.API\Explorer.API.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\c-tours.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
