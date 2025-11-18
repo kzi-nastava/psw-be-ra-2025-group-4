@@ -8,6 +8,7 @@ namespace Explorer.Stakeholders.API.Dtos
 {
     public class DirectMessageDto
     {
+        public long Id { get; set; }
         public string Sender {  get; set; }
         public string Recipient { get; set; }
         public string Content { get; set; }
