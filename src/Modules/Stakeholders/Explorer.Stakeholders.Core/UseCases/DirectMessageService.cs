@@ -24,7 +24,7 @@ namespace Explorer.Stakeholders.Core.UseCases
             _mapper = mapper;
         }
 
-        public DirectMessageDto Create(DirectMessageDto entity)
+        public DirectMessageDto SendMessage(DirectMessageDto entity)
         {
             var result = _directMessageRepository.Create(_mapper.Map<DirectMessage>(entity));
             return _mapper.Map<DirectMessageDto>(result);

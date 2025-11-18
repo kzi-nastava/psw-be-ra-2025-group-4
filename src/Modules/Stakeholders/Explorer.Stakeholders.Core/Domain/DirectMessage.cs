@@ -12,7 +12,9 @@ namespace Explorer.Stakeholders.Core.Domain
     public class DirectMessage : Entity
     {
         public long SenderId { get; set; }
+        public User Sender { get; set; }
         public long RecipientId { get; set; }
+        public User Recipient { get; set; }
         public string Content { get; set; }
         public DateTime SentAt { get; set; }
         public DateTime? EditedAt { get; set; }
