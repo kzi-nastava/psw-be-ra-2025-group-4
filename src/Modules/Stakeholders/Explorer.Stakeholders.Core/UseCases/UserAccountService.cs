@@ -10,10 +10,11 @@ using Explorer.Stakeholders.Core.Domain;
 using System.Security.Principal;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.API.Public;
 
 namespace Explorer.Stakeholders.Core.UseCases
 {
-    internal class UserAccountService
+    public class UserAccountService : IUserAccountService
     {
         private readonly IMapper _mapper;
         private readonly IUserRepository _userRepository;
@@ -28,20 +29,21 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public void BlockUser(long userId)
         {
-            var user = _userRepository.GetActiveByName(userId.ToString());
-            if (user.Role != UserRole.Author || user.Role != UserRole.Tourist)
-            {
-                throw new InvalidOperationException("Only users with role 'Author' or 'Tourist' can be blocked.");
-            }
+            var user = _userRepository.GetActiveByName(_userRepository.GetById(userId).Username);
             if (user == null)
             {
                 throw new KeyNotFoundException($"User with ID {userId} was not found or is not active.");
             }
+            if (user.Role != UserRole.Author && user.Role != UserRole.Tourist)
+            {
+                throw new InvalidOperationException("Only users with role 'Author' or 'Tourist' can be blocked.");
+            }
+            
             user.IsActive = false;
             _userRepository.Update(user);
         }
 
-        public AccountRegistrationDto CreateUser(AccountRegistrationDto account)
+        public UserAccountDto CreateUser(AccountRegistrationDto account)
         {
             if (_userRepository.Exists(account.Username))
                 throw new EntityValidationException("Provided username already exists.");
@@ -54,7 +56,10 @@ namespace Explorer.Stakeholders.Core.UseCases
             var user = _userRepository.Create(new User(account.Username, account.Password, u.getRole(account.Role), true));
             var person = _personRepository.Create(new Person(user.Id, account.Name, account.Surname, account.Email));
 
-            return account;
+            UserAccountDto temp = new UserAccountDto();
+            temp = _mapper.Map<UserAccountDto>(user);
+            temp.Email = person.Email;
+            return temp;
         }
 
         public PagedResult<UserAccountDto> GetPaged(int page, int pageSize)
