@@ -24,6 +24,9 @@ namespace Explorer.Tours.Core.UseCases.Author
 
         public QuizDto Create(QuizDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new ArgumentException("Title is required");
+
             var entity = _mapper.Map<Quiz>(dto);
             var result = _repo.Create(entity);
             return _mapper.Map<QuizDto>(result);
@@ -31,6 +34,9 @@ namespace Explorer.Tours.Core.UseCases.Author
 
         public QuizDto Update(QuizDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new ArgumentException("Title is required");
+
             var entity = _mapper.Map<Quiz>(dto);
             var result = _repo.Update(entity);
             return _mapper.Map<QuizDto>(result);

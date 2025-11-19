@@ -12,7 +12,7 @@ namespace Explorer.Tours.Core.Domain
         public string Title { get; set; }
         public List<Question> Questions { get; set; }
 
-        public string? AuthorId { get; private set; }
+        public string? AuthorId { get; set; }
 
         public Quiz()
         {

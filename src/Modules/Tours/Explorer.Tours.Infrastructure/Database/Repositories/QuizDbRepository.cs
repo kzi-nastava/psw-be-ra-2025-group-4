@@ -1,4 +1,5 @@
-﻿using Explorer.Tours.Core.Domain;
+﻿using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -27,24 +28,29 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
 
         public Quiz Update(Quiz quiz)
         {
-            _context.Quizzes.Update(quiz);
+            var existing = _context.Quizzes.FirstOrDefault(q => q.Id == quiz.Id);
+            if (existing == null)
+            {
+                throw new NotFoundException("Quiz not found: " + quiz.Id);
+            }
+
+            existing.Title = quiz.Title;
+            existing.AuthorId = quiz.AuthorId;
+
             _context.SaveChanges();
-            return quiz;
+            return existing;
         }
 
         public void Delete(int id)
         {
-            var quiz = _context.Quizzes
-                .Include(q => q.Questions)
-                .ThenInclude(o => o.Options)
-                .FirstOrDefault(q => q.Id == id);
+            var quiz = _context.Quizzes.FirstOrDefault(q => q.Id == id);
+            if (quiz == null)
+                throw new NotFoundException($"Quiz not found: {id}");
 
-            if (quiz != null)
-            {
-                _context.Quizzes.Remove(quiz);
-                _context.SaveChanges();
-            }
+            _context.Quizzes.Remove(quiz);
+            _context.SaveChanges();
         }
+
 
         public Quiz GetById(int id)
         {
