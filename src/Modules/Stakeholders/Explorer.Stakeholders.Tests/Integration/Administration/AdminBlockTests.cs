@@ -21,6 +21,9 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        var userSetup = dbContext.Users.First(u => u.Id == -11);
+        userSetup.IsActive = true;
+        dbContext.SaveChanges();
 
         var controller = CreateController(scope);
 
