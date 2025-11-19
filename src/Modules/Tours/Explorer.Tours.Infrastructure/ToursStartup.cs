@@ -13,6 +13,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.UseCases.Tourist;
 using Npgsql;
+using Explorer.Tours.API.Public.Tourist;
+using Explorer.Tours.Core.UseCases.Tourist;
+
 
 namespace Explorer.Tours.Infrastructure;
 
@@ -31,9 +34,13 @@ public static class ToursStartup
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<ITourService, TourService>();
 
+        services.AddScoped<ITourPreferencesService, TourPreferencesService>();
+
+
         services.AddScoped<ITouristEquipmentService, TouristEquipmentService>();
       
         services.AddScoped<ITourProblemService, TourProblemService>();
+
 
     }
 
@@ -41,9 +48,13 @@ public static class ToursStartup
     {
         services.AddScoped<IEquipmentRepository, EquipmentDbRepository>();
         services.AddScoped<ITourRepository, TourDbRepository>();
+
+        services.AddScoped<ITourPreferencesRepository, TourPreferencesDbRepository>();
+
         services.AddScoped<ITourProblemRepository, TourProblemRepository>();
 
         services.AddScoped<ITouristEquipmentRepository, TouristEquipmentDbRepository>();
+
 
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));

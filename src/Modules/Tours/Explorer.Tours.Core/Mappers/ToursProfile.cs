@@ -12,6 +12,13 @@ namespace Explorer.Tours.Core.Mappers
             CreateMap<TourStatus, TourDtoStatus>().ConvertUsing(src => (TourDtoStatus)src);
             CreateMap<TourDtoStatus, TourStatus>().ConvertUsing(src => (TourStatus)src);
             CreateMap<Tour, TourDto>().ReverseMap();
+
+
+            CreateMap<TourPreferences, TourPreferencesDTO>()
+            .ForMember(dest => dest.PreferredDifficulty,
+               opt => opt.MapFrom(src => src.PreferredDifficulty.ToString()));
+
+
             CreateMap<CreateUpdateTourDto, Tour>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.AuthorId, opt => opt.Ignore())
