@@ -18,9 +18,6 @@ namespace Explorer.Blog.Core.Domain
 
         public DigitalDiary(long touristId, string title, DateTime createdAt, string status, string country, string? city)
         {
-            if (touristId == 0)
-                throw new ArgumentException("Invalid TouristId.");
-
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Invalid Title.");
 
