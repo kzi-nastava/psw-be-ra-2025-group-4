@@ -1,6 +1,7 @@
 ﻿using Explorer.API.Controllers;
 using Explorer.API.Controllers.Message;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Microsoft.AspNetCore.Mvc;
@@ -116,13 +117,88 @@ namespace Explorer.Stakeholders.Tests.Integration.Authentication
             // Arrange
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
+   
+            Should.Throw<NotFoundException>(() =>
+            {
+                var _ = controller.Delete(1);
+            });
+        }
 
-            // Act - try to delete a message that does NOT exist
-            var result = controller.Delete(1);
+        [Fact]
+        public void UpdateMessage_Updates_Content_Successfully()
+        {
+            // Arrange
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            // First send a message
+            var original = new DirectMessageDto
+            {
+                Sender = "autor1@gmail.com",
+                Recipient = "autor2@gmail.com",
+                Content = "Original content",
+                SentAt = DateTime.UtcNow
+            };
+
+            var created = ((ObjectResult)controller.SendMessage(original).Result).Value as DirectMessageDto;
+            created.ShouldNotBeNull();
+
+            // Prepare update
+            created.Content = "Updated content";
+
+            // Act
+            var updated = ((ObjectResult)controller.Update(created).Result).Value as DirectMessageDto;
 
             // Assert
-            result.ShouldBeOfType<OkResult>();
+            updated.ShouldNotBeNull();
+            updated.Content.ShouldBe("Updated content");
+            updated.EditedAt.ShouldNotBeNull();
         }
+
+        [Fact]
+        public void UpdateMessage_ThrowsNotFound_WhenMessageDoesNotExist()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var dto = new DirectMessageDto
+            {
+                Id = -999,
+                Sender = "autor1@gmail.com",
+                Recipient = "autor2@gmail.com",
+                Content = "Doesn't matter"
+            };
+
+            Should.Throw<NotFoundException>(() =>
+            {
+                var _ = controller.Update(dto).Result;
+            });
+        }
+
+        [Fact]
+        public void GetPaged_Returns_Correct_Page()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            for (int i = 0; i < 3; i++)
+            {
+                controller.SendMessage(new DirectMessageDto
+                {
+                    Sender = "autor1@gmail.com",
+                    Recipient = "autor2@gmail.com",
+                    Content = $"Message {i}",
+                    SentAt = DateTime.UtcNow
+                });
+            }
+
+            var result = ((ObjectResult)controller.GetAll(1, 2).Result).Value as PagedResult<DirectMessageDto>;
+
+            result.ShouldNotBeNull();
+            result.Results.Count.ShouldBe(2);
+            result.TotalCount.ShouldBeGreaterThanOrEqualTo(3);
+        }
+
 
     }
 }
