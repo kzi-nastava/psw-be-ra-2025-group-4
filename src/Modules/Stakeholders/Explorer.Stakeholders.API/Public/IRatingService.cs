@@ -9,7 +9,7 @@ namespace Explorer.Stakeholders.API.Public
 {
     public interface IRatingService
     {
-        RatingDto CreateRating(RatingCreateDto dto);
+        RatingDto CreateRating(long userId, RatingCreateDto dto);
         RatingDto UpdateRating(long id, long userId, RatingUpdateDto dto);
         void DeleteRating(long ratingId, long userId);
         List<RatingDto> GetAll();

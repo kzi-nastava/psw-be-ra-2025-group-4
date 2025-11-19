@@ -19,9 +19,13 @@ namespace Explorer.Stakeholders.Core.UseCases
             _mapper = mapper;
         }
 
-        public RatingDto CreateRating(RatingCreateDto dto)
+        public RatingDto CreateRating(long userId, RatingCreateDto dto)
         {
-            var rating = _mapper.Map<Rating>(dto);
+            var rating = new Rating(
+                userId,
+                dto.Value,
+                dto.Comment
+    );
             var created = _ratingRepository.Create(rating);
             return _mapper.Map<RatingDto>(created);
         }
