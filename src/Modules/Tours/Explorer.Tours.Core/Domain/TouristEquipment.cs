@@ -16,7 +16,7 @@ public class TouristEquipment : Entity
 
     private void Validate()
     {
-        if (TouristId <= 0) throw new ArgumentException("Invalid tourist id.");
-        if (EquipmentId <= 0) throw new ArgumentException("Invalid equipment id.");
+        if (EquipmentId == 0)
+            throw new ArgumentException("Invalid equipment id.");
     }
 }

@@ -7,8 +7,7 @@ public class ToursContext : DbContext
 {
     public DbSet<Equipment> Equipment { get; set; }
     public DbSet<Tour> Tours { get; set; }
-
-
+    public DbSet<TouristEquipment> TouristEquipment { get; set; }
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
