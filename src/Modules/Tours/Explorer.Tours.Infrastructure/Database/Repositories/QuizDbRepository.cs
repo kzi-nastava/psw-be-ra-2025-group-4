@@ -43,7 +43,7 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
 
         public void Delete(int id)
         {
-            var quiz = _context.Quizzes.FirstOrDefault(q => q.Id == id);
+            var quiz = GetById(id);
             if (quiz == null)
                 throw new NotFoundException($"Quiz not found: {id}");
 

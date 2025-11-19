@@ -1,7 +1,6 @@
 ﻿using Explorer.API.Controllers.Author;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Author;
-using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -19,17 +18,15 @@ public class QuizQueryTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        // Seed for this test only
-        var created1 = CreateQuiz(scope, "Query Test Quiz 1");
-        var created2 = CreateQuiz(scope, "Query Test Quiz 2");
-
         // Act
         var result = ((ObjectResult)controller.GetAll().Result)?.Value as List<QuizDto>;
 
         // Assert
         result.ShouldNotBeNull();
-        result.ShouldContain(q => q.Id == created1.Id);
-        result.ShouldContain(q => q.Id == created2.Id);
+
+        result.ShouldContain(q => q.Id == -1);
+        result.ShouldContain(q => q.Id == -2);
+        result.ShouldContain(q => q.Id == -3);
     }
 
 
@@ -39,33 +36,13 @@ public class QuizQueryTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        // Create one quiz
-        var created = CreateQuiz(scope, "Quiz For Single Lookup Test");
-
         // Act
-        var result = ((ObjectResult)controller.GetById(created.Id).Result)?.Value as QuizDto;
+        var result = ((ObjectResult)controller.GetById(-1).Result)?.Value as QuizDto;
 
         // Assert
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(created.Id);
-        result.Title.ShouldBe("Quiz For Single Lookup Test");
-    }
-
-    private QuizDto CreateQuiz(IServiceScope scope, string title)
-    {
-        var controller = CreateController(scope);
-
-        var createDto = new QuizDto
-        {
-            Title = title,
-            AuthorId = "-1",
-            Questions = new List<QuestionDto>()
-        };
-
-        var result = ((ObjectResult)controller.Create(createDto).Result)?.Value as QuizDto;
-        result.ShouldNotBeNull();
-
-        return result!;
+        result.Id.ShouldBe(-1);
+        result.Title.ShouldBe("Existing Negative Quiz 1");
     }
 
     private static QuizController CreateController(IServiceScope scope)
