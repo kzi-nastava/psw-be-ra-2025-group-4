@@ -15,16 +15,23 @@ namespace Explorer.Tours.Core.Domain
 
         public TourProblem(int tourId, ProblemCategory category, ProblemPriority priority, string description, DateTime time, int touristId)
         {
-            if (tourId <= 0) throw new ArgumentException("Invalid TourId.");
-            if (touristId <= 0) throw new ArgumentException("Invalid TouristId.");
-            if (string.IsNullOrWhiteSpace(description)) throw new ArgumentException("Invalid Description.");
-
             TourId = tourId;
             Category = category;
             Priority = priority;
             Description = description;
             Time = time;
             TouristId = touristId;
+            Validate();
+        }
+
+        private void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Description))
+                throw new ArgumentException("Description cannot be empty");
+            if (TourId == 0)
+                throw new ArgumentException("TourId must not be zero");
+            if (TouristId == 0)
+                throw new ArgumentException("TouristId must not be zero");
         }
     }
 
