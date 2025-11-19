@@ -18,6 +18,9 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Price, opt => opt.Ignore());
 
+            CreateMap<HistoricalMonumentDTO, HistoricalMonument>().ForMember(dest => dest.Status, opt => opt.MapFrom(src => (MonumentStatus)src.Status));
+            CreateMap<HistoricalMonument, HistoricalMonumentDTO>().ForMember(dest => dest.Status, opt => opt.MapFrom(src => (MonumentStatusDTO)src.Status));
+
 
             CreateMap<TouristEquipmentDTO, TouristEquipment>().ReverseMap();
 
@@ -26,7 +29,6 @@ namespace Explorer.Tours.Core.Mappers
             CreateMap<ProblemCategory, ProblemCategoryDto>().ConvertUsing(src => (ProblemCategoryDto)src);
             CreateMap<ProblemPriorityDto, ProblemPriority>().ConvertUsing(src => (ProblemPriority)src);
             CreateMap<ProblemPriority, ProblemPriorityDto>().ConvertUsing(src => (ProblemPriorityDto)src);
-
         }
     }
 }
