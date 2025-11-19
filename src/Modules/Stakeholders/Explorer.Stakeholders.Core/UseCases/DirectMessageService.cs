@@ -28,20 +28,21 @@ namespace Explorer.Stakeholders.Core.UseCases
             _mapper = mapper;
         }
 
-        public DirectMessageDto SendMessage(DirectMessageDto entity)
+        public DirectMessageDto SendMessage(string senderUsername, DirectMessageDto entity)
         {
-            var sender = _userRepository.GetActiveByName(entity.Sender);
+            var sender = _userRepository.GetActiveByName(senderUsername);
             if (sender == null)
-                throw new ArgumentException($"Sender with username '{entity.Sender}' not found.", nameof(entity.Sender));
+                throw new ArgumentException($"Sender '{senderUsername}' not found.");
 
             var recipient = _userRepository.GetActiveByName(entity.Recipient);
             if (recipient == null)
-                throw new ArgumentException($"Recipient with username '{entity.Recipient}' not found.", nameof(entity.Recipient));
+                throw new ArgumentException($"Recipient '{entity.Recipient}' not found.");
 
             var message = new DirectMessage(sender.Id, recipient.Id, entity.Content, DateTime.UtcNow);
             var result = _directMessageRepository.Create(message);
             return _mapper.Map<DirectMessageDto>(result);
         }
+
 
         public void Delete(long id)
         {
@@ -73,8 +74,6 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public PagedResult<DirectMessageDto> GetPagedConversations(int page, int pageSize, string user)
         {
-            Console.WriteLine("User: " + user);
-            Trace.WriteLine("User: " + user);
             var result = _directMessageRepository.GetPagedConversations(page, pageSize, user);
 
             var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
