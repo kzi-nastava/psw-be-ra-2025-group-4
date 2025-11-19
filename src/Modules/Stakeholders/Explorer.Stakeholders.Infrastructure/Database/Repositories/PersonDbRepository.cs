@@ -15,6 +15,11 @@ public class PersonDbRepository : IPersonRepository
         _dbSet = DbContext.Set<Person>();
     }
 
+    public Person? Get(long id)
+    {
+        return DbContext.People.FirstOrDefault(p => p.Id == id);
+    }
+
     public Person Create(Person entity)
     {
         _dbSet.Add(entity);

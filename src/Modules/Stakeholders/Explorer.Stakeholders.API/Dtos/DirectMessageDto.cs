@@ -10,7 +10,9 @@ namespace Explorer.Stakeholders.API.Dtos
     {
         public long Id { get; set; }
         public string Sender {  get; set; }
+        public long SenderId { get; set; }
         public string Recipient { get; set; }
+        public long RecipientId { get; set; }
         public string Content { get; set; }
         public DateTime SentAt { get; set; }
         public DateTime? EditedAt { get; set; }

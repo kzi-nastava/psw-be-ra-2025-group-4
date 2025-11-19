@@ -9,8 +9,8 @@ namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces
 {
     public interface IDirectMessageRepository
     {
-        PagedResult<DirectMessage> GetPaged(int page, int pageSize, string user);
-        PagedResult<DirectMessage> GetPagedConversations(int page, int pageSize, string user);
+        PagedResult<DirectMessage> GetPaged(int page, int pageSize, long userId);
+        PagedResult<DirectMessage> GetPagedConversations(int page, int pageSize, long userId);
         DirectMessage Create(DirectMessage map);
         DirectMessage Update(DirectMessage map);
         void Delete(long id);
