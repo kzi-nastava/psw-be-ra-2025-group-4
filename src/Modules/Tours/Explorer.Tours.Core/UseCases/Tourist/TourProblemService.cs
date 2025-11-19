@@ -1,14 +1,14 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Tourist;
+using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using System.Linq;
 
 namespace Explorer.Tours.Core.UseCases.Tourist;
 
-public class TourProblemService// : ITourProblemService
+public class TourProblemService : ITourProblemService
 {
     private readonly ITourProblemRepository _repository;
     private readonly IMapper _mapper;
@@ -36,7 +36,7 @@ public class TourProblemService// : ITourProblemService
 
     public TourProblemDto Update(TourProblemDto tourProblemDto)
     {
-        var tourProblem = _repository.GetById(tourProblemDto.TourProblemId);
+        var tourProblem = _repository.GetById(tourProblemDto.Id);
 
         tourProblem.TourId = tourProblemDto.TourId;
         tourProblem.TouristId = tourProblemDto.TouristId;
