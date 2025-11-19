@@ -11,7 +11,7 @@ namespace Explorer.Tours.API.Dtos
         public int Id { get; set; }
         public string Title { get; set; }
 
-        public int AuthorId { get; set; }
+        public string AuthorId { get; set; }
 
         public List<QuestionDto> Questions { get; set; }
     }

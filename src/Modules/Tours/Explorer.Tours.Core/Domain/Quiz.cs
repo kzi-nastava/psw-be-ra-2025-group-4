@@ -12,14 +12,14 @@ namespace Explorer.Tours.Core.Domain
         public string Title { get; set; }
         public List<Question> Questions { get; set; }
 
-        public int AuthorId { get; private set; }
+        public string? AuthorId { get; private set; }
 
         public Quiz()
         {
             Questions = new List<Question>();
         }
 
-        public Quiz(string title, int authorId)
+        public Quiz(string title, string authorId)
         {
             Title = title;
             Questions = new List<Question>();
