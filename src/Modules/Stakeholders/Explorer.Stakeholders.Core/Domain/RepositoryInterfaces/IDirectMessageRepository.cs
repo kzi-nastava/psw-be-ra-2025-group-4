@@ -13,5 +13,6 @@ namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces
         DirectMessage Create(DirectMessage map);
         DirectMessage Update(DirectMessage map);
         void Delete(long id);
+        DirectMessage? Get(long id);
     }
 }

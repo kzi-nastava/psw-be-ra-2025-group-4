@@ -10,10 +10,7 @@ namespace Explorer.Stakeholders.Core.Mappers
         {
             CreateMap<DirectMessage, DirectMessageDto>()
                 .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender.Username))
-                .ForMember(dest => dest.Recipient, opt => opt.MapFrom(src => src.Recipient.Username))
-                .ReverseMap()
-                .ForPath(src => src.Sender, opt => opt.Ignore())
-                .ForPath(src => src.Recipient, opt => opt.Ignore());
+                .ForMember(dest => dest.Recipient, opt => opt.MapFrom(src => src.Recipient.Username));
         }
     }
 }

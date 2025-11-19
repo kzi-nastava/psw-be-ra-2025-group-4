@@ -53,15 +53,7 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
 
         public DirectMessage Update(DirectMessage entity)
         {
-            try
-            {
-                DbContext.Update(entity);
-                DbContext.SaveChanges();
-            }
-            catch (DbUpdateException e)
-            {
-                throw new NotFoundException(e.Message);
-            }
+            DbContext.SaveChanges();
             return entity;
         }
     }

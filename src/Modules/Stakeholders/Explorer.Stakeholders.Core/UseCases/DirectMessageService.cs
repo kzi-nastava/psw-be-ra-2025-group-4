@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
@@ -48,9 +49,18 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public DirectMessageDto Update(DirectMessageDto entity)
         {
-            var result = _directMessageRepository.Update(_mapper.Map<DirectMessage>(entity));
+            var message = _directMessageRepository.Get(entity.Id);
+
+            if (message == null)
+                throw new NotFoundException($"Message with id '{entity.Id}' not found!");
+
+            message.Content = entity.Content;
+            message.EditedAt = DateTime.UtcNow;
+
+            var result = _directMessageRepository.Update(message);
             return _mapper.Map<DirectMessageDto>(result);
         }
+
 
         public PagedResult<DirectMessageDto> GetPaged(int page, int pageSize)
         {
