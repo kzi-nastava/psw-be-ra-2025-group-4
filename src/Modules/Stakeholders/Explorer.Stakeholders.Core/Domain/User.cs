@@ -28,6 +28,22 @@ public class User : Entity
     {
         return Role.ToString().ToLower();
     }
+
+    public UserRole getRole(string role) //sus but idc
+    {
+        if(role.Equals("administrator", StringComparison.OrdinalIgnoreCase))
+        {
+            return UserRole.Administrator;
+        }
+        else if(role.Equals("author", StringComparison.OrdinalIgnoreCase))
+        {
+            return UserRole.Author;
+        }
+        else
+        {
+            return UserRole.Tourist;
+        }
+    }
 }
 
 public enum UserRole
