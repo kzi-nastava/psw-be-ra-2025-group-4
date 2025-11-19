@@ -61,7 +61,7 @@ namespace Explorer.Tours.Core.Domain
 
         private void Validate()
         {
-            if (TouristId <= 0)
+            if (TouristId == 0)
                 throw new ArgumentException("TouristId must be greater than 0.");
 
             ValidateRating(WalkRating, nameof(WalkRating));
