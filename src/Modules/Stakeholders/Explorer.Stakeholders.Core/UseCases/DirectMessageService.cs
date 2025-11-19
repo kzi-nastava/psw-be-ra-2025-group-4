@@ -8,6 +8,7 @@ using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -62,9 +63,19 @@ namespace Explorer.Stakeholders.Core.UseCases
         }
 
 
-        public PagedResult<DirectMessageDto> GetPaged(int page, int pageSize)
+        public PagedResult<DirectMessageDto> GetPaged(int page, int pageSize, string user)
         {
-            var result = _directMessageRepository.GetPaged(page, pageSize);
+            var result = _directMessageRepository.GetPaged(page, pageSize, user);
+
+            var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
+            return new PagedResult<DirectMessageDto>(items, result.TotalCount);
+        }
+
+        public PagedResult<DirectMessageDto> GetPagedConversations(int page, int pageSize, string user)
+        {
+            Console.WriteLine("User: " + user);
+            Trace.WriteLine("User: " + user);
+            var result = _directMessageRepository.GetPagedConversations(page, pageSize, user);
 
             var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
             return new PagedResult<DirectMessageDto>(items, result.TotalCount);

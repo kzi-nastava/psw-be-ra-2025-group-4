@@ -4,6 +4,7 @@ using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,11 +19,12 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
         protected readonly StakeholdersContext DbContext;
         private readonly DbSet<DirectMessage> _dbSet;
 
-        public DirectMessageDbRepository(StakeholdersContext context) 
+        public DirectMessageDbRepository(StakeholdersContext context)
         {
             DbContext = context;
             _dbSet = DbContext.Set<DirectMessage>();
         }
+
         public DirectMessage Create(DirectMessage entity)
         {
             _dbSet.Add(entity);
@@ -44,11 +46,46 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             DbContext.SaveChanges();
         }
 
-        public PagedResult<DirectMessage> GetPaged(int page, int pageSize)
+        public PagedResult<DirectMessage> GetPaged(int page, int pageSize, string user)
         {
-            var task = _dbSet.GetPagedById(page, pageSize);
+            var query = _dbSet
+                .Include(message => message.Sender)
+                .Include(message => message.Recipient)
+                .Where(message => message.Sender.Username.Equals(user) || message.Recipient.Username.Equals(user))
+                .OrderByDescending(dm => dm.SentAt);
+
+            var task = query.GetPagedById(page, pageSize);
             task.Wait();
             return task.Result;
+        }
+
+        public PagedResult<DirectMessage> GetPagedConversations(int page, int pageSize, string user)
+        {
+            var userMessages = _dbSet
+                .Include(dm => dm.Sender)
+                .Include(dm => dm.Recipient)
+                .Where(message => message.Sender.Username == user || message.Recipient.Username == user)
+                .OrderByDescending(dm => dm.SentAt)
+                .ToList();
+
+            var latestMessages = userMessages
+                .GroupBy(message =>
+                {
+                    var participants = new[] { message.Sender.Username, message.Recipient.Username }
+                        .OrderBy(x => x)
+                        .ToArray();
+                    return $"{participants[0]}_{participants[1]}";
+                })
+                .Select(g => g.First())
+                .ToList();
+
+            var totalCount = latestMessages.Count;
+            var items = latestMessages
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PagedResult<DirectMessage>(items, totalCount);
         }
 
         public DirectMessage Update(DirectMessage entity)

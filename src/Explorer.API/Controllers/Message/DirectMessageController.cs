@@ -21,8 +21,15 @@ namespace Explorer.API.Controllers.Message
         [HttpGet]
         public ActionResult<PagedResult<DirectMessageDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            return Ok(_directMessageService.GetPaged(page, pageSize));
+            return Ok(_directMessageService.GetPaged(page, pageSize, User?.Identity?.Name));
         }
+
+        [HttpGet("conversations")]
+        public ActionResult<PagedResult<DirectMessageDto>> GetAllConversations([FromQuery] int page, [FromQuery] int pageSize)
+        {
+            return Ok(_directMessageService.GetPagedConversations(page, pageSize, User?.Identity?.Name));
+        }
+
 
         [HttpPost]
         public ActionResult<DirectMessageDto> SendMessage([FromBody] DirectMessageDto directMessage)
