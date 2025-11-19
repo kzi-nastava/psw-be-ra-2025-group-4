@@ -29,26 +29,35 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public void BlockUser(long userId)
         {
-            var user = _userRepository.GetActiveByName(_userRepository.GetById(userId).Username);
+            var tren = _userRepository.GetById(userId);
+            if (tren == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} was not found.");
+            }
+
+            var user = _userRepository.GetActiveByName(tren.Username);
             if (user == null)
             {
-                throw new KeyNotFoundException($"User with ID {userId} was not found or is not active.");
+                // Ako je već blokiran, možemo baciti InvalidOperationException
+                throw new InvalidOperationException("User is already blocked or not active.");
             }
+
             if (user.Role != UserRole.Author && user.Role != UserRole.Tourist)
             {
                 throw new InvalidOperationException("Only users with role 'Author' or 'Tourist' can be blocked.");
             }
-            
+
             user.IsActive = false;
             _userRepository.Update(user);
         }
+
 
         public UserAccountDto CreateUser(AccountRegistrationDto account)
         {
             if (_userRepository.Exists(account.Username))
                 throw new EntityValidationException("Provided username already exists.");
 
-            if (account.Role != "Author" && account.Role != "Administrator")
+            if (account.Role.ToLower() != "author" && account.Role.ToLower() != "administrator")
                 throw new EntityValidationException("Invalid role provided.");
 
             var u = new User(account.Username, account.Password, UserRole.Tourist, true); // Temporary role assignment
