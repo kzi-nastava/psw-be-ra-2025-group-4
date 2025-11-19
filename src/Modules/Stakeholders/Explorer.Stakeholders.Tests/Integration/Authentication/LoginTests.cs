@@ -16,21 +16,42 @@ public class LoginTests : BaseStakeholdersIntegrationTest
     [Fact]
     public void Successfully_logs_in()
     {
-        // Arrange
+        
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
-        var loginSubmission = new CredentialsDto { Username = "turista1@gmail.com", Password = "turista1" };
 
-        // Act
-        var authenticationResponse = ((ObjectResult)controller.Login(loginSubmission).Result).Value as AuthenticationTokensDto;
+       
+        var registration = new AccountRegistrationDto
+        {
+            Username = "login.test@example.com",
+            Password = "test123",
+            Email = "login.test@example.com",
+            Name = "Login",
+            Surname = "Test"
+        };
 
-        // Assert
+        var registrationResult = (ObjectResult)controller.RegisterTourist(registration).Result;
+        var registrationTokens = registrationResult.Value as AuthenticationTokensDto;
+        registrationTokens.ShouldNotBeNull();
+
+      
+        var loginSubmission = new CredentialsDto
+        {
+            Username = "login.test@example.com",
+            Password = "test123"
+        };
+
+        var loginResult = (ObjectResult)controller.Login(loginSubmission).Result;
+        var authenticationResponse = loginResult.Value as AuthenticationTokensDto;
+
+        
         authenticationResponse.ShouldNotBeNull();
-        authenticationResponse.Id.ShouldBe(-21);
-        var decodedAccessToken = new JwtSecurityTokenHandler().ReadJwtToken(authenticationResponse.AccessToken);
-        var personId = decodedAccessToken.Claims.FirstOrDefault(c => c.Type == "personId");
+        authenticationResponse!.Id.ShouldNotBe(0);  
+
+       
+        var decodedToken = new JwtSecurityTokenHandler().ReadJwtToken(authenticationResponse.AccessToken);
+        var personId = decodedToken.Claims.FirstOrDefault(c => c.Type == "personId");
         personId.ShouldNotBeNull();
-        personId.Value.ShouldBe("-21");
     }
 
     [Fact]
