@@ -20,11 +20,11 @@ public class TouristEquipmentController : ControllerBase
     }
     private long GetTouristId()
     {
-        var idClaim = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+        var idClaim = User.Claims.FirstOrDefault(c => c.Type == "personId")?.Value;
         if (string.IsNullOrWhiteSpace(idClaim))
-            throw new UnauthorizedAccessException("Missing id claim.");
+            throw new UnauthorizedAccessException("Missing personId claim.");
 
-        return long.Parse(idClaim);   
+        return long.Parse(idClaim);
     }
 
 
