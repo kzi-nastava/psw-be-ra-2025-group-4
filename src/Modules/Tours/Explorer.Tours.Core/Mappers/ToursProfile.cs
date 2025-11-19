@@ -20,6 +20,8 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.AuthorId, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Price, opt => opt.Ignore());
+
+            CreateMap<TouristEquipmentDTO, TouristEquipment>().ReverseMap();
         }
     }
 }
