@@ -1,8 +1,10 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
+using Explorer.Tours.Core.UseCases.Author;
 using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -21,10 +23,12 @@ public static class ToursStartup
         SetupInfrastructure(services);
         return services;
     }
-    
+
     private static void SetupCore(IServiceCollection services)
     {
         services.AddScoped<IEquipmentService, EquipmentService>();
+
+        services.AddScoped<ITourService, TourService>();
         services.AddScoped<IFacilityService, FacilityService>();
     }
 
@@ -33,6 +37,8 @@ public static class ToursStartup
         services.AddScoped<IEquipmentRepository, EquipmentDbRepository>();
         services.AddScoped<IFacilityRepository,  FacilityDbRepository>();
 
+        services.AddScoped<ITourRepository, TourDbRepository>();
+
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();
@@ -40,4 +46,5 @@ public static class ToursStartup
             opt.UseNpgsql(dataSource,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "tours")));
     }
+
 }
