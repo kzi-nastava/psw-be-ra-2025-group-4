@@ -73,15 +73,15 @@ public class TourCommandTests : BaseToursIntegrationTest
             Tags = new List<string>()
         };
 
-        var result = ((ObjectResult)controller.Update(1, dto).Result)?.Value as TourDto;
+        var result = ((ObjectResult)controller.Update(-2, dto).Result)?.Value as TourDto;
 
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(1);
+        result.Id.ShouldBe(-2);
         result.Name.ShouldBe(dto.Name);
         result.Description.ShouldBe(dto.Description);
         result.Difficulty.ShouldBe(dto.Difficulty);
 
-        var storedTour = dbContext.Tours.AsNoTracking().FirstOrDefault(t => t.Id == 1);
+        var storedTour = dbContext.Tours.AsNoTracking().FirstOrDefault(t => t.Id == -2);
         storedTour.ShouldNotBeNull();
         storedTour.Name.ShouldBe(dto.Name);
         storedTour.Description.ShouldBe(dto.Description);
@@ -112,12 +112,12 @@ public class TourCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        var result = (NoContentResult)controller.Delete(2);
+        var result = (NoContentResult)controller.Delete(-1);
 
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(204);
 
-        var storedTour = dbContext.Tours.FirstOrDefault(t => t.Id == 2);
+        var storedTour = dbContext.Tours.FirstOrDefault(t => t.Id == -1);
         storedTour.ShouldBeNull();
     }
 
