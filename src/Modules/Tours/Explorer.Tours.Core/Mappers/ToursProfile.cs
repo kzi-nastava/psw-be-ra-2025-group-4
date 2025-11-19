@@ -18,11 +18,15 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Price, opt => opt.Ignore());
 
+
+            CreateMap<TouristEquipmentDTO, TouristEquipment>().ReverseMap();
+
             CreateMap<TourProblemDto, TourProblem>().ReverseMap();
             CreateMap<ProblemCategoryDto, ProblemCategory>().ConvertUsing(src => (ProblemCategory)src);
             CreateMap<ProblemCategory, ProblemCategoryDto>().ConvertUsing(src => (ProblemCategoryDto)src);
             CreateMap<ProblemPriorityDto, ProblemPriority>().ConvertUsing(src => (ProblemPriority)src);
             CreateMap<ProblemPriority, ProblemPriorityDto>().ConvertUsing(src => (ProblemPriorityDto)src);
+
         }
     }
 }
