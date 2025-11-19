@@ -15,6 +15,10 @@ namespace Explorer.Tours.Core.Mappers
 
             CreateMap<Tour, TourDto>().ReverseMap();
 
+            CreateMap<TourPreferences, TourPreferencesDTO>()
+            .ForMember(dest => dest.PreferredDifficulty,
+               opt => opt.MapFrom(src => src.PreferredDifficulty.ToString()));
+
             CreateMap<CreateUpdateTourDto, Tour>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.AuthorId, opt => opt.Ignore())
