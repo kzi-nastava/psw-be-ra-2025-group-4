@@ -34,6 +34,12 @@ namespace Explorer.API.Controllers.Message
             return Ok(_directMessageService.GetPagedConversations(page, pageSize, User.PersonId()));
         }
 
+        [HttpGet("conversations/{userId:long}")]
+        public ActionResult<PagedResult<DirectMessageDto>> GetAllBetweenUsers(long userId, [FromQuery] int page, [FromQuery] int pageSize)
+        {
+            return Ok(_directMessageService.GetPagedBetweenUsers(page, pageSize, User.PersonId(), userId));
+        }
+
 
         [HttpPost]
         public ActionResult<DirectMessageDto> SendMessage([FromBody] DirectMessageDto directMessage)

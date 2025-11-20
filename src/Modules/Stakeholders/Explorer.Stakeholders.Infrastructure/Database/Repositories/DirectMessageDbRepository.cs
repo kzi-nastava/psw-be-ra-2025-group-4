@@ -94,5 +94,19 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             DbContext.SaveChanges();
             return entity;
         }
+
+        public PagedResult<DirectMessage> GetPagedBetweenUsers(int page, int pageSize, long firstUserId, long secondUserId)
+        {
+            var query = _dbSet
+                .Include(dm => dm.Sender)
+                .Include(dm => dm.Recipient)
+                .Where(message => (message.SenderId == firstUserId && message.RecipientId == secondUserId)
+                || (message.SenderId == secondUserId && message.RecipientId == firstUserId))
+                .OrderByDescending(dm => dm.SentAt);
+
+            var task = query.GetPagedById(page, pageSize);
+            task.Wait();
+            return task.Result;
+        }
     }
 }
