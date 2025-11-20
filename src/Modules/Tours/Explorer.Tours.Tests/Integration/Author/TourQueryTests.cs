@@ -31,7 +31,7 @@ public class TourQueryTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        var result = ((ObjectResult)controller.GetById(1).Result)?.Value as TourDto;
+        var result = ((ObjectResult)controller.GetById(-1).Result)?.Value as TourDto;
 
         result.ShouldNotBeNull();
     }
