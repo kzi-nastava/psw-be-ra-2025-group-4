@@ -61,6 +61,18 @@ namespace Explorer.API.Controllers.Tourist
         }
 
         [Authorize]
+        [HttpGet("{id:long}")]
+        public ActionResult<RatingDto> GetById(long id)
+        {
+            if (!IsAuthorOrTourist())
+                return Forbid();
+
+            var rating = _ratingService.GetById(id);
+            return Ok(rating);
+        }
+
+
+        [Authorize]
         [HttpPost]
         public ActionResult<RatingDto> Create([FromBody] RatingCreateDto ratingCreateDto)
         {
