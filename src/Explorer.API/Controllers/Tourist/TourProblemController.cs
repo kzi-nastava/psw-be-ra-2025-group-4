@@ -42,6 +42,7 @@ public class TourProblemController : ControllerBase
     [HttpPost]
     public ActionResult<TourProblemDto> Create([FromBody] TourProblemDto dto)
     {
+        dto.TouristId = GetTouristId(); 
         var created = _tourProblemService.Create(dto);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
