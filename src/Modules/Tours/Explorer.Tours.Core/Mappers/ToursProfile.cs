@@ -19,6 +19,7 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.Price, opt => opt.Ignore());
 
             CreateMap<HistoricalMonumentDTO, HistoricalMonument>().ForMember(dest => dest.Status, opt => opt.MapFrom(src => (MonumentStatus)src.Status));
+
             CreateMap<HistoricalMonument, HistoricalMonumentDTO>().ForMember(dest => dest.Status, opt => opt.MapFrom(src => (MonumentStatusDTO)src.Status));
 
 

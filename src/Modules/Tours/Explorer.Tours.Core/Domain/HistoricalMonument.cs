@@ -18,13 +18,16 @@ public class HistoricalMonument : Entity
     public double Latitude { get; private set; }
     public double Longitude { get; private set; }
 
-    public HistoricalMonument(string name, string description, int yearOfCreation, double latitude, double longitude)
+    public long AdministratorId { get; private set; }
+
+    public HistoricalMonument(string name, string description, int yearOfCreation, double latitude, double longitude, long administratorId)
     {
         Name = name;
         Description = description;
         YearOfCreation = yearOfCreation;
         Latitude = latitude;
         Longitude = longitude;
+        AdministratorId = administratorId;
         Status = MonumentStatus.Active;
 
         Validate();
@@ -54,5 +57,7 @@ public class HistoricalMonument : Entity
             throw new ArgumentException("Latitude must be between -90 and 90");
         if (Longitude < -180 || Longitude > 180)
             throw new ArgumentException("Longitude must be between -180 and 180");
+        if (AdministratorId <= 0)
+            throw new ArgumentException("AdministratorId must be greater than 0");
     }
 }

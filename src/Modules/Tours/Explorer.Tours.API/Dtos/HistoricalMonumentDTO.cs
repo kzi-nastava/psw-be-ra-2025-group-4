@@ -15,6 +15,8 @@ public class HistoricalMonumentDTO
     public MonumentStatusDTO Status { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
+
+    public long AdministratorId { get;  set; }
 }
 
 public enum MonumentStatusDTO
