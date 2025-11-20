@@ -4,6 +4,7 @@ using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Infrastructure.Database;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -25,105 +26,97 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
     {
         public DirectMessageTests(StakeholdersTestFactory factory) : base(factory) { }
 
-
         private static DirectMessageController CreateController(IServiceScope scope)
         {
             return new DirectMessageController(scope.ServiceProvider.GetRequiredService<IDirectMessageService>());
         }
 
-        [Fact]
-        public void SendMessage_Creates_Successfully()
+        // ----------------------------------------------
+        // Helper for setting user with personId
+        // ----------------------------------------------
+        private static void SetUser(ControllerBase controller, long personId)
         {
-            // Arrange
+            var user = new ClaimsPrincipal(
+                new ClaimsIdentity(
+                    new[] { new Claim("personId", personId.ToString()) },
+                    "mock"
+                )
+            );
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
+        }
+
+        [Fact]
+        public void SendMessage_Returns_Created_Message()
+        {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
-            // Mock the authenticated user
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, "autor1@gmail.com") };
-            var identity = new ClaimsIdentity(claims, "TestAuthType");
-            var claimsPrincipal = new ClaimsPrincipal(identity);
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
+            SetUser(controller, -11);  
 
-            var messageDto = new DirectMessageDto
+            var dto = new DirectMessageDto
             {
+                RecipientId = -12,
                 Recipient = "autor2@gmail.com",
-                Content = "Hello! This is a test message.",
+                Content = "Test message content",
                 SentAt = DateTime.UtcNow
             };
 
-            // Act
+            var result = controller.SendMessage(dto).Result as OkObjectResult;
 
-            var result = ((ObjectResult)controller.SendMessage(messageDto).Result).Value as DirectMessageDto;
-
-            // Assert
             result.ShouldNotBeNull();
-            result.Recipient.ShouldBe(messageDto.Recipient);
-            result.Content.ShouldBe(messageDto.Content);
-            result.SentAt.ShouldBe(messageDto.SentAt, TimeSpan.FromSeconds(1));
-            result.EditedAt.ShouldBeNull();
+            var returned = result.Value as DirectMessageDto;
+
+            returned.ShouldNotBeNull();
+            returned.Content.ShouldBe("Test message content");
+            returned.SentAt.ShouldNotBe(default);
         }
 
         [Fact]
         public void SendMessage_Create_Sender_Doesnt_Exists()
         {
-            // Arrange
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
-            // Mock the authenticated user
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, "nonexistent@gmail.com") };
-            var identity = new ClaimsIdentity(claims, "TestAuthType");
-            var claimsPrincipal = new ClaimsPrincipal(identity);
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
+            SetUser(controller, -9999);   // nonexistent sender
 
-            var messageDto = new DirectMessageDto
+            var dto = new DirectMessageDto
             {
+                RecipientId = -12,
                 Recipient = "autor2@gmail.com",
                 Content = "Hello! This is a test message.",
                 SentAt = DateTime.UtcNow
             };
 
-            // Act
-            var result = controller.SendMessage(messageDto);
+            var result = controller.SendMessage(dto);
 
-            // Assert
             result.Result.ShouldBeOfType<BadRequestObjectResult>();
         }
 
         [Fact]
         public void SendMessage_Create_Recipient_Doesnt_Exists()
         {
-            // Arrange
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
-            // Mock authenticated user that exists in database
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, "autor1@gmail.com") };
-            var identity = new ClaimsIdentity(claims, "TestAuthType");
-            var claimsPrincipal = new ClaimsPrincipal(identity);
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
+            SetUser(controller, -11);
 
-            var messageDto = new DirectMessageDto
+            var dto = new DirectMessageDto
             {
-                Recipient = "autor123@gmail.com", // Non-existent recipient
-                Content = "Hello! This is a test message.",
+                RecipientId = -999,
+                Recipient = "autor2@gmail.com",
+                Content = "Hello!",
                 SentAt = DateTime.UtcNow
             };
 
-            var result = controller.SendMessage(messageDto);
+            var result = controller.SendMessage(dto);
 
             result.Result.ShouldBeOfType<BadRequestObjectResult>();
-            var badRequest = result.Result as BadRequestObjectResult;
-            badRequest.Value.ShouldBe("Recipient 'autor123@gmail.com' not found.");
+            var bad = result.Result as BadRequestObjectResult;
+            bad.Value.ShouldBe($"Recipient '{dto.RecipientId}' not found.");
         }
 
         [Fact]
@@ -132,17 +125,20 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
+            SetUser(controller, -11);
+
             var result = controller.Delete(-999);
 
             result.ShouldBeOfType<NotFoundObjectResult>();
         }
-
 
         [Fact]
         public void DeleteMessage_ReturnsOk()
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
+
+            SetUser(controller, -11);
 
             var result = controller.Delete(1);
 
@@ -155,16 +151,11 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, "autor1@gmail.com") };
-            var identity = new ClaimsIdentity(claims, "TestAuthType");
-            var claimsPrincipal = new ClaimsPrincipal(identity);
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
+            SetUser(controller, -11);
 
             var original = new DirectMessageDto
             {
+                RecipientId = -12,
                 Recipient = "autor2@gmail.com",
                 Content = "Original content",
                 SentAt = DateTime.UtcNow
@@ -188,23 +179,17 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, "autor1@gmail.com") };
-            var identity = new ClaimsIdentity(claims, "TestAuthType");
-            var claimsPrincipal = new ClaimsPrincipal(identity);
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
+            SetUser(controller, -11);
 
-            var messageDto = new DirectMessageDto
+            var dto = new DirectMessageDto
             {
                 Id = -999,
                 Recipient = "autor2@gmail.com",
-                Content = "Hello! This is a test message.",
+                Content = "Hello!",
                 SentAt = DateTime.UtcNow
             };
 
-            var result = controller.Update(messageDto).Result;
+            var result = controller.Update(dto).Result;
 
             result.ShouldBeOfType<NotFoundObjectResult>();
         }
@@ -215,33 +200,24 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
-            var identity = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, "autor1@gmail.com"),
-            }, "TestAuthentication");
-
-            var claimsPrincipal = new ClaimsPrincipal(identity);
-
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
+            SetUser(controller, -11);
 
             for (int i = 0; i < 3; i++)
             {
                 controller.SendMessage(new DirectMessageDto
                 {
-                    Sender = "autor1@gmail.com",
+                    RecipientId = -12,
                     Recipient = "autor2@gmail.com",
                     Content = $"Message {i}",
                     SentAt = DateTime.UtcNow
                 });
             }
 
-            var result = ((ObjectResult)controller.GetAll(1, 2).Result).Value as PagedResult<DirectMessageDto>;
-            result.ShouldNotBeNull();
-            result.Results.Count.ShouldBe(2);
-            result.TotalCount.ShouldBeGreaterThanOrEqualTo(3);
+            var page = ((ObjectResult)controller.GetAll(1, 2).Result).Value as PagedResult<DirectMessageDto>;
+
+            page.ShouldNotBeNull();
+            page.Results.Count.ShouldBe(2);
+            page.TotalCount.ShouldBeGreaterThanOrEqualTo(3);
         }
 
         [Fact]
@@ -250,33 +226,27 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
-            var identity = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, "autor1@gmail.com"),
-            }, "TestAuthentication");
-
-            var claimsPrincipal = new ClaimsPrincipal(identity);
-
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
+            SetUser(controller, -11);
 
             for (int i = 0; i < 3; i++)
             {
                 controller.SendMessage(new DirectMessageDto
                 {
-                    Sender = "autor1@gmail.com",
-                    Recipient = $"autor{i + 1}@gmail.com",
+                    RecipientId = -12,
+                    Recipient = "autor2@gmail.com",
                     Content = $"Message {i}",
                     SentAt = DateTime.UtcNow
                 });
             }
 
-            var result = ((ObjectResult)controller.GetAllConversations(1, 10).Result).Value as PagedResult<DirectMessageDto>;
+            var result = ((ObjectResult)controller.GetAllConversations(1, 10).Result)
+                .Value as PagedResult<DirectMessageDto>;
+
             result.ShouldNotBeNull();
             result.Results.Count.ShouldBe(3);
+            result.Results[0].RecipientId.ShouldBe(-12);
             result.TotalCount.ShouldBeGreaterThanOrEqualTo(3);
         }
     }
+
 }

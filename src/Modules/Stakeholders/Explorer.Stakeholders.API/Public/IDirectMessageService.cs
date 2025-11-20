@@ -9,9 +9,9 @@ namespace Explorer.Stakeholders.API.Public
 {
     public interface IDirectMessageService
     {
-        PagedResult<DirectMessageDto> GetPaged(int page, int pageSize, string user);
-        PagedResult<DirectMessageDto> GetPagedConversations(int page, int pageSize, string user);
-        DirectMessageDto SendMessage(string senderUsername, DirectMessageDto directMessage);
+        PagedResult<DirectMessageDto> GetPaged(int page, int pageSize, long userId);
+        PagedResult<DirectMessageDto> GetPagedConversations(int page, int pageSize, long userId);
+        DirectMessageDto SendMessage(long senderId, DirectMessageDto directMessage);
         DirectMessageDto Update(DirectMessageDto directMessage);
         void Delete(long id);
     }
