@@ -18,5 +18,9 @@ public class StakeholderProfile : Profile
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.GetPrimaryRoleName()))
             .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
 
+        CreateMap<UserProfile, UserProfileDto>().ReverseMap();
+        CreateMap<UpdateUserProfileDto, UserProfile>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore());
     }
 }
