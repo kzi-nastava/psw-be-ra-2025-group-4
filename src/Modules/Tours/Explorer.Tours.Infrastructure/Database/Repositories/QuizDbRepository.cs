@@ -28,7 +28,10 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
 
         public Quiz Update(Quiz quiz)
         {
-            var existing = _context.Quizzes.FirstOrDefault(q => q.Id == quiz.Id);
+            var existing = _context.Quizzes
+                .Include(q => q.Questions)
+                .ThenInclude(q => q.Options)
+                .FirstOrDefault(q => q.Id == quiz.Id);
             if (existing == null)
             {
                 throw new NotFoundException("Quiz not found: " + quiz.Id);
@@ -37,8 +40,98 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
             existing.Title = quiz.Title;
             existing.AuthorId = quiz.AuthorId;
 
+            if (quiz.Questions != null)
+            {
+                var questionIds = quiz.Questions.Where(q => q.Id > 0).Select(q => q.Id).ToList();
+                
+                var questionsToRemove = existing.Questions.Where(q => !questionIds.Contains(q.Id)).ToList();
+                foreach (var question in questionsToRemove)
+                {
+                    var optionsToRemove = _context.Options.Where(o => o.QuestionId == question.Id).ToList();
+                    _context.Options.RemoveRange(optionsToRemove);
+                    _context.Questions.Remove(question);
+                }
+
+                foreach (var questionDto in quiz.Questions)
+                {
+                    if (questionDto.Id > 0)
+                    {
+                        var existingQuestion = existing.Questions.FirstOrDefault(q => q.Id == questionDto.Id);
+                        if (existingQuestion != null)
+                        {
+                            existingQuestion.Text = questionDto.Text;
+
+                            if (questionDto.Options != null)
+                            {
+                                var optionIds = questionDto.Options.Where(o => o.Id > 0).Select(o => o.Id).ToList();
+                                
+                                var optionsToRemove = existingQuestion.Options.Where(o => !optionIds.Contains(o.Id)).ToList();
+                                _context.Options.RemoveRange(optionsToRemove);
+
+                                foreach (var optionDto in questionDto.Options)
+                                {
+                                    if (optionDto.Id > 0)
+                                    {
+                                        var existingOption = existingQuestion.Options.FirstOrDefault(o => o.Id == optionDto.Id);
+                                        if (existingOption != null)
+                                        {
+                                            existingOption.Text = optionDto.Text;
+                                            existingOption.IsCorrect = optionDto.IsCorrect;
+                                            existingOption.Feedback = optionDto.Feedback;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var newOption = new Option
+                                        {
+                                            Text = optionDto.Text,
+                                            IsCorrect = optionDto.IsCorrect,
+                                            Feedback = optionDto.Feedback,
+                                            QuestionId = existingQuestion.Id
+                                        };
+                                        existingQuestion.Options.Add(newOption);
+                                        _context.Options.Add(newOption);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var newQuestion = new Question
+                        {
+                            Text = questionDto.Text,
+                            QuizId = existing.Id,
+                            Options = new List<Option>()
+                        };
+                        
+                        existing.Questions.Add(newQuestion);
+                        _context.Questions.Add(newQuestion);
+                        _context.SaveChanges();
+                        
+                        if (questionDto.Options != null)
+                        {
+                            foreach (var optionDto in questionDto.Options)
+                            {
+                                var newOption = new Option
+                                {
+                                    Text = optionDto.Text,
+                                    IsCorrect = optionDto.IsCorrect,
+                                    Feedback = optionDto.Feedback,
+                                    QuestionId = newQuestion.Id
+                                };
+                                newQuestion.Options.Add(newOption);
+                                _context.Options.Add(newOption);
+                            }
+                        }
+                    }
+                }
+            }
+
             _context.SaveChanges();
-            return existing;
+            
+            _context.Entry(existing).State = EntityState.Detached;
+            return GetById(existing.Id);
         }
 
         public void Delete(int id)
