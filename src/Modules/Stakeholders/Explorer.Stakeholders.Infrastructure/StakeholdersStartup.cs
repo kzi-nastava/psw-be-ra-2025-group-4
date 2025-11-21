@@ -28,6 +28,7 @@ public static class StakeholdersStartup
         services.AddScoped<ITokenGenerator, JwtGenerator>();
         services.AddScoped<IDirectMessageService, DirectMessageService>();
         services.AddScoped<IClubService, ClubService>();
+        services.AddScoped<IUserProfileService, UserProfileService>();
 
     }
 
@@ -37,6 +38,7 @@ public static class StakeholdersStartup
         services.AddScoped<IUserRepository, UserDbRepository>();
         services.AddScoped<IDirectMessageRepository, DirectMessageDbRepository>();
         services.AddScoped<IClubRepository, ClubDbRepository>();
+        services.AddScoped<IUserProfileRepository, UserProfileDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("stakeholders"));
         dataSourceBuilder.EnableDynamicJson();
