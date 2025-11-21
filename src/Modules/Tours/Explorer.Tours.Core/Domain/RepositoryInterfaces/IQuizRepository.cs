@@ -11,8 +11,8 @@ namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
     {
         Quiz Create(Quiz quiz);
         Quiz Update(Quiz quiz);
-        void Delete(int id);
-        Quiz GetById(int id);
+        void Delete(long id);
+        Quiz GetById(long id);
         List<Quiz> GetAll();
     }
 }

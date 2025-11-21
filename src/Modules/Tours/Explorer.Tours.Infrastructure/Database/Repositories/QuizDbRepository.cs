@@ -134,7 +134,7 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
             return GetById(existing.Id);
         }
 
-        public void Delete(int id)
+        public void Delete(long id)
         {
             var quiz = GetById(id);
             if (quiz == null)
@@ -145,7 +145,7 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
         }
 
 
-        public Quiz GetById(int id)
+        public Quiz GetById(long id)
         {
             return _context.Quizzes
                 .Include(q => q.Questions)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Explorer.BuildingBlocks.Core.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace Explorer.Tours.Core.Domain
 {
-    public class Question
+    public class Question : Entity
     {
-        public int Id { get; set; }
         public string Text { get; set; }
 
-        public int QuizId { get; set; }
+        public long QuizId { get; set; }
         public Quiz Quiz { get; set; }
 
         public List<Option> Options { get; set; }
@@ -21,7 +21,7 @@ namespace Explorer.Tours.Core.Domain
             Options = new List<Option>();
         }
 
-        public Question(string text, int quizId)
+        public Question(string text, long quizId)
         {
             Text = text;
             QuizId = quizId;

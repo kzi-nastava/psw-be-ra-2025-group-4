@@ -42,12 +42,12 @@ namespace Explorer.Tours.Core.UseCases.Author
             return _mapper.Map<QuizDto>(result);
         }
 
-        public void Delete(int id)
+        public void Delete(long id)
         {
             _repo.Delete(id);
         }
 
-        public QuizDto GetById(int id)
+        public QuizDto GetById(long id)
         {
             var result = _repo.GetById(id);
             return _mapper.Map<QuizDto>(result);

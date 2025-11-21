@@ -11,9 +11,9 @@ namespace Explorer.Tours.API.Public.Author
     {
         QuizDto Create(QuizDto dto);
         QuizDto Update(QuizDto dto);
-        void Delete(int id);
+        void Delete(long id);
 
-        QuizDto GetById(int id);
+        QuizDto GetById(long id);
         List<QuizDto> GetAll();
     }
 }

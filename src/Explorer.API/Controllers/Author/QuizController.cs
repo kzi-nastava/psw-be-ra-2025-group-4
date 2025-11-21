@@ -25,8 +25,8 @@ namespace Explorer.API.Controllers.Author
             return Ok(_quizService.GetAll());
         }
 
-        [HttpGet("{id:int}")]
-        public ActionResult<QuizDto> GetById(int id)
+        [HttpGet("{id:long}")]
+        public ActionResult<QuizDto> GetById(long id)
         {
             return Ok(_quizService.GetById(id));
         }
@@ -38,16 +38,16 @@ namespace Explorer.API.Controllers.Author
             return Ok(_quizService.Create(dto));
         }
 
-        [HttpPut("{id:int}")]
-        public ActionResult<QuizDto> Update(int id, [FromBody] QuizDto dto)
+        [HttpPut("{id:long}")]
+        public ActionResult<QuizDto> Update(long id, [FromBody] QuizDto dto)
         {
             dto.Id = id;
             dto.AuthorId = User.PersonId().ToString();
             return Ok(_quizService.Update(dto));
         }
 
-        [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        [HttpDelete("{id:long}")]
+        public ActionResult Delete(long id)
         {
             _quizService.Delete(id);
             return Ok();

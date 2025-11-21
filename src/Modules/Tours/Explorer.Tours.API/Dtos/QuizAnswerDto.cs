@@ -8,7 +8,7 @@ namespace Explorer.Tours.API.Dtos
 {
     public class QuizAnswerDto
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public int QuestionId { get; set; }
         public int SelectedOptionId { get; set; }
     }
