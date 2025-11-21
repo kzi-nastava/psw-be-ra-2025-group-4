@@ -16,7 +16,6 @@ public class LoginTests : BaseStakeholdersIntegrationTest
     [Fact]
     public void Successfully_logs_in()
     {
-        
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
