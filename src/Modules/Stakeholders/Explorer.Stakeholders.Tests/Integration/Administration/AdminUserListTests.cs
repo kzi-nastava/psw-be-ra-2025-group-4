@@ -19,10 +19,9 @@ public class AdminUserListTests : BaseStakeholdersIntegrationTest
 {
     public AdminUserListTests(StakeholdersTestFactory factory) : base(factory) { }
 
-    /*[Fact]
+    [Fact]
     public void GetPaged_ShouldReturnAllPeople()
     {
-        ResetAndSeedDatabase();
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var userService = scope.ServiceProvider.GetRequiredService<IUserAccountService>();
@@ -36,7 +35,7 @@ public class AdminUserListTests : BaseStakeholdersIntegrationTest
         {
             user.Username.ShouldNotBeNullOrEmpty();
         }
-    }*/
+    }
 
     private static AdministrationController CreateController(IServiceScope scope)
     {

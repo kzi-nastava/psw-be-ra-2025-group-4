@@ -17,10 +17,9 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
 {
     public AdminBlockTests(StakeholdersTestFactory factory) : base(factory) { }
 
-    /*[Fact]
+    [Fact]
     public void BlockAuthor_Succeeds()
     {
-        ResetAndSeedDatabase();
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
@@ -38,7 +37,7 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
         var controller = CreateController(scope);
 
         // Act
-        var result = controller.BlockUser(testUser.Id); // koristi ID koji je baza dodelila
+        var result = controller.BlockUser(testUser.Id);
 
         // Assert - response
         var actionResult = Assert.IsType<NoContentResult>(result);
@@ -47,7 +46,7 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
         // Assert - baza
         dbContext.ChangeTracker.Clear();
         var userInDb = dbContext.Users.First(u => u.Id == testUser.Id);
-        Assert.False(userInDb.IsActive); // mora biti blokiran
+        Assert.False(userInDb.IsActive); 
     }
 
 
@@ -55,7 +54,6 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
     [Fact]
     public void BlockUser_Twice_ReturnsBadRequestOnSecondAttempt()
     {
-        ResetAndSeedDatabase();
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
@@ -71,7 +69,7 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
         dbContext.Users.Add(testUser);
         dbContext.SaveChanges();
 
-        var userId = testUser.Id; // koristimo ID koji je baza dodelila
+        var userId = testUser.Id;
 
         // Act - prvi put blokiranje
         var firstResult = controller.BlockUser(userId);
@@ -93,7 +91,6 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
     [Fact]
     public void BlockAdmin_Fails_BecauseAdminCannotBeBlocked()
     {
-        ResetAndSeedDatabase();
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
@@ -109,7 +106,7 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
         dbContext.Users.Add(adminUser);
         dbContext.SaveChanges();
 
-        var adminId = adminUser.Id; // ID koji je baza dodelila
+        var adminId = adminUser.Id;
 
         // Act
         var result = controller.BlockUser(adminId);
@@ -117,7 +114,7 @@ public class AdminBlockTests : BaseStakeholdersIntegrationTest
         // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal(400, badRequest.StatusCode);
-    }*/
+    }
 
 
 
