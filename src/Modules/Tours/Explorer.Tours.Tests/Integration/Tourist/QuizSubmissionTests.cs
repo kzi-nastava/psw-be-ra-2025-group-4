@@ -1,6 +1,7 @@
 ﻿using Explorer.API.Controllers.Tourist;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Public.Author;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
@@ -214,7 +215,9 @@ public class QuizSubmissionTests : BaseToursIntegrationTest
 
     private static QuizController CreateController(IServiceScope scope)
     {
-        return new QuizController(scope.ServiceProvider.GetRequiredService<IQuizSubmissionService>())
+        return new QuizController(
+            scope.ServiceProvider.GetRequiredService<IQuizSubmissionService>(),
+            scope.ServiceProvider.GetRequiredService<IQuizService>())
         {
             ControllerContext = BuildContext("1")
         };
