@@ -2,10 +2,12 @@ using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.API.Public.Author;
+using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
 using Explorer.Tours.Core.UseCases.Author;
+using Explorer.Tours.Core.UseCases.Tourist;
 using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +35,7 @@ public static class ToursStartup
 
         services.AddScoped<IQuizService, QuizService>();
 
+        services.AddScoped<IQuizSubmissionService, QuizSubmissionService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -42,6 +45,8 @@ public static class ToursStartup
         services.AddScoped<ITourRepository, TourDbRepository>();
 
         services.AddScoped<IQuizRepository, QuizDbRepository>();
+
+        services.AddScoped<IQuizAnswerRepository, QuizAnswerDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();

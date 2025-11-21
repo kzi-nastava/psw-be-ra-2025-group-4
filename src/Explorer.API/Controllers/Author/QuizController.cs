@@ -53,10 +53,5 @@ namespace Explorer.API.Controllers.Author
             return Ok();
         }
 
-        [HttpPost("submit/{quizId:int}")]
-        public ActionResult<QuizDto> SubmitAnswers(int quizId, [FromBody] QuizDto submitted)
-        {
-            return Ok(_quizService.SubmitAnswers(quizId, submitted));
-        }
     }
 }

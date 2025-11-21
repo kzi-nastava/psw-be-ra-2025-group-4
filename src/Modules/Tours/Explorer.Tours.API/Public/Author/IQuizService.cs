@@ -15,7 +15,5 @@ namespace Explorer.Tours.API.Public.Author
 
         QuizDto GetById(int id);
         List<QuizDto> GetAll();
-
-        QuizDto SubmitAnswers(int quizId, QuizDto submitted);
     }
 }

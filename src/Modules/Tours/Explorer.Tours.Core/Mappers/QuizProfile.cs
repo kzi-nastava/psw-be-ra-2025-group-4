@@ -11,6 +11,7 @@ namespace Explorer.Tours.Core.Mappers
             CreateMap<QuizDto, Quiz>().ReverseMap();
             CreateMap<QuestionDto, Question>().ReverseMap();
             CreateMap<OptionDto, Option>().ReverseMap();
+            CreateMap<QuizAnswerDto, QuizAnswer>().ReverseMap();
         }
     }
 }

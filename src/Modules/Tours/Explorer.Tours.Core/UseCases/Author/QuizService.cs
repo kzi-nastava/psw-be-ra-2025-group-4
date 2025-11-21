@@ -60,10 +60,5 @@ namespace Explorer.Tours.Core.UseCases.Author
                         .ToList();
         }
 
-        public QuizDto SubmitAnswers(int quizId, QuizDto submitted)
-        {
-            var quiz = _repo.GetById(quizId);
-            return _mapper.Map<QuizDto>(quiz);
-        }
     }
 }
