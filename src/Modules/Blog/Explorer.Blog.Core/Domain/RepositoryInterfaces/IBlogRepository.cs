@@ -11,7 +11,7 @@ namespace Explorer.Blog.Core.Domain.RepositoryInterfaces
         BlogPost Get(int id);
         IEnumerable<BlogPost> GetByUser(int userId);
         BlogPost Create(BlogPost blog);
-        void Update(BlogPost blog);
-        void Delete(BlogPost blog);
+        BlogPost Update(BlogPost blog);
+        void Delete(int id);
     }
 }

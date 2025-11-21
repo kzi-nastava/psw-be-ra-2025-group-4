@@ -53,7 +53,7 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<BlogDto>(blog);
         }
 
-        public IEnumerable<BlogDto> GetForUser(int userId)
+        public IEnumerable<BlogDto> GetByUser(int userId)
         {
             var blogs = _repository.GetByUser(userId);
             return _mapper.Map<IEnumerable<BlogDto>>(blogs);
@@ -69,7 +69,7 @@ namespace Explorer.Blog.Core.UseCases
             if (blog.UserId != userId)
                 throw new UnauthorizedAccessException("You cannot delete someone else's blog.");
 
-            _repository.Delete(blog);
+            _repository.Delete(id);
         }
     }
 }
