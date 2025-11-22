@@ -23,11 +23,15 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             _mapper = mapper;
         }
 
-        public QuizResultDto SubmitAnswers(int quizId, QuizSubmissionDto dto)
+        public QuizResultDto SubmitAnswers(long quizId, QuizSubmissionDto dto)
         {
             var quiz = ValidateSubmission(quizId, dto);
 
-            var answers = dto.Answers.Select(a => new QuizAnswer(dto.TouristId, a.QuestionId, a.SelectedOptionId)).ToList();
+            var answers = quiz.Questions.Select(question =>
+            {
+                var submittedAnswer = dto.Answers.FirstOrDefault(a => a.QuestionId == question.Id);
+                return new QuizAnswer(dto.TouristId, question.Id, submittedAnswer?.SelectedOptionId ?? 0);
+            }).ToList();
             _answerRepo.Create(answers);
 
             var questionResults = quiz.Questions.Select(question => BuildQuestionResult(question, dto.Answers)).ToList();
@@ -39,7 +43,7 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             };
         }
 
-        private Quiz ValidateSubmission(int quizId, QuizSubmissionDto dto)
+        private Quiz ValidateSubmission(long quizId, QuizSubmissionDto dto)
         {
             if (dto.QuizId != quizId)
                 throw new ArgumentException($"Quiz ID in route ({quizId}) does not match Quiz ID in request body ({dto.QuizId})");

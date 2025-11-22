@@ -9,6 +9,6 @@ namespace Explorer.Tours.API.Public.Tourist
 {
     public interface IQuizSubmissionService
     {
-        QuizResultDto SubmitAnswers(int quizId, QuizSubmissionDto submission);
+        QuizResultDto SubmitAnswers(long quizId, QuizSubmissionDto submission);
     }
 }

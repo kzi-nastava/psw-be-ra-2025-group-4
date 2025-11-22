@@ -10,14 +10,14 @@ namespace Explorer.Tours.Core.Domain
     public class QuizAnswer : Entity
     {
         public long TouristId { get; set; }
-        public int QuestionId { get; set; }
-        public int SelectedOptionId { get; set; }
+        public long QuestionId { get; set; }
+        public long SelectedOptionId { get; set; }
 
         public QuizAnswer()
         {
         }
 
-        public QuizAnswer(long touristId, int questionId, int selectedOptionId)
+        public QuizAnswer(long touristId, long questionId, long selectedOptionId)
         {
             TouristId = touristId;
             QuestionId = questionId;
