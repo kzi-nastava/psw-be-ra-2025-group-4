@@ -8,6 +8,8 @@ public class BlogProfile : Profile
 {
     public BlogProfile()
     {
+        CreateMap<DigitalDiaryDto, DigitalDiary>()
+                .ReverseMap();
         CreateMap<BlogPost, BlogDto>();
 
         CreateMap<CreateUpdateBlogDto, BlogPost>()
