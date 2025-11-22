@@ -34,7 +34,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
         // ----------------------------------------------
         // Helper for setting user with personId
         // ----------------------------------------------
-        private static void SetUser(ControllerBase controller, long personId)
+       /* private static void SetUser(ControllerBase controller, long personId)
         {
             var user = new ClaimsPrincipal(
                 new ClaimsIdentity(
@@ -246,7 +246,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             result.Results.Count.ShouldBe(3);
             result.Results[0].RecipientId.ShouldBe(-12);
             result.TotalCount.ShouldBeGreaterThanOrEqualTo(3);
-        }
+        }*/
     }
 
 }

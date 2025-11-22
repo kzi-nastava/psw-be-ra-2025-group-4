@@ -40,5 +40,5 @@ VALUES
     0,
     3,
     2,
-    ARRAY[]::text[]
+    ARRAY['test']
 );
