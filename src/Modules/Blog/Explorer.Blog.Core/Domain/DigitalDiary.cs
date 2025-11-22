@@ -30,6 +30,7 @@ namespace Explorer.Blog.Core.Domain
             if (createdAt > DateTime.UtcNow)
                 throw new ArgumentException("Creation date cannot be in the future.");
 
+            TouristId = touristId;
             Title = title;
             CreatedAt = createdAt;
             Status = status;
