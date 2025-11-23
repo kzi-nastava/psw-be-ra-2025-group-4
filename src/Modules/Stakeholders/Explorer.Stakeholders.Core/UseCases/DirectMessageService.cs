@@ -81,5 +81,13 @@ namespace Explorer.Stakeholders.Core.UseCases
             var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
             return new PagedResult<DirectMessageDto>(items, result.TotalCount);
         }
+
+        public PagedResult<DirectMessageDto> GetPagedBetweenUsers(int page, int pageSize, long firstUserId, long secondUserId)
+        {
+            var result = _directMessageRepository.GetPagedBetweenUsers(page, pageSize, firstUserId, secondUserId);
+
+            var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
+            return new PagedResult<DirectMessageDto>(items, result.TotalCount);
+        }
     }
 }

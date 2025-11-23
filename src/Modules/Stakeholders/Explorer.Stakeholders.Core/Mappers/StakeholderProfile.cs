@@ -9,5 +9,18 @@ public class StakeholderProfile : Profile
     public StakeholderProfile()
     {
         CreateMap<Club, ClubDto>().ReverseMap();
+        CreateMap<Person, UserAccountDto>()
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+
+        CreateMap<User, UserAccountDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.GetPrimaryRoleName()))
+            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
+
+        CreateMap<UserProfile, UserProfileDto>().ReverseMap();
+        CreateMap<UpdateUserProfileDto, UserProfile>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore());
     }
 }

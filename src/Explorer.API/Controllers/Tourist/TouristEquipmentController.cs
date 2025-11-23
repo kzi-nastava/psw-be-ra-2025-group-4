@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,12 @@ namespace Explorer.API.Controllers.Tourist;
 public class TouristEquipmentController : ControllerBase
 {
     private readonly ITouristEquipmentService _touristEquipmentService;
-
-    public TouristEquipmentController(ITouristEquipmentService touristEquipmentService)
+    private readonly IEquipmentService _equipmentService;
+    public TouristEquipmentController(ITouristEquipmentService touristEquipmentService, IEquipmentService equipmentService)
     {
         _touristEquipmentService = touristEquipmentService;
+        _equipmentService = equipmentService;
+
     }
     private long GetTouristId()
     {
@@ -36,7 +39,14 @@ public class TouristEquipmentController : ControllerBase
         return Ok(result);
     }
 
-  
+    [HttpGet("all")]
+    public ActionResult<List<EquipmentDto>> GetAllEquipmentForTourist()
+    {
+        var paged = _equipmentService.GetPaged(0, 1000);
+        return Ok(paged.Results);
+    }
+
+
 
     [HttpPost]
     public ActionResult<TouristEquipmentDTO> AddEquipment([FromBody] long equipmentId)

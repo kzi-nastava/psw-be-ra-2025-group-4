@@ -2,6 +2,7 @@
 using System.Linq;
 using Explorer.API.Controllers.Tourist;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.API.Public.Tourist;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ public class TouristEquipmentQueryTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, "-21");
 
         // Act
         ActionResult<List<TouristEquipmentDTO>> response = controller.GetMyEquipment();
@@ -33,12 +34,13 @@ public class TouristEquipmentQueryTests : BaseToursIntegrationTest
         result.Any(te => te.EquipmentId == -2).ShouldBeTrue();
     }
 
-    private static TouristEquipmentController CreateController(IServiceScope scope)
+    private static TouristEquipmentController CreateController(IServiceScope scope, string personId)
     {
         return new TouristEquipmentController(
-            scope.ServiceProvider.GetRequiredService<ITouristEquipmentService>())
+            scope.ServiceProvider.GetRequiredService<ITouristEquipmentService>(),
+            scope.ServiceProvider.GetRequiredService<IEquipmentService>())
         {
-            ControllerContext = BuildContext("-21")
+            ControllerContext = BuildContext(personId)
         };
     }
 }

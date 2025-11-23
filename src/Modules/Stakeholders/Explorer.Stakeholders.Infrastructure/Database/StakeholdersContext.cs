@@ -13,6 +13,8 @@ public class StakeholdersContext : DbContext
     public DbSet<Rating> Ratings { get; set; }
 
 
+    public DbSet<UserProfile> UserProfiles { get; set; }
+
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
