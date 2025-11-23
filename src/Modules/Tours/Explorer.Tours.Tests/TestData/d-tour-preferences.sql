@@ -1,4 +1,4 @@
-INSERT INTO tours."TourPreferences"(
+ï»¿INSERT INTO tours."TourPreferences"(
     "Id", "TouristId", "PreferredDifficulty",
     "WalkRating", "BikeRating", "CarRating", "BoatRating", "Tags")
 VALUES
@@ -10,7 +10,7 @@ VALUES
     1,
     0,
     0,
-    ARRAY['priroda', 'šetnja']
+    ARRAY['priroda', 'ï¿½etnja']
 );
 
 INSERT INTO tours."TourPreferences"(
@@ -40,5 +40,5 @@ VALUES
     0,
     3,
     2,
-    ARRAY[]::text[]
+    ARRAY['test']
 );
