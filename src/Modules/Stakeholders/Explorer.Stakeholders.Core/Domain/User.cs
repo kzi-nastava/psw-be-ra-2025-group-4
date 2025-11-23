@@ -29,20 +29,14 @@ public class User : Entity
         return Role.ToString().ToLower();
     }
 
-    public UserRole getRole(string role) //sus but idc
+    public UserRole GetRole(string role)
     {
-        if(role.Equals("administrator", StringComparison.OrdinalIgnoreCase))
+        if (Enum.TryParse<UserRole>(role, true, out var parsed))
         {
-            return UserRole.Administrator;
+            return parsed;
         }
-        else if(role.Equals("author", StringComparison.OrdinalIgnoreCase))
-        {
-            return UserRole.Author;
-        }
-        else
-        {
-            return UserRole.Tourist;
-        }
+
+        throw new ArgumentException($"Invalid role: {role}");
     }
 }
 

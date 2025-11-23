@@ -62,7 +62,7 @@ namespace Explorer.Stakeholders.Core.UseCases
 
             var u = new User(account.Username, account.Password, UserRole.Tourist, true); // Temporary role assignment
 
-            var user = _userRepository.Create(new User(account.Username, account.Password, u.getRole(account.Role), true));
+            var user = _userRepository.Create(new User(account.Username, account.Password, u.GetRole(account.Role), true));
             var person = _personRepository.Create(new Person(user.Id, account.Name, account.Surname, account.Email));
 
             UserAccountDto temp = new UserAccountDto();
