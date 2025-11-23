@@ -10,6 +10,8 @@ public class StakeholdersContext : DbContext
     public DbSet<DirectMessage> DirectMessages { get; set; }
 
     public DbSet<Club> Clubs { get; set; }
+    public DbSet<Rating> Ratings { get; set; }
+
 
     public DbSet<UserProfile> UserProfiles { get; set; }
 
