@@ -36,6 +36,7 @@ public static class ToursStartup
         services.AddScoped<IEquipmentService, EquipmentService>();
 
         services.AddScoped<ITourService, TourService>();
+        services.AddScoped<IFacilityService, FacilityService>();
 
         services.AddScoped<IQuizService, QuizService>();
 
@@ -51,6 +52,7 @@ public static class ToursStartup
     private static void SetupInfrastructure(IServiceCollection services)
     {
         services.AddScoped<IEquipmentRepository, EquipmentDbRepository>();
+        services.AddScoped<IFacilityRepository,  FacilityDbRepository>();
 
         services.AddScoped<ITourRepository, TourDbRepository>();
 

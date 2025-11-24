@@ -1,0 +1,52 @@
+﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Domain;
+using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+
+namespace Explorer.Tours.Core.UseCases.Administration
+{
+    public class FacilityService : IFacilityService
+    {
+        private readonly IFacilityRepository _facilityRepository;
+        private readonly IMapper _mapper;
+
+        public FacilityService(IFacilityRepository facilityRepository, IMapper mapper)
+        {
+            _facilityRepository = facilityRepository;
+            _mapper = mapper;
+        }
+
+        public PagedResult<FacilityDto> GetPaged(int page, int pageSize)
+        {
+            var result = _facilityRepository.GetPaged(page, pageSize);
+
+            var items = result.Results.Select(_mapper.Map<FacilityDto>).ToList();
+            return new PagedResult<FacilityDto>(items, result.TotalCount);
+        }
+
+        public FacilityDto Create(FacilityDto entity)
+        {
+            var result = _facilityRepository.Create(_mapper.Map<Facility>(entity));
+            return _mapper.Map<FacilityDto>(result);
+        }
+
+        public FacilityDto Update(FacilityDto entity)
+        {
+            _facilityRepository.Get(entity.Id);
+            
+            var updated = _mapper.Map<Facility>(entity);
+            var result = _facilityRepository.Update(updated);
+
+            return _mapper.Map<FacilityDto>(result);
+        }
+
+        public void Delete(long id)
+        {
+            _facilityRepository.Get(id);
+            _facilityRepository.Delete(id);
+        }
+
+    }
+}

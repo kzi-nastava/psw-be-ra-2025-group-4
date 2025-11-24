@@ -9,6 +9,8 @@ namespace Explorer.Tours.Core.Mappers
         public ToursProfile()
         {
             CreateMap<EquipmentDto, Equipment>().ReverseMap();
+            CreateMap<FacilityDto, Facility>().ReverseMap();
+
             CreateMap<TourStatus, TourDtoStatus>().ConvertUsing(src => (TourDtoStatus)src);
             CreateMap<TourDtoStatus, TourStatus>().ConvertUsing(src => (TourStatus)src);
             CreateMap<Tour, TourDto>().ReverseMap();
