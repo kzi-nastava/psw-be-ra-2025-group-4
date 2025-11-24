@@ -1,5 +1,9 @@
+using Explorer.Blog.API.Public;
+using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 using Explorer.Blog.Core.Mappers;
+using Explorer.Blog.Core.UseCases;
 using Explorer.Blog.Infrastructure.Database;
+using Explorer.Blog.Infrastructure.Database.Repositories;
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,10 +24,13 @@ public static class BlogStartup
     
     private static void SetupCore(IServiceCollection services)
     {
+        services.AddScoped<IDigitalDiaryService, DigitalDiaryService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
     {
+        services.AddScoped<IDigitalDiaryRepository, DigitalDiaryDbRepository>();
+
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("blog"));
         dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();
