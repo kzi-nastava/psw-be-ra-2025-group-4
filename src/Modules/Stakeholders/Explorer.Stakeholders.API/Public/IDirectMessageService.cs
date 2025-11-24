@@ -14,6 +14,7 @@ namespace Explorer.Stakeholders.API.Public
         PagedResult<DirectMessageDto> GetPagedConversations(int page, int pageSize, long userId);
         PagedResult<DirectMessageDto> GetPagedBetweenUsers(int page, int pageSize, long firstUserId, long secondUserId);
         DirectMessageDto SendMessage(long senderId, DirectMessageDto directMessage);
+        DirectMessageDto StartConversation(long senderId, ConversationStartDto directMessage);
         DirectMessageDto Update(DirectMessageDto directMessage);
         void Delete(long id);
     }

@@ -32,11 +32,11 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public DirectMessageDto SendMessage(long senderId, DirectMessageDto entity)
         {
-            var sender = _personRepository.Get(senderId);
+            var sender = _userRepository.Get(senderId);
             if (sender == null)
-                throw new ArgumentException($"Sender '{entity.SenderId}' not found.");
+                throw new ArgumentException($"Sender '{senderId}' not found.");
 
-            var recipient = _personRepository.Get(entity.RecipientId);
+            var recipient = _userRepository.Get(entity.RecipientId);
             if (recipient == null)
                 throw new ArgumentException($"Recipient '{entity.RecipientId}' not found.");
 
@@ -45,6 +45,20 @@ namespace Explorer.Stakeholders.Core.UseCases
             return _mapper.Map<DirectMessageDto>(result);
         }
 
+        public DirectMessageDto StartConversation(long senderId, ConversationStartDto directMessage)
+        {
+            var sender = _userRepository.Get(senderId);
+            if (sender == null)
+                throw new ArgumentException($"Sender '{senderId}' not found.");
+
+            var recipient = _userRepository.GetActiveByName(directMessage.Username);
+            if (recipient == null)
+                throw new ArgumentException($"Recipient '{directMessage.Username}' not found.");
+
+            var message = new DirectMessage(sender.Id, recipient.Id, directMessage.Content, DateTime.UtcNow);
+            var result = _directMessageRepository.Create(message);
+            return _mapper.Map<DirectMessageDto>(result);
+        }
 
         public void Delete(long id)
         {

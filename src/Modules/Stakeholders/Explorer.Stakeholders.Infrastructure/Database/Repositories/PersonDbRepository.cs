@@ -26,4 +26,9 @@ public class PersonDbRepository : IPersonRepository
         DbContext.SaveChanges();
         return entity;
     }
+
+    public Person? GetByNameAndSurname(string name, string surname)
+    {
+        return DbContext.People.FirstOrDefault(p => p.Name == name && p.Surname == surname);
+    }
 }

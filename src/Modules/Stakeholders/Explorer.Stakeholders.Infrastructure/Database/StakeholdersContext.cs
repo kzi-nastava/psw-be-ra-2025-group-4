@@ -38,13 +38,11 @@ public class StakeholdersContext : DbContext
         modelBuilder.Entity<DirectMessage>()
             .HasOne(dm => dm.Sender)
             .WithMany()
-            .HasForeignKey(dm => dm.SenderId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(dm => dm.SenderId);
 
         modelBuilder.Entity<DirectMessage>()
             .HasOne(dm => dm.Recipient)
             .WithMany()
-            .HasForeignKey(dm => dm.RecipientId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(dm => dm.RecipientId);
     }
 }

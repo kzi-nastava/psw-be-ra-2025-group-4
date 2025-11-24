@@ -22,6 +22,11 @@ public class UserDbRepository : IUserRepository
         return _dbContext.Users.FirstOrDefault(user => user.Username == username && user.IsActive);
     }
 
+    public User? Get(long userId)
+    {
+        return _dbContext.Users.FirstOrDefault(user => user.Id == userId);
+    }
+
     public User Create(User user)
     {
         _dbContext.Users.Add(user);
@@ -34,5 +39,10 @@ public class UserDbRepository : IUserRepository
         var person = _dbContext.People.FirstOrDefault(i => i.UserId == userId);
         if (person == null) throw new KeyNotFoundException("Not found.");
         return person.Id;
+    }
+
+    public Person? GetPersonByUserId(long userId)
+    {
+        return _dbContext.People.FirstOrDefault(p => p.UserId == userId);
     }
 }
