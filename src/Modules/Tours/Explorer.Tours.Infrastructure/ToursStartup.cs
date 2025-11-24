@@ -1,6 +1,8 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
-using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.API.Public;
+using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.API.Public.Author;
+using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
@@ -32,30 +34,35 @@ public static class ToursStartup
     private static void SetupCore(IServiceCollection services)
     {
         services.AddScoped<IEquipmentService, EquipmentService>();
+
         services.AddScoped<ITourService, TourService>();
 
-        services.AddScoped<ITourPreferencesService, TourPreferencesService>();
+        services.AddScoped<IQuizService, QuizService>();
 
+        services.AddScoped<IQuizSubmissionService, QuizSubmissionService>();
+
+        services.AddScoped<ITourPreferencesService, TourPreferencesService>();
 
         services.AddScoped<ITouristEquipmentService, TouristEquipmentService>();
       
         services.AddScoped<ITourProblemService, TourProblemService>();
-
-
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
     {
         services.AddScoped<IEquipmentRepository, EquipmentDbRepository>();
+
         services.AddScoped<ITourRepository, TourDbRepository>();
+
+        services.AddScoped<IQuizRepository, QuizDbRepository>();
+
+        services.AddScoped<IQuizAnswerRepository, QuizAnswerDbRepository>();
 
         services.AddScoped<ITourPreferencesRepository, TourPreferencesDbRepository>();
 
         services.AddScoped<ITourProblemRepository, TourProblemRepository>();
 
         services.AddScoped<ITouristEquipmentRepository, TouristEquipmentDbRepository>();
-
-
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
