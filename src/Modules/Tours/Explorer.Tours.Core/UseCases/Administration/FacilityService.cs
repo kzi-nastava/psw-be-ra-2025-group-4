@@ -34,13 +34,19 @@ namespace Explorer.Tours.Core.UseCases.Administration
 
         public FacilityDto Update(FacilityDto entity)
         {
-            var result = _facilityRepository.Update(_mapper.Map<Facility>(entity));
+            _facilityRepository.Get(entity.Id);
+            
+            var updated = _mapper.Map<Facility>(entity);
+            var result = _facilityRepository.Update(updated);
+
             return _mapper.Map<FacilityDto>(result);
         }
 
         public void Delete(long id)
         {
+            _facilityRepository.Get(id);
             _facilityRepository.Delete(id);
         }
+
     }
 }
