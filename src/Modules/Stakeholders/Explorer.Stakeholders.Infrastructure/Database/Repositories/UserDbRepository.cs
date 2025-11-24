@@ -27,6 +27,11 @@ public class UserDbRepository : IUserRepository
         return _dbContext.Users.FirstOrDefault(user => user.Username == username && user.IsActive);
     }
 
+    public User? Get(long userId)
+    {
+        return _dbContext.Users.FirstOrDefault(user => user.Id == userId);
+    }
+
     public User Create(User user)
     {
         _dbContext.Users.Add(user);
@@ -78,4 +83,9 @@ public class UserDbRepository : IUserRepository
         return _dbContext.Users.FirstOrDefault(user => user.Id == userId);
     }
 
+
+    public Person? GetPersonByUserId(long userId)
+    {
+        return _dbContext.People.FirstOrDefault(p => p.UserId == userId);
+    }
 }

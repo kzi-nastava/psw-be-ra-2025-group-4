@@ -1,3 +1,4 @@
+using Explorer.API.Hubs;
 using Explorer.API.Middleware;
 using Explorer.API.Startup;
 
@@ -10,6 +11,8 @@ builder.Services.ConfigureCors(corsPolicy);
 builder.Services.ConfigureAuth();
 
 builder.Services.RegisterModules();
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -30,6 +33,9 @@ app.UseCors(corsPolicy);
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<MessageHub>("/hubs/messages");
+
 
 app.MapControllers();
 

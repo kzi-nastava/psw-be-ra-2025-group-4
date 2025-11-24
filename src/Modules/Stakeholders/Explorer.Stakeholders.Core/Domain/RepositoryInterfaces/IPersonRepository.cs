@@ -8,4 +8,5 @@ public interface IPersonRepository
     Person? Get(long id);
 
     public PagedResult<Person> GetPaged(int page, int pageSize);
+    Person? GetByNameAndSurname(string name, string surname);
 }

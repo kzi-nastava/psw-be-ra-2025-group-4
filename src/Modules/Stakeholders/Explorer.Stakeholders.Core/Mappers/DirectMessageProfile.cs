@@ -11,11 +11,11 @@ namespace Explorer.Stakeholders.Core.Mappers
             CreateMap<DirectMessage, DirectMessageDto>()
                 .ForMember(
                     dest => dest.Sender,
-                    opt => opt.MapFrom(src => src.Sender != null ? $"{src.Sender.Name} {src.Sender.Surname}" : null)
+                    opt => opt.MapFrom(src => src.Sender != null ? src.Sender.Username : null)
                 )
                 .ForMember(
                     dest => dest.Recipient,
-                    opt => opt.MapFrom(src => src.Recipient != null ? $"{src.Recipient.Name} {src.Recipient.Surname}" : null)
+                    opt => opt.MapFrom(src => src.Recipient != null ? src.Recipient.Username : null)
                 );
         }
     }

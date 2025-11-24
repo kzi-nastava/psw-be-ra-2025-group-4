@@ -38,7 +38,7 @@ namespace Explorer.Stakeholders.Core.Domain
 
         private void Validate()
         {
-            if (UserId <= 0) throw new ArgumentException("Invalid UserId");
+            //if (UserId <= 0) throw new ArgumentException("Invalid UserId");
             if (Value < 1 || Value > 5) throw new ArgumentException("Rating must be between 1 and 5");
         }
     }

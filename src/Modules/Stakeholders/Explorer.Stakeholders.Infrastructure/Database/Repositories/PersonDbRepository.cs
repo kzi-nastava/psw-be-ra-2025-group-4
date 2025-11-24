@@ -35,4 +35,9 @@ public class PersonDbRepository : IPersonRepository
         task.Wait();
         return task.Result;
     }
+
+    public Person? GetByNameAndSurname(string name, string surname)
+    {
+        return DbContext.People.FirstOrDefault(p => p.Name == name && p.Surname == surname);
+    }
 }
