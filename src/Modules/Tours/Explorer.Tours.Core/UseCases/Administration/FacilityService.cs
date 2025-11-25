@@ -34,11 +34,9 @@ namespace Explorer.Tours.Core.UseCases.Administration
 
         public FacilityDto Update(FacilityDto entity)
         {
-            _facilityRepository.Get(entity.Id);
-            
-            var updated = _mapper.Map<Facility>(entity);
-            var result = _facilityRepository.Update(updated);
-
+            var existing = _facilityRepository.Get(entity.Id);
+            _mapper.Map(entity, existing);
+            var result = _facilityRepository.Update(existing);
             return _mapper.Map<FacilityDto>(result);
         }
 
