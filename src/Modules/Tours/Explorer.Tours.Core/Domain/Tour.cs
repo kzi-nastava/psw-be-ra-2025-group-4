@@ -63,8 +63,7 @@ namespace Explorer.Tours.Core.Domain
                 throw new ArgumentException("Name cannot be empty");
             if (string.IsNullOrWhiteSpace(Description))
                 throw new ArgumentException("Description cannot be empty");
-            if (AuthorId <= 0)
-                throw new ArgumentException("AuthorId must be greater than 0");
+
         }
     }
 }

@@ -40,7 +40,7 @@ public class TourQueryTests : BaseToursIntegrationTest
     {
         return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>())
         {
-            ControllerContext = BuildContext("2")
+            ControllerContext = BuildContext("-11")
         };
     }
 }
