@@ -41,15 +41,7 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
 
         public Facility Update(Facility entity)
         {
-            try
-            {
-                DbContext.Update(entity);
-                DbContext.SaveChanges();
-            }
-            catch (DbUpdateException e)
-            {
-                throw new NotFoundException(e.Message);
-            }
+            DbContext.SaveChanges();
             return entity;
         }
 
