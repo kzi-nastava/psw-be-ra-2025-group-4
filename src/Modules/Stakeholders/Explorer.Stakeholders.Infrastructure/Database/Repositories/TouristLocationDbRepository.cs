@@ -22,17 +22,20 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
 
         public TouristLocation Save(TouristLocation entity)
         {
-            if (entity.Id == 0)
+            var existing = _dbSet.FirstOrDefault(l => l.UserId == entity.UserId);
+
+            if (existing == null)
             {
                 _dbSet.Add(entity);
             }
             else
             {
-                _dbSet.Update(entity);
+                _dbContext.Update(existing);
             }
 
             _dbContext.SaveChanges();
-            return entity;
+            return existing ?? entity;
         }
+
     }
 }

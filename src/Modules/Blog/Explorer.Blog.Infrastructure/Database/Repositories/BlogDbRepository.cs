@@ -21,7 +21,7 @@ namespace Explorer.Blog.Infrastructure.Database.Repositories
         public BlogPost Create(BlogPost blog)
         {
             _dbSet.Add(blog);
-            _dbContext.SaveChanges();
+                _dbContext.SaveChanges();
             return blog;
         }
 
