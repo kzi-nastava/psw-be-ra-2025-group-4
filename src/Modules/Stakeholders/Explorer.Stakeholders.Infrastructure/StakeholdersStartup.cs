@@ -30,6 +30,7 @@ public static class StakeholdersStartup
         services.AddScoped<IClubService, ClubService>();
         services.AddTransient<IRatingService, RatingService>();
         services.AddScoped<IUserProfileService, UserProfileService>();
+        services.AddScoped<ITouristLocationService, TouristLocationService>();
 
         services.AddScoped<IUserAccountService, UserAccountService>();
     }
@@ -41,6 +42,7 @@ public static class StakeholdersStartup
         services.AddScoped<IDirectMessageRepository, DirectMessageDbRepository>();
         services.AddScoped<IClubRepository, ClubDbRepository>();
         services.AddTransient<IRatingRepository, RatingDbRepository>();
+        services.AddScoped<ITouristLocationRepository, TouristLocationDbRepository>();
 
         services.AddScoped<IUserProfileRepository, UserProfileDbRepository>();
 
