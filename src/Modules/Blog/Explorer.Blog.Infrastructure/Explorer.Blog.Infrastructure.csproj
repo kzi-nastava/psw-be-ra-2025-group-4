@@ -15,4 +15,8 @@
     <Folder Include="Database\Repositories\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="8.8.0" />
+  </ItemGroup>
+
 </Project>
