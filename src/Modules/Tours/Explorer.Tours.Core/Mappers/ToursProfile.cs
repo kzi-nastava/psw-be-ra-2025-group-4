@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.Core.Domain;
+using System.Linq;
 
 namespace Explorer.Tours.Core.Mappers
 {
@@ -13,13 +14,11 @@ namespace Explorer.Tours.Core.Mappers
 
             CreateMap<TourStatus, TourDtoStatus>().ConvertUsing(src => (TourDtoStatus)src);
             CreateMap<TourDtoStatus, TourStatus>().ConvertUsing(src => (TourStatus)src);
-            CreateMap<Tour, TourDto>().ReverseMap();
 
-
-            CreateMap<TourPreferences, TourPreferencesDTO>()
-            .ForMember(dest => dest.PreferredDifficulty,
-               opt => opt.MapFrom(src => src.PreferredDifficulty.ToString()));
-
+            CreateMap<Tour, TourDto>()
+                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points.OrderBy(p => p.Order)))
+                .ReverseMap()
+                .ForMember(dest => dest.Points, opt => opt.Ignore());
 
             CreateMap<CreateUpdateTourDto, Tour>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -27,6 +26,9 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Price, opt => opt.Ignore());
 
+            CreateMap<TourPreferences, TourPreferencesDTO>()
+                .ForMember(dest => dest.PreferredDifficulty,
+                    opt => opt.MapFrom(src => src.PreferredDifficulty.ToString()));
 
             CreateMap<TouristEquipmentDTO, TouristEquipment>().ReverseMap();
 
@@ -35,6 +37,14 @@ namespace Explorer.Tours.Core.Mappers
             CreateMap<ProblemCategory, ProblemCategoryDto>().ConvertUsing(src => (ProblemCategoryDto)src);
             CreateMap<ProblemPriorityDto, ProblemPriority>().ConvertUsing(src => (ProblemPriority)src);
             CreateMap<ProblemPriority, ProblemPriorityDto>().ConvertUsing(src => (ProblemPriorityDto)src);
+
+            CreateMap<TourPoint, TourPointDto>().ReverseMap()
+                .ForMember(dest => dest.Tour, opt => opt.Ignore());
+
+            CreateMap<TourPointDto, TourPoint>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Tour, opt => opt.Ignore())
+                .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order));
 
         }
     }
