@@ -27,5 +27,7 @@ namespace Explorer.Tours.API.Dtos
         public TourDtoStatus Status { get; set; } = TourDtoStatus.Draft;   
         public decimal Price { get; set; }
         public int AuthorId { get; set; }
+        public List<TourPointDto> Points { get; set; }
+
     }
 }
