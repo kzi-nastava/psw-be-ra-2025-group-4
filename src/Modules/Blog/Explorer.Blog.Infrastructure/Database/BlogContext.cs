@@ -8,6 +8,7 @@ public class BlogContext : DbContext
     public BlogContext(DbContextOptions<BlogContext> options) : base(options) {}
 
     public DbSet<DigitalDiary> DigitalDiaries { get; set; } = default!;
+    public DbSet<BlogPost> BlogPosts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,6 +1,8 @@
 using Explorer.API.Hubs;
 using Explorer.API.Middleware;
 using Explorer.API.Startup;
+using Explorer.Blog.Infrastructure;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,8 @@ builder.Services.ConfigureCors(corsPolicy);
 builder.Services.ConfigureAuth();
 
 builder.Services.RegisterModules();
+builder.Services.ConfigureBlogModule();
+
 
 builder.Services.AddSignalR();
 
