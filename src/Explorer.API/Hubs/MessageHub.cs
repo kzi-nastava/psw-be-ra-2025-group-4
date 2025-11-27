@@ -93,22 +93,23 @@ namespace Explorer.API.Hubs
             }
         }
 
-        public async Task IsRecipientOnline(long senderId, long recipientId)
+        public async Task IsRecipientOnline(long recipientId)
         {
             try
             {
+                var senderId = GetUserId(); 
                 bool isOnline = HubContext.ConnectedUsers.ContainsKey(recipientId);
+
                 await Clients.Caller.SendAsync("IsOnline", isOnline);
-                if (isOnline)
-                {
-                    await Clients.Group($"user_{recipientId}").SendAsync("IsOnline", true);
-                }
+
+                await Clients.Group($"user_{recipientId}").SendAsync("UserOnline", senderId);
             }
             catch (Exception ex)
             {
                 await Clients.Caller.SendAsync("Error", ex.Message);
             }
         }
+
 
         public async Task DeleteMessage(long messageId, long recipientId)
         {
