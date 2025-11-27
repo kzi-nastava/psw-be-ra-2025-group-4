@@ -26,6 +26,14 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Price, opt => opt.Ignore());
 
+            // HistoricalMonument mappings (from HEAD)
+            CreateMap<HistoricalMonumentDTO, HistoricalMonument>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (MonumentStatus)src.Status));
+
+            CreateMap<HistoricalMonument, HistoricalMonumentDTO>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (MonumentStatusDTO)src.Status));
+
+            // TourPreferences mappings (from development)
             CreateMap<TourPreferences, TourPreferencesDTO>()
                 .ForMember(dest => dest.PreferredDifficulty,
                     opt => opt.MapFrom(src => src.PreferredDifficulty.ToString()));
@@ -38,6 +46,7 @@ namespace Explorer.Tours.Core.Mappers
             CreateMap<ProblemPriorityDto, ProblemPriority>().ConvertUsing(src => (ProblemPriority)src);
             CreateMap<ProblemPriority, ProblemPriorityDto>().ConvertUsing(src => (ProblemPriorityDto)src);
 
+            // TourPoint mappings (from development)
             CreateMap<TourPoint, TourPointDto>().ReverseMap()
                 .ForMember(dest => dest.Tour, opt => opt.Ignore());
 
@@ -45,7 +54,6 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Tour, opt => opt.Ignore())
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order));
-
         }
     }
 }
