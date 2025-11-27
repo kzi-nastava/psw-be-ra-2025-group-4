@@ -19,30 +19,46 @@ namespace Explorer.Stakeholders.Core.UseCases
     {
         private readonly IDirectMessageRepository _directMessageRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IPersonRepository _personRepository;
         private readonly IMapper _mapper;
 
-        public DirectMessageService(IUserRepository userRepository, IDirectMessageRepository directMessageRepository, IMapper mapper) 
+        public DirectMessageService(IUserRepository userRepository, IDirectMessageRepository directMessageRepository, IPersonRepository personRepository, IMapper mapper) 
         {
             _directMessageRepository = directMessageRepository;
             _userRepository = userRepository;
+            _personRepository = personRepository;
             _mapper = mapper;
         }
 
-        public DirectMessageDto SendMessage(string senderUsername, DirectMessageDto entity)
+        public DirectMessageDto SendMessage(long senderId, DirectMessageDto entity)
         {
-            var sender = _userRepository.GetActiveByName(senderUsername);
+            var sender = _userRepository.Get(senderId);
             if (sender == null)
-                throw new ArgumentException($"Sender '{senderUsername}' not found.");
+                throw new ArgumentException($"Sender '{senderId}' not found.");
 
-            var recipient = _userRepository.GetActiveByName(entity.Recipient);
+            var recipient = _userRepository.Get(entity.RecipientId);
             if (recipient == null)
-                throw new ArgumentException($"Recipient '{entity.Recipient}' not found.");
+                throw new ArgumentException($"Recipient '{entity.RecipientId}' not found.");
 
             var message = new DirectMessage(sender.Id, recipient.Id, entity.Content, DateTime.UtcNow);
             var result = _directMessageRepository.Create(message);
             return _mapper.Map<DirectMessageDto>(result);
         }
 
+        public DirectMessageDto StartConversation(long senderId, ConversationStartDto directMessage)
+        {
+            var sender = _userRepository.Get(senderId);
+            if (sender == null)
+                throw new ArgumentException($"Sender '{senderId}' not found.");
+
+            var recipient = _userRepository.GetActiveByName(directMessage.Username);
+            if (recipient == null)
+                throw new ArgumentException($"Recipient '{directMessage.Username}' not found.");
+
+            var message = new DirectMessage(sender.Id, recipient.Id, directMessage.Content, DateTime.UtcNow);
+            var result = _directMessageRepository.Create(message);
+            return _mapper.Map<DirectMessageDto>(result);
+        }
 
         public void Delete(long id)
         {
@@ -64,17 +80,25 @@ namespace Explorer.Stakeholders.Core.UseCases
         }
 
 
-        public PagedResult<DirectMessageDto> GetPaged(int page, int pageSize, string user)
+        public PagedResult<DirectMessageDto> GetPaged(int page, int pageSize, long userId)
         {
-            var result = _directMessageRepository.GetPaged(page, pageSize, user);
+            var result = _directMessageRepository.GetPaged(page, pageSize, userId);
 
             var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
             return new PagedResult<DirectMessageDto>(items, result.TotalCount);
         }
 
-        public PagedResult<DirectMessageDto> GetPagedConversations(int page, int pageSize, string user)
+        public PagedResult<DirectMessageDto> GetPagedConversations(int page, int pageSize, long userId)
         {
-            var result = _directMessageRepository.GetPagedConversations(page, pageSize, user);
+            var result = _directMessageRepository.GetPagedConversations(page, pageSize, userId);
+
+            var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
+            return new PagedResult<DirectMessageDto>(items, result.TotalCount);
+        }
+
+        public PagedResult<DirectMessageDto> GetPagedBetweenUsers(int page, int pageSize, long firstUserId, long secondUserId)
+        {
+            var result = _directMessageRepository.GetPagedBetweenUsers(page, pageSize, firstUserId, secondUserId);
 
             var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
             return new PagedResult<DirectMessageDto>(items, result.TotalCount);

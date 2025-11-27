@@ -4,6 +4,7 @@ using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Explorer.Tours.Infrastructure.Database.Repositories;
 
@@ -20,15 +21,22 @@ public class TourDbRepository : ITourRepository
 
     public PagedResult<Tour> GetPaged(int page, int pageSize)
     {
-        var task = _dbSet.GetPagedById(page, pageSize);
+        var task = _dbSet
+            .Include(t => t.Points)
+            .GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;
     }
 
     public Tour GetById(int id)
     {
-        var entity = _dbSet.Find(id);
-        if (entity == null) throw new NotFoundException("Tour not found: " + id);
+        var entity = _dbSet
+            .Include(t => t.Points)
+            .FirstOrDefault(t => t.Id == id);
+
+        if (entity == null)
+            throw new NotFoundException("Tour not found: " + id);
+
         return entity;
     }
 
@@ -62,6 +70,9 @@ public class TourDbRepository : ITourRepository
 
     public IEnumerable<Tour> GetByAuthor(int authorId)
     {
-        return _dbSet.Where(t => t.AuthorId == authorId).ToList();
+        return _dbSet
+            .Include(t => t.Points)
+            .Where(t => t.AuthorId == authorId)
+            .ToList();
     }
 }

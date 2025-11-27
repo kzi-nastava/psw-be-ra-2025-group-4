@@ -10,6 +10,10 @@ public class StakeholdersContext : DbContext
     public DbSet<DirectMessage> DirectMessages { get; set; }
 
     public DbSet<Club> Clubs { get; set; }
+    public DbSet<Rating> Ratings { get; set; }
+
+
+    public DbSet<UserProfile> UserProfiles { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
@@ -36,13 +40,11 @@ public class StakeholdersContext : DbContext
         modelBuilder.Entity<DirectMessage>()
             .HasOne(dm => dm.Sender)
             .WithMany()
-            .HasForeignKey(dm => dm.SenderId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(dm => dm.SenderId);
 
         modelBuilder.Entity<DirectMessage>()
             .HasOne(dm => dm.Recipient)
             .WithMany()
-            .HasForeignKey(dm => dm.RecipientId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(dm => dm.RecipientId);
     }
 }

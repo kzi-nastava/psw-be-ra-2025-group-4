@@ -6,4 +6,4 @@ INSERT INTO tours."Equipment"(
 VALUES (-2, 'Štapovi za šetanje', 'Štapovi umanjuju umor nogu, pospešuju aktivnost gornjeg dela tela i pružaju stabilnost na neravnom terenu.');
 INSERT INTO tours."Equipment"(
     "Id", "Name", "Description")
-VALUES (-3, 'Obična baterijska lampa', 'Baterijska lampa od 200 do 400 lumena.');
+VALUES (-3, 'Obična baterijska lampa', 'Baterijska lampa od 200 do 400 lumena.');    

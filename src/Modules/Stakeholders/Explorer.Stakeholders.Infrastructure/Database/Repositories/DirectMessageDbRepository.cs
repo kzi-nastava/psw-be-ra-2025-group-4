@@ -46,12 +46,12 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             DbContext.SaveChanges();
         }
 
-        public PagedResult<DirectMessage> GetPaged(int page, int pageSize, string user)
+        public PagedResult<DirectMessage> GetPaged(int page, int pageSize, long userId)
         {
             var query = _dbSet
-                .Include(message => message.Sender)
-                .Include(message => message.Recipient)
-                .Where(message => message.Sender.Username.Equals(user) || message.Recipient.Username.Equals(user))
+                .Include(dm => dm.Sender)
+                .Include(dm => dm.Recipient)
+                .Where(message => message.SenderId == userId || message.RecipientId == userId)
                 .OrderByDescending(dm => dm.SentAt);
 
             var task = query.GetPagedById(page, pageSize);
@@ -59,19 +59,19 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             return task.Result;
         }
 
-        public PagedResult<DirectMessage> GetPagedConversations(int page, int pageSize, string user)
+        public PagedResult<DirectMessage> GetPagedConversations(int page, int pageSize, long userId)
         {
             var userMessages = _dbSet
                 .Include(dm => dm.Sender)
                 .Include(dm => dm.Recipient)
-                .Where(message => message.Sender.Username == user || message.Recipient.Username == user)
+                .Where(message => message.SenderId == userId || message.RecipientId == userId)
                 .OrderByDescending(dm => dm.SentAt)
                 .ToList();
 
             var latestMessages = userMessages
                 .GroupBy(message =>
                 {
-                    var participants = new[] { message.Sender.Username, message.Recipient.Username }
+                    var participants = new[] { message.SenderId, message.RecipientId }
                         .OrderBy(x => x)
                         .ToArray();
                     return $"{participants[0]}_{participants[1]}";
@@ -88,10 +88,25 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             return new PagedResult<DirectMessage>(items, totalCount);
         }
 
+
         public DirectMessage Update(DirectMessage entity)
         {
             DbContext.SaveChanges();
             return entity;
+        }
+
+        public PagedResult<DirectMessage> GetPagedBetweenUsers(int page, int pageSize, long firstUserId, long secondUserId)
+        {
+            var query = _dbSet
+                .Include(dm => dm.Sender)
+                .Include(dm => dm.Recipient)
+                .Where(message => (message.SenderId == firstUserId && message.RecipientId == secondUserId)
+                || (message.SenderId == secondUserId && message.RecipientId == firstUserId))
+                .OrderByDescending(dm => dm.SentAt);
+
+            var task = query.GetPagedById(page, pageSize);
+            task.Wait();
+            return task.Result;
         }
     }
 }

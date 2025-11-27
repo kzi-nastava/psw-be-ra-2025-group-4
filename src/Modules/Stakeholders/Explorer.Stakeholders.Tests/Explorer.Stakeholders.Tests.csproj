@@ -9,6 +9,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="TestData\e-ratings.sql" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="TestData\e-ratings.sql">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.20" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.6" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />

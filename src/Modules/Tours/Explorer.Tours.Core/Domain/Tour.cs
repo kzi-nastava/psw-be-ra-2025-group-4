@@ -28,6 +28,8 @@ namespace Explorer.Tours.Core.Domain
         public TourStatus Status { get; private set; } = TourStatus.Draft;
         public decimal Price { get; private set; } = 0;
         public int AuthorId { get; private set; }
+        public List<TourPoint> Points { get; private set; } = new();
+
 
         public Tour(string name, string description, TourDifficulty difficulty, int authorId, List<string>? tags = null)
         {
@@ -63,8 +65,7 @@ namespace Explorer.Tours.Core.Domain
                 throw new ArgumentException("Name cannot be empty");
             if (string.IsNullOrWhiteSpace(Description))
                 throw new ArgumentException("Description cannot be empty");
-            if (AuthorId <= 0)
-                throw new ArgumentException("AuthorId must be greater than 0");
+
         }
     }
 }

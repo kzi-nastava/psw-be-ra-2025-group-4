@@ -25,7 +25,7 @@ public abstract class BaseTestFactory<TDbContext> : WebApplicationFactory<Progra
         });
     }
 
-    private static void InitializeDatabase(DbContext context, string scriptFolder, ILogger logger)
+    public static void InitializeDatabase(DbContext context, string scriptFolder, ILogger logger)
     {
         try
         {

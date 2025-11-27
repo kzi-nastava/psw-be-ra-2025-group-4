@@ -1,3 +1,4 @@
+
 INSERT INTO tours."TourPreferences"(
     "Id", "TouristId", "PreferredDifficulty",
     "WalkRating", "BikeRating", "CarRating", "BoatRating", "Tags")

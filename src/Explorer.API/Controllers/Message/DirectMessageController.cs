@@ -3,6 +3,7 @@ using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,13 +25,19 @@ namespace Explorer.API.Controllers.Message
         [HttpGet]
         public ActionResult<PagedResult<DirectMessageDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            return Ok(_directMessageService.GetPaged(page, pageSize, User.Identity.Name));
+            return Ok(_directMessageService.GetPaged(page, pageSize, User.PersonId()));
         }
 
         [HttpGet("conversations")]
         public ActionResult<PagedResult<DirectMessageDto>> GetAllConversations([FromQuery] int page, [FromQuery] int pageSize)
         {
-            return Ok(_directMessageService.GetPagedConversations(page, pageSize, User.Identity.Name));
+            return Ok(_directMessageService.GetPagedConversations(page, pageSize, User.PersonId()));
+        }
+
+        [HttpGet("conversations/{userId:long}")]
+        public ActionResult<PagedResult<DirectMessageDto>> GetAllBetweenUsers(long userId, [FromQuery] int page, [FromQuery] int pageSize)
+        {
+            return Ok(_directMessageService.GetPagedBetweenUsers(page, pageSize, User.PersonId(), userId));
         }
 
 
@@ -39,7 +46,7 @@ namespace Explorer.API.Controllers.Message
         {
             try
             {
-                var result = _directMessageService.SendMessage(User.Identity.Name, directMessage);
+                var result = _directMessageService.SendMessage(User.PersonId(), directMessage);
                 return Ok(result);
             }
             catch (ArgumentException ex)

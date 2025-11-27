@@ -28,6 +28,16 @@ public class User : Entity
     {
         return Role.ToString().ToLower();
     }
+
+    public UserRole GetRole(string role)
+    {
+        if (Enum.TryParse<UserRole>(role, true, out var parsed))
+        {
+            return parsed;
+        }
+
+        throw new ArgumentException($"Invalid role: {role}");
+    }
 }
 
 public enum UserRole

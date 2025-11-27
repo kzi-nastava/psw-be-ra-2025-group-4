@@ -9,8 +9,14 @@ namespace Explorer.Stakeholders.Core.Mappers
         public DirectMessageProfile()
         {
             CreateMap<DirectMessage, DirectMessageDto>()
-                .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender.Username))
-                .ForMember(dest => dest.Recipient, opt => opt.MapFrom(src => src.Recipient.Username));
+                .ForMember(
+                    dest => dest.Sender,
+                    opt => opt.MapFrom(src => src.Sender != null ? src.Sender.Username : null)
+                )
+                .ForMember(
+                    dest => dest.Recipient,
+                    opt => opt.MapFrom(src => src.Recipient != null ? src.Recipient.Username : null)
+                );
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.API.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,10 @@ namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces
 {
     public interface IDirectMessageRepository
     {
-        PagedResult<DirectMessage> GetPaged(int page, int pageSize, string user);
-        PagedResult<DirectMessage> GetPagedConversations(int page, int pageSize, string user);
+        PagedResult<DirectMessage> GetPaged(int page, int pageSize, long userId);
+        PagedResult<DirectMessage> GetPagedConversations(int page, int pageSize, long userId);
+        PagedResult<DirectMessage> GetPagedBetweenUsers(int page, int pageSize, long firstUserId, long secondUserId);
+
         DirectMessage Create(DirectMessage map);
         DirectMessage Update(DirectMessage map);
         void Delete(long id);
