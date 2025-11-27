@@ -10,5 +10,9 @@ public class BlogProfile : Profile
     {
         CreateMap<DigitalDiaryDto, DigitalDiary>()
                 .ReverseMap();
+        CreateMap<BlogPost, BlogDto>();
+
+        CreateMap<CreateUpdateBlogDto, BlogPost>()
+            .ForCtorParam("images", opt => opt.MapFrom(src => src.Images));
     }
 }
