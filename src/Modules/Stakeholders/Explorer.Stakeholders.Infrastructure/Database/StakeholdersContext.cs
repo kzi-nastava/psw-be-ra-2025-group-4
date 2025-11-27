@@ -7,6 +7,13 @@ public class StakeholdersContext : DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Person> People { get; set; }
+    public DbSet<DirectMessage> DirectMessages { get; set; }
+
+    public DbSet<Club> Clubs { get; set; }
+    public DbSet<Rating> Ratings { get; set; }
+    public DbSet<TouristLocation> TouristLocations { get; set; }
+
+    public DbSet<UserProfile> UserProfiles { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
@@ -17,6 +24,7 @@ public class StakeholdersContext : DbContext
         modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
 
         ConfigureStakeholder(modelBuilder);
+        ConfigureDirectMessage(modelBuilder);
     }
 
     private static void ConfigureStakeholder(ModelBuilder modelBuilder)
@@ -25,5 +33,18 @@ public class StakeholdersContext : DbContext
             .HasOne<User>()
             .WithOne()
             .HasForeignKey<Person>(s => s.UserId);
+    }
+
+    private static void ConfigureDirectMessage(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DirectMessage>()
+            .HasOne(dm => dm.Sender)
+            .WithMany()
+            .HasForeignKey(dm => dm.SenderId);
+
+        modelBuilder.Entity<DirectMessage>()
+            .HasOne(dm => dm.Recipient)
+            .WithMany()
+            .HasForeignKey(dm => dm.RecipientId);
     }
 }

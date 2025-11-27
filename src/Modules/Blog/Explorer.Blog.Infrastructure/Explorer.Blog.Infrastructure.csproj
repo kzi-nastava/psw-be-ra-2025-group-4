@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Database\Repositories\" />
+    <PackageReference Include="FluentAssertions" Version="8.8.0" />
   </ItemGroup>
 
 </Project>
