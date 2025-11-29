@@ -38,11 +38,6 @@ namespace Explorer.Stakeholders.Core.UseCases
         {
             var location = _repository.GetById(userId);
 
-            if (location == null)
-            {
-                throw new KeyNotFoundException("Tourist location not found.");
-            }
-
             return _mapper.Map<TouristLocationDto>(location);
         }
     }
