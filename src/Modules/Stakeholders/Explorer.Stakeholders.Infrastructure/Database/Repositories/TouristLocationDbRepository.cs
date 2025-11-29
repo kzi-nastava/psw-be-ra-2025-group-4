@@ -27,14 +27,15 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             if (existing == null)
             {
                 _dbSet.Add(entity);
+                _dbContext.SaveChanges();
+                return entity;
             }
             else
             {
-                _dbContext.Update(existing);
+                existing.UpdateLocation(entity.Latitude, entity.Longitude);
+                _dbContext.SaveChanges();
+                return existing;
             }
-
-            _dbContext.SaveChanges();
-            return existing ?? entity;
         }
 
     }
