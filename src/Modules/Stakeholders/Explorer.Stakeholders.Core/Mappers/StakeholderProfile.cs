@@ -25,6 +25,11 @@ public class StakeholderProfile : Profile
                 .ForMember(dest => dest.UserId, opt => opt.Ignore());
 
         CreateMap<ClubMessage, ClubMessageDto>();
+        CreateMap<ClubMessageCreateDto, ClubMessage>()
+               .ForMember(dest => dest.Id, opt => opt.Ignore())
+               .ForMember(dest => dest.AuthorId, opt => opt.Ignore())
+               .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
+
 
     }
 }
