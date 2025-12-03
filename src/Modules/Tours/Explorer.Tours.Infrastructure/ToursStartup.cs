@@ -64,6 +64,7 @@ public static class ToursStartup
         services.AddScoped<IHistoricalMonumentRepository, HistoricalMonumentRepository>();
         services.AddScoped<ITourPointRepository, TourPointDbRepository>();
         services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
+        services.AddScoped<IShoppingCartService, ShoppingCartService>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
