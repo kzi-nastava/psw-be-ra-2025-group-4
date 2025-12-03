@@ -37,7 +37,7 @@ namespace Explorer.API.Controllers.Author
 
             var bytes = Convert.FromBase64String(base64);
 
-            var folder = Path.Combine(_env.WebRootPath, "tour-point-images");
+            var folder = Path.Combine(_env.WebRootPath, "TourPointsImages");
             Directory.CreateDirectory(folder);
 
             var fileName = $"{Guid.NewGuid()}.jpg"; 
