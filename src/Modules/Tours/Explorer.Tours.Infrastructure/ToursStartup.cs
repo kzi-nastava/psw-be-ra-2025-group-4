@@ -71,5 +71,8 @@ public static class ToursStartup
         services.AddDbContext<ToursContext>(opt =>
             opt.UseNpgsql(dataSource,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "tours")));
+
+        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+
     }
 }

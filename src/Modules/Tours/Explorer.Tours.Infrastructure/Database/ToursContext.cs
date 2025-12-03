@@ -18,6 +18,7 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<HistoricalMonument> HistoricalMonuments { get; set; }
         public DbSet<TourPoint> TourPoints { get; set; }
 
+        public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,6 +30,11 @@ namespace Explorer.Tours.Infrastructure.Database
                 .WithOne(p => p.Tour)
                 .HasForeignKey(p => p.TourId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TourPurchaseToken>()
+                .HasIndex(t => new { t.TouristId, t.TourId })
+                .IsUnique();
+
 
             base.OnModelCreating(modelBuilder);
         }
