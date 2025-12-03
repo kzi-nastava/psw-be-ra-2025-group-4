@@ -6,7 +6,6 @@ using Explorer.Blog.API.Public;
 using Explorer.Blog.Core.Domain;
 using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 
-
 namespace Explorer.Blog.Core.UseCases
 {
     public class BlogService : IBlogService
@@ -70,6 +69,32 @@ namespace Explorer.Blog.Core.UseCases
                 throw new UnauthorizedAccessException("You cannot delete someone else's blog.");
 
             _repository.Delete(id);
+        }
+
+        public void Publish(int id, int userId)
+        {
+            var blog = _repository.Get(id);
+            if (blog == null)
+                throw new KeyNotFoundException("Blog not found.");
+
+            if (blog.UserId != userId)
+                throw new UnauthorizedAccessException("You cannot publish someone else's blog.");
+
+            blog.Publish();
+            _repository.Update(blog);
+        }
+
+        public void Archive(int id, int userId)
+        {
+            var blog = _repository.Get(id);
+            if (blog == null)
+                throw new KeyNotFoundException("Blog not found.");
+
+            if (blog.UserId != userId)
+                throw new UnauthorizedAccessException("You cannot archive someone else's blog.");
+
+            blog.Archive();
+            _repository.Update(blog);
         }
     }
 }
