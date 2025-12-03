@@ -18,25 +18,36 @@ namespace Explorer.Tours.Core.Domain
         Hard
     }
 
-    public class Tour : Entity
+    public class Tour : AggregateRoot
     {
-        public int Id { get; set; }
         public string Name { get; private set; }
         public string Description { get; private set; }
         public TourDifficulty Difficulty { get; private set; }
         public List<string> Tags { get; private set; } = new List<string>();
         public TourStatus Status { get; private set; } = TourStatus.Draft;
-        public decimal Price { get; private set; } = 0;
         public int AuthorId { get; private set; }
         public List<TourPoint> Points { get; private set; } = new();
+        public List<Equipment> Equipment { get; private set; } = new List<Equipment>();
+        public Money Price { get; private set; }
+        public List<TourTransportDuration> TransportDuration { get; private set; } = new List<TourTransportDuration>();
+        public DateTime? PublishedAt { get; private set; }
+        public DateTime? ArchivedAt { get; private set; }
+
+        private Tour()
+        {
+
+        }
 
 
-        public Tour(string name, string description, TourDifficulty difficulty, int authorId, List<string>? tags = null)
+        public Tour(string name, string description, TourDifficulty difficulty, int authorId, Money price, List<string>? tags = null            )
         {
             Name = name;
             Description = description;
             Difficulty = difficulty;
             AuthorId = authorId;
+            Status = TourStatus.Draft;
+            Price = new Money(0.0, "RSD");
+
             if (tags != null) Tags = tags;
 
             Validate();
@@ -44,11 +55,6 @@ namespace Explorer.Tours.Core.Domain
         public void SetStatus(TourStatus status)
         {
             Status = status;
-        }
-
-        public void SetPrice(decimal price)
-        {
-            Price = price;
         }
 
         public void Update(string name, string description, TourDifficulty difficulty, List<string> tags)
@@ -65,7 +71,42 @@ namespace Explorer.Tours.Core.Domain
                 throw new ArgumentException("Name cannot be empty");
             if (string.IsNullOrWhiteSpace(Description))
                 throw new ArgumentException("Description cannot be empty");
+        }
 
+        public void Publish()
+        {
+            if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(Description)
+                || Points.Count < 2 || TransportDuration.Count == 0 || Tags.Count == 0 || Status == TourStatus.Published)
+            {
+                throw new ArgumentException("Tour canot be published.");
+            }
+
+            Status = TourStatus.Published;
+            PublishedAt = DateTime.UtcNow;
+        }
+
+        public void Archive()
+        {
+            if (Status != TourStatus.Published)
+                throw new InvalidOperationException("Only published tours can be archived.");
+
+            Status = TourStatus.Archived;
+            ArchivedAt = DateTime.UtcNow;
+        }
+
+        public void AddTourPoint(TourPoint point)
+        {
+            Points.Add(point);
+        }
+
+        public void AddEquipment(Equipment equipment)
+        {
+            Equipment.Add(equipment);
+        }
+
+        public void AddEquipments(List<Equipment> equipments)
+        {
+            Equipment.AddRange(equipments);
         }
     }
 }
