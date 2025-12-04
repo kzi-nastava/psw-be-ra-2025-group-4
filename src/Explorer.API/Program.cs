@@ -35,10 +35,16 @@ else
 
 app.UseStaticFiles();
 
+var tourPointsImagesPath = Path.Combine(
+    builder.Environment.ContentRootPath,
+    "wwwroot",
+    "TourPointsImages");
+
+Directory.CreateDirectory(tourPointsImagesPath);
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "TourPointsImages")),
+    FileProvider = new PhysicalFileProvider(tourPointsImagesPath),
     RequestPath = "/TourPointsImages"
 });
 
