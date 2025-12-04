@@ -43,7 +43,7 @@ namespace Explorer.Tours.Infrastructure.Database
                 builder.OwnsMany(c => c.Items, owned =>
                 {
                     
-                    owned.ToTable("OrderItems");
+                    owned.ToTable("OrderItem");
 
                     owned.WithOwner()
                          .HasForeignKey("ShoppingCartId");

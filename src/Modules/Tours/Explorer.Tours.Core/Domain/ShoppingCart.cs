@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.Tours.Core.Domain
 {
@@ -19,8 +20,8 @@ namespace Explorer.Tours.Core.Domain
 
         public ShoppingCart(int touristId)
         {
-            if(touristId == 0)
-                throw new ArgumentException("Invalid tourist id.", nameof(touristId));
+            if (touristId == 0)
+                throw new EntityValidationException("Invalid tourist id.");
 
             TouristId = touristId;
             TotalPrice = 0;

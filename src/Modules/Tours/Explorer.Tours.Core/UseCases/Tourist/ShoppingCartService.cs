@@ -1,9 +1,11 @@
-﻿using System;
-using AutoMapper;
+﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using System;
+using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.Tours.Core.UseCases.Tourist
 {
@@ -44,25 +46,25 @@ namespace Explorer.Tours.Core.UseCases.Tourist
 
         public ShoppingCartDto AddToCart(int touristId, int tourId)
         {
-            
             var tour = _tourRepository.GetById(tourId);
             if (tour == null)
             {
-                throw new InvalidOperationException($"Tour {tourId} not found.");
+                
+                throw new NotFoundException($"Tour {tourId} not found.");
             }
 
-            
             if (tour.Status == TourStatus.Archived)
             {
-                throw new InvalidOperationException("Archived tours cannot be added to cart.");
+                
+                throw new EntityValidationException("Archived tours cannot be added to cart.");
             }
 
             if (tour.Status != TourStatus.Published)
             {
-                throw new InvalidOperationException("Only published tours can be added to cart.");
+                
+                throw new EntityValidationException("Only published tours can be added to cart.");
             }
 
-            
             var cart = _cartRepository.GetByTouristId(touristId);
             if (cart == null)
             {
@@ -71,18 +73,14 @@ namespace Explorer.Tours.Core.UseCases.Tourist
 
             var previousTotal = cart.TotalPrice;
 
-            
             cart.AddItem(tour.Id, tour.Name, tour.Price);
 
-            
             if (cart.Id == 0)
             {
-                
                 cart = _cartRepository.Create(cart);
             }
             else if (cart.TotalPrice != previousTotal)
             {
-                
                 cart = _cartRepository.Update(cart);
             }
 

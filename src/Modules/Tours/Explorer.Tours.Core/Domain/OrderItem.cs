@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.BuildingBlocks.Core.Exceptions;
+using System;
 using System.Collections.Generic;
-using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.Tours.Core.Domain
 {
@@ -15,10 +17,10 @@ namespace Explorer.Tours.Core.Domain
         public OrderItem(int tourId, string tourName, decimal price)
         {
             if (string.IsNullOrWhiteSpace(tourName))
-                throw new ArgumentException("Tour name is required.", nameof(tourName));
+                throw new EntityValidationException("Tour name is required.");
 
             if (price < 0)
-                throw new ArgumentException("Price cannot be negative.", nameof(price));
+                throw new EntityValidationException("Price cannot be negative.");
 
             TourId = tourId;
             TourName = tourName.Trim();
