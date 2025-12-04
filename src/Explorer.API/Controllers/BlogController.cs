@@ -11,12 +11,13 @@ namespace Explorer.API.Controllers
     public class BlogController : ControllerBase
     {
         private readonly IBlogService _blogService;
+        private readonly ICommentService _commentService;
 
-        public BlogController(IBlogService blogService)
+        public BlogController(IBlogService blogService, ICommentService commentService)
         {
             _blogService = blogService;
+            _commentService = commentService;
         }
-
         private int GetUserId()
         {
             var id = User.FindFirst("id")?.Value;
@@ -90,6 +91,37 @@ namespace Explorer.API.Controllers
         {
             _blogService.Archive(id, GetUserId());
             return Ok();
+        }
+
+        [HttpGet("{id:int}/comments")]
+        public ActionResult<IEnumerable<CommentDto>> GetComments(int id)
+        {
+            var result = _commentService.GetByBlog(id);
+            return Ok(result);
+        }
+
+        // kreiranje komentara (samo ako je blog objavljen)
+        [HttpPost("{id:int}/comments")]
+        public ActionResult<CommentDto> CreateComment(int id, [FromBody] CreateUpdateCommentDto dto)
+        {
+            var created = _commentService.Create(id, GetUserId(), dto);
+            return CreatedAtAction(nameof(GetComments), new { id }, created);
+        }
+
+        // izmena komentara (autor + 15 minuta)
+        [HttpPut("comments/{commentId:int}")]
+        public ActionResult<CommentDto> UpdateComment(int commentId, [FromBody] CreateUpdateCommentDto dto)
+        {
+            var updated = _commentService.Update(commentId, GetUserId(), dto);
+            return Ok(updated);
+        }
+
+        // brisanje komentara (autor + 15 minuta)
+        [HttpDelete("comments/{commentId:int}")]
+        public IActionResult DeleteComment(int commentId)
+        {
+            _commentService.Delete(commentId, GetUserId());
+            return NoContent();
         }
     }
 }

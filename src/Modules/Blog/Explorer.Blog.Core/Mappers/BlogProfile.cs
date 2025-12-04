@@ -16,5 +16,8 @@ public class BlogProfile : Profile
 
         CreateMap<CreateUpdateBlogDto, BlogPost>()
             .ForCtorParam("images", opt => opt.MapFrom(src => src.Images));
+
+        CreateMap<Comment, CommentDto>().ReverseMap();
+
     }
 }
