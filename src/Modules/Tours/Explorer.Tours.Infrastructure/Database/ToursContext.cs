@@ -1,5 +1,6 @@
 using Explorer.Tours.Core.Domain;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Explorer.Tours.Infrastructure.Database
 {
@@ -29,6 +30,45 @@ namespace Explorer.Tours.Infrastructure.Database
                 .WithOne(p => p.Tour)
                 .HasForeignKey(p => p.TourId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Tour>()
+                .HasMany(t => t.Equipment)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "TourEquipment",
+                    j => j
+                        .HasOne<Equipment>()
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<Tour>()
+                        .WithMany()
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                );
+
+            modelBuilder.Entity<Tour>()
+                .HasMany(t => t.Points)
+                .WithOne(p => p.Tour)
+                .HasForeignKey(p => p.TourId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Tour>()
+                .Property(t => t.TransportDuration)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Deserialize<List<TourTransportDuration>>(v, (JsonSerializerOptions)null) ?? new List<TourTransportDuration>()
+                );
+
+            modelBuilder.Entity<Tour>()
+                .Property(t => t.Price)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<Money>(v, (JsonSerializerOptions?)null)!
+                );
 
             base.OnModelCreating(modelBuilder);
         }
