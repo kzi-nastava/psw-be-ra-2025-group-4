@@ -91,5 +91,22 @@ public class TourExecutionController : ControllerBase
             return Forbid(ex.Message);
         }
     }
+
+    [HttpGet("active/tour/{tourId:int}")]
+    public ActionResult<TourExecutionDto> GetActiveByTour(int tourId)
+    {
+        try
+        {
+            long touristId = User.PersonId();
+            var result = _tourExecutionService.GetActiveByTour(tourId, touristId);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
 
