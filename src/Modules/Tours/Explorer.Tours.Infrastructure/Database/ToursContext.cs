@@ -1,4 +1,4 @@
-using Explorer.Tours.Core.Domain;
+﻿using Explorer.Tours.Core.Domain;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -18,7 +18,10 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<TourProblem> TourProblems { get; set; }
         public DbSet<HistoricalMonument> HistoricalMonuments { get; set; }
         public DbSet<TourPoint> TourPoints { get; set; }
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        public DbSet<TourExecution> TourExecutions { get; set; }
 
+        public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -69,8 +72,47 @@ namespace Explorer.Tours.Infrastructure.Database
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                     v => JsonSerializer.Deserialize<Money>(v, (JsonSerializerOptions?)null)!
                 );
+            modelBuilder.Entity<TourPurchaseToken>()
+                .HasIndex(t => new { t.TouristId, t.TourId })
+                .IsUnique();
+
+
+            modelBuilder.Entity<ShoppingCart>(builder =>
+            {
+                builder.ToTable("ShoppingCarts");
+
+                builder.HasKey(c => c.Id);
+                builder.Property(c => c.TouristId).IsRequired();
+                builder.Property(c => c.TotalPrice).IsRequired();
+
+                builder.OwnsMany(c => c.Items, owned =>
+                {
+                    
+                    owned.ToTable("OrderItem");
+
+                    owned.WithOwner()
+                         .HasForeignKey("ShoppingCartId");
+
+                   
+                    owned.Property<int>("Id");
+                    owned.HasKey("Id");
+
+                    
+                    owned.Property(o => o.TourId).IsRequired();
+                    owned.Property(o => o.TourName).IsRequired();
+                    owned.Property(o => o.Price).IsRequired();
+                });
+            });
+
+            modelBuilder.Entity<TourExecution>()
+                .HasMany(te => te.CompletedPoints)
+                .WithOne()
+                .HasForeignKey("TourExecutionId")
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             base.OnModelCreating(modelBuilder);
+
         }
     }
 }

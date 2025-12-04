@@ -7,6 +7,7 @@ namespace Explorer.Tours.API.Public
     {
         PagedResult<TourDto> GetPagedByAuthor(int authorId, int page, int pageSize);
         TourDto GetByIdForAuthor(int authorId, int id);
+        TourDto GetById(int id);
         TourDto Create(CreateUpdateTourDto dto, int authorId);
         TourDto Update(int id, CreateUpdateTourDto dto, int authorId);
         void DeleteForAuthor(int authorId, int id);
@@ -16,5 +17,6 @@ namespace Explorer.Tours.API.Public
         void SetPrice(int tourId, int authorId, MoneyDto money);
         void AddEquipment(int tourId, int authorId, List<EquipmentDto> equipment);
         void AddTourPoint(int tourId, int authorId, TourPointDto tourPoint);
+        PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize);
     }
 }

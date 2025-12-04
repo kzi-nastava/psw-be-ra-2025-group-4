@@ -59,6 +59,27 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Tour, opt => opt.Ignore())
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order));
+
+
+            CreateMap<TourPurchaseToken, TourPurchaseTokenDto>().ReverseMap();
+
+            
+            CreateMap<OrderItem, OrderItemDto>().ReverseMap();
+
+            CreateMap<ShoppingCart, ShoppingCartDto>()
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
+
+            CreateMap<TourExecutionStatus, TourExecutionStatusDto>().ConvertUsing(src => (TourExecutionStatusDto)src);
+            CreateMap<TourExecutionStatusDto, TourExecutionStatus>().ConvertUsing(src => (TourExecutionStatus)src);
+            CreateMap<TourExecution, TourExecutionDto>().ReverseMap();
+            CreateMap<TourExecutionCreateDto, TourExecution>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.TouristId, opt => opt.Ignore())
+                .ForMember(dest => dest.StartTime, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.EndTime, opt => opt.Ignore());
+
+
         }
     }
 }

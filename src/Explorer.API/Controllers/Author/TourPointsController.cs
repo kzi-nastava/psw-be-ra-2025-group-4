@@ -11,10 +11,12 @@ namespace Explorer.API.Controllers.Author
     public class TourPointsController : ControllerBase
     {
         private readonly ITourPointService _service;
+        private readonly IWebHostEnvironment _env;
 
-        public TourPointsController(ITourPointService service)
+        public TourPointsController(ITourPointService service, IWebHostEnvironment env)
         {
             _service = service;
+            _env = env;
         }
 
         private int AuthorId()
@@ -22,6 +24,30 @@ namespace Explorer.API.Controllers.Author
             var id = User.FindFirst("id")?.Value ?? User.FindFirst("personId")?.Value;
             return int.Parse(id ?? throw new Exception("No user id"));
         }
+
+        private string? SaveImageFromBase64(string? base64)
+        {
+            if (string.IsNullOrWhiteSpace(base64)) return null;
+
+            var commaIndex = base64.IndexOf(',');
+            if (commaIndex >= 0)
+            {
+                base64 = base64[(commaIndex + 1)..];
+            }
+
+            var bytes = Convert.FromBase64String(base64);
+
+            var folder = Path.Combine(_env.WebRootPath, "TourPointsImages");
+            Directory.CreateDirectory(folder);
+
+            var fileName = $"{Guid.NewGuid()}.jpg"; 
+            var fullPath = Path.Combine(folder, fileName);
+
+            System.IO.File.WriteAllBytes(fullPath, bytes);
+
+            return fileName;
+        }
+
 
         [HttpGet("{tourId:int}/points")]
         public ActionResult<List<TourPointDto>> GetPoints(int tourId)
@@ -32,6 +58,12 @@ namespace Explorer.API.Controllers.Author
         [HttpPost("{tourId:int}/points")]
         public ActionResult<TourPointDto> CreatePoint(int tourId, [FromBody] TourPointDto dto)
         {
+            if (!string.IsNullOrWhiteSpace(dto.ImageBase64))
+            {
+                dto.ImageFileName = SaveImageFromBase64(dto.ImageBase64);
+                dto.ImageBase64 = null;
+            }
+
             var created = _service.Create(tourId, dto, AuthorId());
             return Created(string.Empty, created);
         }
@@ -39,6 +71,12 @@ namespace Explorer.API.Controllers.Author
         [HttpPut("points/{pointId:int}")]
         public ActionResult<TourPointDto> UpdatePoint(int pointId, [FromBody] TourPointDto dto)
         {
+            if (!string.IsNullOrWhiteSpace(dto.ImageBase64))
+            {
+                dto.ImageFileName = SaveImageFromBase64(dto.ImageBase64);
+                dto.ImageBase64 = null;
+            }
+
             return Ok(_service.Update(pointId, dto, AuthorId()));
         }
 

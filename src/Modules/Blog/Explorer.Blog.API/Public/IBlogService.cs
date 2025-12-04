@@ -14,5 +14,7 @@ namespace Explorer.Blog.API.Public
         BlogDto Get(int id);
         IEnumerable<BlogDto> GetByUser(int userId);
         void DeleteBlog(int id, int userId);
+        void Publish(int id, int userId);
+        void Archive(int id, int userId);
     }
 }

@@ -52,6 +52,22 @@ namespace Explorer.Tours.Core.UseCases.Author
             return dto;
         }
 
+        public TourDto GetById(int id)
+        {
+            var tour = _tourRepository.GetById(id);
+
+            var dto = _mapper.Map<TourDto>(tour);
+
+            if (dto.Points != null)
+            {
+                dto.Points = dto.Points
+                    .OrderBy(p => p.Order)
+                    .ToList();
+            }
+
+            return dto;
+        }
+
         public TourDto Create(CreateUpdateTourDto dto, int authorId)
         {
             var durations = dto.TransportDuration.Select(_mapper.Map<TourTransportDuration>).ToList();
@@ -129,6 +145,26 @@ namespace Explorer.Tours.Core.UseCases.Author
             var tour = _tourRepository.GetById(tourId);
             if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
             tour.AddTourPoint(_mapper.Map<TourPoint>(tourPoint));
+        }
+        
+        public PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize)
+        {
+            var all = _tourRepository.GetPublishedAndArchived()
+                                     .OrderBy(t => t.Id)
+                                     .ToList();
+
+            var items = all.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var mapped = items.Select(t =>
+            {
+                var dto = _mapper.Map<TourDto>(t);
+                if (dto.Points != null)
+                {
+                    dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
+                }
+                return dto;
+            }).ToList();
+
+            return new PagedResult<TourDto>(mapped, all.Count);
         }
     }
 }

@@ -9,6 +9,12 @@ using System.Xml.Linq;
 
 namespace Explorer.Stakeholders.Core.Domain
 {
+    public enum ResourceType
+    {
+        None = 0,
+        Tour = 1,
+        Blog = 2
+    }
     public class DirectMessage : Entity
     {
         public User Sender { get; set; }
@@ -18,22 +24,30 @@ namespace Explorer.Stakeholders.Core.Domain
         public string Content { get; set; }
         public DateTime SentAt { get; set; }
         public DateTime? EditedAt { get; set; }
+        public long? ResourceId { get; set; }
+        public ResourceType ResourceType { get; set; } = ResourceType.None;
+
 
         public DirectMessage() { }
 
-        public DirectMessage(long senderId, long recipientId, string content, DateTime sentAt)
+        public DirectMessage(long senderId, long recipientId, string content, DateTime sentAt, long? resourceId, ResourceType resourceType)
         {
             SenderId = senderId;
             RecipientId = recipientId;
             Content = content;
             SentAt = sentAt;
             EditedAt = null;
+            ResourceId = resourceId;
+            ResourceType = resourceType;
             Validate();
         }
 
         private void Validate()
         {
             if (string.IsNullOrWhiteSpace(Content)) throw new ArgumentException("Invalid Message");
+            
+            if (Content.Length > 280)
+                throw new ArgumentException("Message too long (max 280 characters)");
         }
     }
 }

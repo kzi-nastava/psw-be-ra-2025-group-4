@@ -16,6 +16,16 @@ namespace Explorer.Stakeholders.Core.Mappers
                 .ForMember(
                     dest => dest.Recipient,
                     opt => opt.MapFrom(src => src.Recipient != null ? src.Recipient.Username : null)
+                )
+                .ForMember(
+                    dest => dest.ResourceUrl,
+                    opt => opt.MapFrom(src =>
+                        src.ResourceType == ResourceType.Blog && src.ResourceId != null
+                            ? $"/blog/{src.ResourceId}"
+                            : src.ResourceType == ResourceType.Tour && src.ResourceId != null
+                                ? $"/tours/{src.ResourceId}"
+                                : null
+                    )
                 );
         }
     }

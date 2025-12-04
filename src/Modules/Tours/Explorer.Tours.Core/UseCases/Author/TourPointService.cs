@@ -36,7 +36,7 @@ namespace Explorer.Tours.Core.UseCases.Author
 
             var current = _pointRepo.GetByTour(tourId);
             var order = current.Any() ? current.Max(p => p.Order) + 1 : 1;
-            var point = new TourPoint(tourId, dto.Name, dto.Description, dto.Latitude, dto.Longitude, order);
+            var point = new TourPoint(tourId, dto.Name, dto.Description, dto.Latitude, dto.Longitude, order, dto.ImageFileName, dto.Secret);
 
             var created = _pointRepo.Create(point);
             return _mapper.Map<TourPointDto>(created);
@@ -48,7 +48,7 @@ namespace Explorer.Tours.Core.UseCases.Author
             var tour = _tourRepo.GetById((int)point.TourId);
             if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
 
-            point.Update(dto.Name, dto.Description, dto.Latitude, dto.Longitude, dto.Order);
+            point.Update(dto.Name, dto.Description, dto.Latitude, dto.Longitude, dto.Order, dto.ImageFileName, dto.Secret);
             var updated = _pointRepo.Update(point);
 
             return _mapper.Map<TourPointDto>(updated);
