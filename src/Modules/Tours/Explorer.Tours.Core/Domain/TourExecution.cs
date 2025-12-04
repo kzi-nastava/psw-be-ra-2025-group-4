@@ -39,6 +39,8 @@ public class TourExecution : AggregateRoot
     public DateTime? EndTime { get; private set; }
     public DateTime LastActivity { get; private set; }
     public ICollection<CompletedTourPoint> CompletedPoints { get; private set; }
+    public double CompletionPercentage { get; private set; }
+
 
     public TourExecution(long touristId, int tourId, double startLatitude, double startLongitude)
     {
@@ -97,5 +99,43 @@ public class TourExecution : AggregateRoot
         return true;
     }
 
+    public void UpdateCompletionPercentage(int totalTourPoints)
+    {
+        if (totalTourPoints <= 0)
+        {
+            CompletionPercentage = 0;
+            return;
+        }
+
+        CompletionPercentage = (CompletedPoints.Count / (double)totalTourPoints) * 100;
+    }
+
+    public bool CanLeaveReview()
+    {
+        if (CompletionPercentage <= 35)
+            return false;
+
+        var daysSinceLastActivity = (DateTime.UtcNow - LastActivity).TotalDays;
+        if (daysSinceLastActivity > 7)
+            return false;
+
+        return true;
+    }
+
+    public string GetReviewIneligibilityReason()
+    {
+        if (CompletionPercentage <= 35)
+        {
+            return "You have to complete at least 35% of the tour to leave a review.";
+        }
+
+        var daysSinceLastActivity = (DateTime.UtcNow - LastActivity).TotalDays;
+        if (daysSinceLastActivity > 7)
+        {
+            return "More than 7 days have passed since your last activity. You cannot leave a review.";
+        }
+
+        return string.Empty;
+    }
 }
 

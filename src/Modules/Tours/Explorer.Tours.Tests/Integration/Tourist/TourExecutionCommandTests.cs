@@ -51,8 +51,19 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
     public void Starts_archived_tour_execution()
     {
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        //var controller = CreateController(scope);
+        var service = scope.ServiceProvider.GetRequiredService<ITourExecutionService>();
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        var existingExecutions = db.TourExecutions
+         .Where(te => te.TouristId == -1 && te.TourId == -3 && te.Status == TourExecutionStatus.Active)
+         .ToList();
+
+        foreach (var existing in existingExecutions)  
+        {
+            existing.Abandon();
+            db.SaveChanges();
+        }
 
         var dto = new TourExecutionCreateDto
         {
@@ -61,8 +72,8 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
             StartLongitude = 19.8335
         };
 
-        var result = ((ObjectResult)controller.StartTour(dto).Result)?.Value as TourExecutionDto;
-
+        //var result = ((ObjectResult)controller.StartTour(dto).Result)?.Value as TourExecutionDto;
+        var result = service.StartTour(dto, -1);
         result.ShouldNotBeNull();
         result.Id.ShouldNotBe(0);
         result.TourId.ShouldBe(-3);

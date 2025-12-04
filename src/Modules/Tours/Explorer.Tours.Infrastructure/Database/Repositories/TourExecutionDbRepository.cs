@@ -58,5 +58,34 @@ public class TourExecutionDbRepository : ITourExecutionRepository
             .OrderByDescending(te => te.StartTime)
             .ToList();
     }
+
+
+    public TourExecution GetActiveTourExecution(long touristId, int tourId)
+    {
+        return _dbSet
+            .Include(te => te.CompletedPoints)
+            .FirstOrDefault(te => 
+                            te.TouristId == touristId && 
+                            te.TourId == tourId && 
+                            te.Status == TourExecutionStatus.Active);
+    }
+
+    public bool HasActiveTourExecution(long touristId, int tourId)
+    {
+        return _dbSet
+            .Any(te =>
+                te.TouristId == touristId &&
+                te.TourId == tourId &&
+                te.Status == TourExecutionStatus.Active);
+    }
+
+    public TourExecution GetLastTourExecution(long touristId, int tourId)
+    {
+        return _dbSet
+            .Include(te => te.CompletedPoints)
+            .Where(te => te.TouristId == touristId && te.TourId == tourId)
+            .OrderByDescending(te => te.LastActivity)
+            .FirstOrDefault();
+    }
 }
 
