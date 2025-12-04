@@ -17,6 +17,7 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<TourProblem> TourProblems { get; set; }
         public DbSet<HistoricalMonument> HistoricalMonuments { get; set; }
         public DbSet<TourPoint> TourPoints { get; set; }
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
@@ -36,7 +37,36 @@ namespace Explorer.Tours.Infrastructure.Database
                 .IsUnique();
 
 
+            modelBuilder.Entity<ShoppingCart>(builder =>
+            {
+                builder.ToTable("ShoppingCarts");
+
+                builder.HasKey(c => c.Id);
+                builder.Property(c => c.TouristId).IsRequired();
+                builder.Property(c => c.TotalPrice).IsRequired();
+
+                builder.OwnsMany(c => c.Items, owned =>
+                {
+                    
+                    owned.ToTable("OrderItem");
+
+                    owned.WithOwner()
+                         .HasForeignKey("ShoppingCartId");
+
+                   
+                    owned.Property<int>("Id");
+                    owned.HasKey("Id");
+
+                    
+                    owned.Property(o => o.TourId).IsRequired();
+                    owned.Property(o => o.TourName).IsRequired();
+                    owned.Property(o => o.Price).IsRequired();
+                });
+            });
+
+
             base.OnModelCreating(modelBuilder);
+
         }
     }
 }

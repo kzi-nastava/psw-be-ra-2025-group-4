@@ -62,5 +62,20 @@ namespace Explorer.API.Controllers
             _blogService.DeleteBlog(id, GetUserId());
             return NoContent();
         }
+
+        [HttpPost("{id:int}/publish")]
+        public IActionResult Publish(int id)
+        {
+            _blogService.Publish(id, GetUserId());
+            return Ok();
+        }
+
+        [HttpPost("{id:int}/archive")]
+        public IActionResult Archive(int id)
+        {
+            _blogService.Archive(id, GetUserId());
+            return Ok();
+        }
+
     }
 }
