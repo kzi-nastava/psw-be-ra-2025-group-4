@@ -65,13 +65,6 @@ namespace Explorer.Tours.Infrastructure.Database
                     v => JsonSerializer.Deserialize<List<TourTransportDuration>>(v, (JsonSerializerOptions)null) ?? new List<TourTransportDuration>()
                 );
 
-            modelBuilder.Entity<Tour>()
-                .Property(t => t.Price)
-                .HasColumnType("jsonb")
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                    v => JsonSerializer.Deserialize<Money>(v, (JsonSerializerOptions?)null)!
-                );
             modelBuilder.Entity<TourPurchaseToken>()
                 .HasIndex(t => new { t.TouristId, t.TourId })
                 .IsUnique();

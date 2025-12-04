@@ -16,7 +16,6 @@ namespace Explorer.Tours.Core.Mappers
             CreateMap<TourDtoStatus, TourStatus>().ConvertUsing(src => (TourStatus)src);
 
 
-            CreateMap<Money, MoneyDto>().ReverseMap();
             CreateMap<TourTransportDuration, TourTransportDurationDto>().ReverseMap();
 
             CreateMap<Tour, TourDto>()

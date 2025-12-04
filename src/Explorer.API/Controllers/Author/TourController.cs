@@ -64,9 +64,9 @@ public class TourController : ControllerBase
     }
 
     [HttpPut("{id:int}/price")]
-    public ActionResult SetPrice(int id, [FromBody] MoneyDto dto)
+    public ActionResult SetPrice(int id, [FromBody] decimal price)
     {
-        _tourService.SetPrice(id, GetAuthorId(), dto);
+        _tourService.SetPrice(id, GetAuthorId(), price);
         return NoContent();
     }
 

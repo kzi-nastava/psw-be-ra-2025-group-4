@@ -42,12 +42,10 @@ namespace Explorer.Tours.Tests.Integration.Author
         public void Sets_price(decimal amount, string currency)
         {
             var tour = GetTestTour(10);
-            var price = new Money(amount, currency);
 
-            Should.NotThrow(() => tour.SetPrice(price));
+            Should.NotThrow(() => tour.SetPrice(amount));
 
-            tour.Price.Amount.ShouldBe(amount);
-            tour.Price.Currency.ShouldBe(currency);
+            tour.Price.ShouldBe(amount);
         }
 
         [Theory]
@@ -69,7 +67,7 @@ namespace Explorer.Tours.Tests.Integration.Author
         public void Adds_tour_point(string name, double lat, double lng, int order)
         {
             var tour = GetTestTour(10);
-            var point = new TourPoint(-1, name, name, lat, lng, order);
+            var point = new TourPoint(-1, name, name, lat, lng, order, "", "");
 
             Should.NotThrow(() => tour.AddTourPoint(point));
 
@@ -97,7 +95,7 @@ namespace Explorer.Tours.Tests.Integration.Author
         {
             var points = tourId < 0
                 ? new List<TourPoint>()
-                : new List<TourPoint> { new(-1, "first", "first", 10, 20, 1), new(-2, "second", "second", 10, 20, 2) }; // valid
+                : new List<TourPoint> { new(-1, "first", "first", 10, 20, 1, "", ""), new(-2, "second", "second", 10, 20, 2, "", "") }; // valid
 
             var durations = tourId < 0
                 ? new List<TourTransportDuration>()
@@ -107,7 +105,7 @@ namespace Explorer.Tours.Tests.Integration.Author
                 ? new List<string>()
                 : new List<string> { "hiking" };
 
-            return new Tour(tourId, "Test Tour", "A tour for testing", TourDifficulty.Easy, tags, TourStatus.Draft, 1, points, new List<Equipment>(), new Money(1000.0m, "RSD"), durations, null, null);
+            return new Tour(tourId, "Test Tour", "A tour for testing", TourDifficulty.Easy, tags, TourStatus.Draft, 1, points, new List<Equipment>(), 1000.0m, durations, null, null);
         }
 
     }

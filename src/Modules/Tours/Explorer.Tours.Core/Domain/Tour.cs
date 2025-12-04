@@ -28,7 +28,7 @@ namespace Explorer.Tours.Core.Domain
         public int AuthorId { get; private set; }
         public List<TourPoint> Points { get; private set; } = new();
         public List<Equipment> Equipment { get; private set; } = new List<Equipment>();
-        public Money Price { get; private set; }
+        public decimal Price { get; private set; }
         public List<TourTransportDuration> TransportDuration { get; private set; } = new List<TourTransportDuration>();
         public DateTime? PublishedAt { get; private set; }
         public DateTime? ArchivedAt { get; private set; }
@@ -38,7 +38,7 @@ namespace Explorer.Tours.Core.Domain
 
         }
 
-        public Tour(long id, string name, string description, TourDifficulty difficulty, List<string> tags, TourStatus status, int authorId, List<TourPoint> points, List<Equipment> equipment, Money price, List<TourTransportDuration> transportDuration, DateTime? publishedAt, DateTime? archivedAt)
+        public Tour(long id, string name, string description, TourDifficulty difficulty, List<string> tags, TourStatus status, int authorId, List<TourPoint> points, List<Equipment> equipment, decimal price, List<TourTransportDuration> transportDuration, DateTime? publishedAt, DateTime? archivedAt)
         {
             Id = id;
             Name = name;
@@ -62,7 +62,7 @@ namespace Explorer.Tours.Core.Domain
             Difficulty = difficulty;
             AuthorId = authorId;
             Status = TourStatus.Draft;
-            Price = new Money(0.00m, "RSD");
+            Price = 0.0m;
             TransportDuration = transportDurations;
             if (tags != null) Tags = tags;
 
@@ -111,7 +111,7 @@ namespace Explorer.Tours.Core.Domain
             ArchivedAt = DateTime.UtcNow;
         }
 
-        public void SetPrice(Money price)
+        public void SetPrice(decimal price)
         {
             Price = price;
         }

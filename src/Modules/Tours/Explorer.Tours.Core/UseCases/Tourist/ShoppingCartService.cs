@@ -73,7 +73,7 @@ namespace Explorer.Tours.Core.UseCases.Tourist
 
             var previousTotal = cart.TotalPrice;
 
-            cart.AddItem(tour.Id, tour.Name, tour.Price);
+            cart.AddItem((int)tour.Id, tour.Name, tour.Price);
 
             if (cart.Id == 0)
             {

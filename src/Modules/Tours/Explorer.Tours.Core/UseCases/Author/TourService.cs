@@ -125,11 +125,11 @@ namespace Explorer.Tours.Core.UseCases.Author
             tour.Archive();
         }
 
-        public void SetPrice(int tourId, int authorId, MoneyDto money)
+        public void SetPrice(int tourId, int authorId, decimal price)
         {
             var tour = _tourRepository.GetById(tourId);
             if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
-            tour.SetPrice(_mapper.Map<Money>(money));
+            tour.SetPrice(price);
         }
 
         public void AddEquipment(int tourId, int authorId, List<EquipmentDto> equipment)

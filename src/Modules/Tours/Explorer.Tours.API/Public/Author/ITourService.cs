@@ -14,7 +14,7 @@ namespace Explorer.Tours.API.Public
 
         void Publish(int tourId, int authorId);
         void Archive(int tourId, int authorId);
-        void SetPrice(int tourId, int authorId, MoneyDto money);
+        void SetPrice(int tourId, int authorId, decimal price);
         void AddEquipment(int tourId, int authorId, List<EquipmentDto> equipment);
         void AddTourPoint(int tourId, int authorId, TourPointDto tourPoint);
         PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize);
