@@ -21,29 +21,69 @@ namespace Explorer.Stakeholders.Core.UseCases
         private readonly IUserRepository _userRepository;
         private readonly IPersonRepository _personRepository;
         private readonly IMapper _mapper;
+        private readonly IFollowRepository _followRepository;
 
-        public DirectMessageService(IUserRepository userRepository, IDirectMessageRepository directMessageRepository, IPersonRepository personRepository, IMapper mapper) 
+        public DirectMessageService(IUserRepository userRepository, IDirectMessageRepository directMessageRepository, IPersonRepository personRepository, IFollowRepository followRepository, IMapper mapper) 
         {
             _directMessageRepository = directMessageRepository;
             _userRepository = userRepository;
             _personRepository = personRepository;
+            _followRepository = followRepository;
             _mapper = mapper;
         }
 
         public DirectMessageDto SendMessage(long senderId, DirectMessageDto entity)
         {
-            var sender = _userRepository.Get(senderId);
-            if (sender == null)
-                throw new ArgumentException($"Sender '{senderId}' not found.");
+            var sender = _userRepository.Get(senderId)
+                ?? throw new ArgumentException($"Sender '{senderId}' not found.");
 
-            var recipient = _userRepository.Get(entity.RecipientId);
-            if (recipient == null)
-                throw new ArgumentException($"Recipient '{entity.RecipientId}' not found.");
+            var recipient = _userRepository.Get(entity.RecipientId)
+                ?? throw new ArgumentException($"Recipient '{entity.RecipientId}' not found.");
 
-            var message = new DirectMessage(sender.Id, recipient.Id, entity.Content, DateTime.UtcNow);
+            if (!_followRepository.Exists(recipient.Id, sender.Id))
+                throw new ArgumentException("You can send a message only to users who follow you.");
+
+            if (string.IsNullOrWhiteSpace(entity.Content))
+                throw new ArgumentException("Message content is required.");
+
+            if (entity.Content.Length > 280)
+                throw new ArgumentException("Message too long (max 280 chars).");
+
+            long? resourceId = null;
+            ResourceType resourceType = ResourceType.None;
+
+            if (!string.IsNullOrWhiteSpace(entity.ResourceUrl))
+            {
+                if (entity.ResourceUrl.Contains("/blog/"))
+                {
+                    resourceType = ResourceType.Blog;
+                    resourceId = ExtractId(entity.ResourceUrl);
+                }
+                else if (entity.ResourceUrl.Contains("/tours/"))
+                {
+                    resourceType = ResourceType.Tour;
+                    resourceId = ExtractId(entity.ResourceUrl);
+                }
+            }
+
+            var message = new DirectMessage(
+                sender.Id,
+                recipient.Id,
+                entity.Content,
+                DateTime.UtcNow,
+                resourceId,
+                resourceType
+            );
+
             var result = _directMessageRepository.Create(message);
             return _mapper.Map<DirectMessageDto>(result);
         }
+
+        private long? ExtractId(string url)
+        {
+            return long.TryParse(url.Split('/').Last(), out long id) ? id : null;
+        }
+
 
         public DirectMessageDto StartConversation(long senderId, ConversationStartDto directMessage)
         {
@@ -55,10 +95,47 @@ namespace Explorer.Stakeholders.Core.UseCases
             if (recipient == null)
                 throw new ArgumentException($"Recipient '{directMessage.Username}' not found.");
 
-            var message = new DirectMessage(sender.Id, recipient.Id, directMessage.Content, DateTime.UtcNow);
+            // ❗ Message allowed ONLY if recipient already follows sender
+            if (!_followRepository.Exists(recipient.Id, sender.Id))
+                throw new ArgumentException("You can send a message only to users who follow you.");
+
+            if (string.IsNullOrWhiteSpace(directMessage.Content))
+                throw new ArgumentException("Message content is required.");
+
+            if (directMessage.Content.Length > 280)
+                throw new ArgumentException("Message is too long (max 280 characters).");
+
+            long? resourceId = null;
+            ResourceType resourceType = ResourceType.None;
+
+            if (!string.IsNullOrWhiteSpace(directMessage.ResourceUrl))
+            {
+                if (directMessage.ResourceUrl.Contains("/blog/"))
+                {
+                    resourceType = ResourceType.Blog;
+                    resourceId = ExtractId(directMessage.ResourceUrl);
+                }
+                else if (directMessage.ResourceUrl.Contains("/tours/"))
+                {
+                    resourceType = ResourceType.Tour;
+                    resourceId = ExtractId(directMessage.ResourceUrl);
+                }
+            }
+
+            var message = new DirectMessage(
+                sender.Id,
+                recipient.Id,
+                directMessage.Content,
+                DateTime.UtcNow,
+                resourceId,
+                resourceType
+            );
+
+
             var result = _directMessageRepository.Create(message);
             return _mapper.Map<DirectMessageDto>(result);
         }
+
 
         public void Delete(long id)
         {

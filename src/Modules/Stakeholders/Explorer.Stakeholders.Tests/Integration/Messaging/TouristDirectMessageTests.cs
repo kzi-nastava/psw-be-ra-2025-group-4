@@ -37,7 +37,8 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
                 RecipientId = -22,
                 Recipient = "turista2@gmail.com",
                 Content = "Hello for conversations test",
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                ResourceUrl = null
             };
             controller.SendMessage(seedDto);
 
@@ -63,7 +64,8 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
                 RecipientId = -22,
                 Recipient = "turista2@gmail.com",
                 Content = "Hello for history test",
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                ResourceUrl = null
             };
 
             var ret = controller.SendMessage(seedDto);
@@ -99,7 +101,8 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
                 RecipientId = -22,
                 Recipient = "turista2@gmail.com",
                 Content = "Original message",
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                ResourceUrl = null
             };
             var sendResult = controller.SendMessage(dto).Result as OkObjectResult;
             sendResult.ShouldNotBeNull();
@@ -125,7 +128,8 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
                 RecipientId = -22,
                 Recipient = "turista2@gmail.com",
                 Content = "Message to delete",
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                ResourceUrl = null
             };
             var sendResult = controller.SendMessage(dto).Result as OkObjectResult;
             sendResult.ShouldNotBeNull();
@@ -140,5 +144,30 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             paged.ShouldNotBeNull();
             paged.Results.All(m => m.Id != sent.Id).ShouldBeTrue();
         }
+
+        [Fact]
+        public void SendMessage_WithResource_AttachesCorrectResourceInfo()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope, "-23");
+
+            var dto = new DirectMessageDto
+            {
+                RecipientId = -22,
+                Recipient = "turista2@gmail.com",
+                Content = "Check this tour!",
+                SentAt = DateTime.UtcNow,
+                ResourceUrl = "/tours/103"
+            };
+
+            var result = controller.SendMessage(dto).Result as OkObjectResult;
+            result.ShouldNotBeNull();
+
+            var message = result.Value as DirectMessageDto;
+            message.ShouldNotBeNull();
+            message.Content.ShouldBe("Check this tour!");
+            message.ResourceUrl.ShouldBe("/tours/103");
+        }
+
     }
 }

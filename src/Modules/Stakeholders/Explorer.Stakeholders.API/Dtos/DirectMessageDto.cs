@@ -16,5 +16,7 @@ namespace Explorer.Stakeholders.API.Dtos
         public string Content { get; set; }
         public DateTime SentAt { get; set; }
         public DateTime? EditedAt { get; set; }
+        public string? ResourceUrl { get; set; }
+
     }
 }
