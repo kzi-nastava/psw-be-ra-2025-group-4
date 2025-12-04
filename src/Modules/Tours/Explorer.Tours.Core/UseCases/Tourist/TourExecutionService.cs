@@ -135,5 +135,26 @@ public class TourExecutionService : ITourExecutionService
     }
 
 
+
+    public TourExecutionDto? GetActiveByTour(int tourId, long touristId)
+    {
+        var activeExecution = _executionRepository.GetByTourist(touristId)
+            .FirstOrDefault(te => te.TourId == tourId && te.Status == TourExecutionStatus.Active);
+
+        if (activeExecution == null)
+            return null;
+
+        var firstPoint = _tourPointRepository.GetByTour(tourId)
+            .OrderBy(p => p.Order)
+            .FirstOrDefault();
+
+        var dto = _mapper.Map<TourExecutionDto>(activeExecution);
+        if (firstPoint != null)
+        {
+            dto.NextKeyPoint = _mapper.Map<TourPointDto>(firstPoint);
+        }
+
+        return dto;
+    }
 }
 

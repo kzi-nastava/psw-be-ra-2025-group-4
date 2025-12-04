@@ -11,5 +11,6 @@ namespace Explorer.Tours.API.Public
         TourDto Create(CreateUpdateTourDto dto, int authorId);
         TourDto Update(int id, CreateUpdateTourDto dto, int authorId);
         void DeleteForAuthor(int authorId, int id);
+        PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize);
     }
 }
