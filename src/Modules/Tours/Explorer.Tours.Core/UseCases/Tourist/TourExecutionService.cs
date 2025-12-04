@@ -54,26 +54,29 @@ public class TourExecutionService : ITourExecutionService
 
         return dtoResult;
     }
-
     public TourExecutionDto GetById(long executionId, long touristId)
     {
         var execution = _executionRepository.GetById(executionId);
-        
+
         if (execution.TouristId != touristId)
             throw new ForbiddenException("Not your tour execution.");
 
-        var firstPoint = _tourPointRepository.GetByTour(execution.TourId)
+        var nextPoint = _tourPointRepository
+            .GetByTour(execution.TourId)
             .OrderBy(p => p.Order)
-            .FirstOrDefault();
+            .FirstOrDefault(p =>
+                !execution.CompletedPoints.Any(c => c.TourPointId == p.Id));
 
         var dto = _mapper.Map<TourExecutionDto>(execution);
-        if (firstPoint != null)
+
+        if (nextPoint != null)
         {
-            dto.NextKeyPoint = _mapper.Map<TourPointDto>(firstPoint);
+            dto.NextKeyPoint = _mapper.Map<TourPointDto>(nextPoint);
         }
 
         return dto;
     }
+
 
     public TourExecutionDto Complete(long executionId, long touristId)
     {
@@ -98,5 +101,39 @@ public class TourExecutionService : ITourExecutionService
         var updated = _executionRepository.Update(execution);
         return _mapper.Map<TourExecutionDto>(updated);
     }
+
+    public TourExecutionDto Track(long executionId, long touristId, TourExecutionTrackDto dto)
+    {
+        var execution = _executionRepository.GetById(executionId);
+        if (execution.TouristId != touristId)
+            throw new ForbiddenException("Not your tour execution.");
+
+        var nextPoint = _tourPointRepository
+            .GetByTour(execution.TourId)
+            .OrderBy(p => p.Order)
+            .FirstOrDefault(p =>
+                !execution.CompletedPoints.Any(c => c.TourPointId == p.Id));
+
+        execution.RegisterActivity();
+
+        if (nextPoint != null && IsNear(dto, nextPoint))
+        {
+            execution.TryCompletePoint(nextPoint.Id);
+        }
+
+        _executionRepository.Update(execution);
+
+        return _mapper.Map<TourExecutionDto>(execution);
+    }
+
+    private static bool IsNear(TourExecutionTrackDto dto, TourPoint point)
+    {
+        const double threshold = 0.0002; 
+
+        return Math.Abs(dto.Latitude - point.Latitude) < threshold
+            && Math.Abs(dto.Longitude - point.Longitude) < threshold;
+    }
+
+
 }
 

@@ -9,6 +9,8 @@ using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Explorer.Tours.Tests.Integration.Tourist;
 
@@ -137,6 +139,7 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
 
         var execution = CreateExecution(scope, -2);
 
+
         var result = ((ObjectResult)controller.Complete(execution.Id).Result)?.Value as TourExecutionDto;
 
         result.ShouldNotBeNull();
@@ -156,6 +159,7 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
         var service = scope.ServiceProvider.GetRequiredService<ITourExecutionService>();
 
         var execution = CreateExecution(scope, -2);
+
         service.Complete(execution.Id, -1);
 
         Should.Throw<InvalidOperationException>(() => service.Complete(execution.Id, -1));
@@ -215,6 +219,64 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
 
         Should.Throw<ForbiddenException>(() => service.Abandon(execution.Id, -2));
     }
+
+    [Fact]
+    public void Tracks_location_and_completes_key_point_when_near()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope);
+        var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        var execution = CreateExecution(scope, -2);
+
+
+        var trackDto = new TourExecutionTrackDto
+        {
+            Latitude = 44.8200,
+            Longitude = 20.4530
+        };
+
+        controller.Track(execution.Id, trackDto);
+
+        var executionFromDb = db.TourExecutions
+            .Include(te => te.CompletedPoints)
+            .First(te => te.Id == execution.Id);
+
+
+        executionFromDb.CompletedPoints.Count.ShouldBe(1);
+        executionFromDb.CompletedPoints.First().CompletedAt.ShouldNotBe(default);
+
+        executionFromDb.LastActivity.ShouldBeGreaterThan(executionFromDb.StartTime);
+    }
+    [Fact]
+    public void Tracks_location_without_completing_point_when_not_near()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope);
+        var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        var execution = CreateExecution(scope, -2);
+
+
+        var before = db.TourExecutions.First(te => te.Id == execution.Id).LastActivity;
+
+        var trackDto = new TourExecutionTrackDto
+        {
+            Latitude = 0,
+            Longitude = 0
+        };
+
+        controller.Track(execution.Id, trackDto);
+
+        var executionFromDb = db.TourExecutions
+            .Include(te => te.CompletedPoints)
+            .First(te => te.Id == execution.Id);
+
+
+        executionFromDb.LastActivity.ShouldNotBe(before);
+        executionFromDb.CompletedPoints.ShouldBeEmpty();
+    }
+
 
     private TourExecutionDto CreateExecution(IServiceScope scope, int tourId)
     {

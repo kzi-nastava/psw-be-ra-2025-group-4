@@ -27,7 +27,10 @@ public class TourExecutionDbRepository : ITourExecutionRepository
 
     public TourExecution GetById(long id)
     {
-        var entity = _dbSet.FirstOrDefault(te => te.Id == id);
+        var entity = _dbSet
+            .Include(te => te.CompletedPoints)
+            .FirstOrDefault(te => te.Id == id);
+
         if (entity == null)
             throw new NotFoundException("TourExecution not found: " + id);
         return entity;
@@ -50,6 +53,7 @@ public class TourExecutionDbRepository : ITourExecutionRepository
     public IEnumerable<TourExecution> GetByTourist(long touristId)
     {
         return _dbSet
+            .Include(te => te.CompletedPoints)
             .Where(te => te.TouristId == touristId)
             .OrderByDescending(te => te.StartTime)
             .ToList();
