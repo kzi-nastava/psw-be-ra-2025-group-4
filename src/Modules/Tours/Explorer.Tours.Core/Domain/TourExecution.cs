@@ -4,6 +4,21 @@ using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.Tours.Core.Domain;
 
+public class CompletedTourPoint
+{
+    public int Id { get; private set; }
+    public int TourPointId { get; private set; }
+    public DateTime CompletedAt { get; private set; }
+
+    private CompletedTourPoint() { }
+
+    public CompletedTourPoint(int tourPointId)
+    {
+        TourPointId = tourPointId;
+        CompletedAt = DateTime.UtcNow;
+    }
+}
+
 public enum TourExecutionStatus
 {
     Active = 0,
@@ -22,6 +37,8 @@ public class TourExecution : AggregateRoot
     public double StartLongitude { get; private set; }
     public TourExecutionStatus Status { get; private set; }
     public DateTime? EndTime { get; private set; }
+    public DateTime LastActivity { get; private set; }
+    public ICollection<CompletedTourPoint> CompletedPoints { get; private set; }
 
     public TourExecution(long touristId, int tourId, double startLatitude, double startLongitude)
     {
@@ -40,6 +57,8 @@ public class TourExecution : AggregateRoot
         StartLatitude = startLatitude;
         StartLongitude = startLongitude;
         Status = TourExecutionStatus.Active;
+        CompletedPoints = new List<CompletedTourPoint>();
+        LastActivity = StartTime;
     }
 
     public void Complete()
@@ -59,5 +78,24 @@ public class TourExecution : AggregateRoot
         Status = TourExecutionStatus.Abandoned;
         EndTime = DateTime.UtcNow;
     }
+
+    public void RegisterActivity()
+    {
+        LastActivity = DateTime.UtcNow;
+    }
+
+    public bool TryCompletePoint(int tourPointId)
+    {
+        if (Status != TourExecutionStatus.Active)
+            throw new InvalidOperationException("Cannot complete point on inactive tour execution."); 
+
+        if (CompletedPoints.Any(p => p.TourPointId == tourPointId))
+            return false;
+
+        CompletedPoints.Add(new CompletedTourPoint(tourPointId));
+        RegisterActivity();
+        return true;
+    }
+
 }
 

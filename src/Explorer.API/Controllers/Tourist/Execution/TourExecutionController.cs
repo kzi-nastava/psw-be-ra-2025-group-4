@@ -92,6 +92,16 @@ public class TourExecutionController : ControllerBase
         }
     }
 
+    [HttpPut("{executionId:long}/track")]
+    public ActionResult<TourExecutionDto> Track(
+    long executionId,
+    [FromBody] TourExecutionTrackDto dto)
+    {
+        var touristId = User.PersonId();
+        return Ok(_tourExecutionService.Track(executionId, touristId, dto));
+    }
+
+
     [HttpGet("active/tour/{tourId:int}")]
     public ActionResult<TourExecutionDto> GetActiveByTour(int tourId)
     {

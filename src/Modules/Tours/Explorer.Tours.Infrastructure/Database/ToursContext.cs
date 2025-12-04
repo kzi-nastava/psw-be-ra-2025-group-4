@@ -65,6 +65,12 @@ namespace Explorer.Tours.Infrastructure.Database
                 });
             });
 
+            modelBuilder.Entity<TourExecution>()
+                .HasMany(te => te.CompletedPoints)
+                .WithOne()
+                .HasForeignKey("TourExecutionId")
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             base.OnModelCreating(modelBuilder);
 
