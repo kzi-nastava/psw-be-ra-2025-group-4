@@ -10,11 +10,11 @@ namespace Explorer.Tours.Core.Domain
 {
     public class Money : ValueObject
     {
-        public double Amount { get; private set; }
+        public decimal Amount { get; private set; }
         public string Currency { get; private set; }
 
         [JsonConstructor]
-        public Money(double amount, string currency)
+        public Money(decimal amount, string currency)
         {
             Amount = amount;
             Currency = currency;

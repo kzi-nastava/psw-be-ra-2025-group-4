@@ -38,16 +38,32 @@ namespace Explorer.Tours.Core.Domain
 
         }
 
+        public Tour(long id, string name, string description, TourDifficulty difficulty, List<string> tags, TourStatus status, int authorId, List<TourPoint> points, List<Equipment> equipment, Money price, List<TourTransportDuration> transportDuration, DateTime? publishedAt, DateTime? archivedAt)
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            Difficulty = difficulty;
+            Tags = tags;
+            Status = status;
+            AuthorId = authorId;
+            Points = points;
+            Equipment = equipment;
+            Price = price;
+            TransportDuration = transportDuration;
+            PublishedAt = publishedAt;
+            ArchivedAt = archivedAt;
+        }
 
-        public Tour(string name, string description, TourDifficulty difficulty, int authorId, Money price, List<string>? tags = null            )
+        public Tour(string name, string description, TourDifficulty difficulty, int authorId, List<TourTransportDuration> transportDurations, List<string>? tags = null            )
         {
             Name = name;
             Description = description;
             Difficulty = difficulty;
             AuthorId = authorId;
             Status = TourStatus.Draft;
-            Price = new Money(0.0, "RSD");
-
+            Price = new Money(0.00m, "RSD");
+            TransportDuration = transportDurations;
             if (tags != null) Tags = tags;
 
             Validate();
@@ -57,11 +73,12 @@ namespace Explorer.Tours.Core.Domain
             Status = status;
         }
 
-        public void Update(string name, string description, TourDifficulty difficulty, List<string> tags)
+        public void Update(string name, string description, TourDifficulty difficulty, List<TourTransportDuration> transportDurations, List<string> tags)
         {
             Name = name;
             Description = description;
             Difficulty = difficulty;
+            TransportDuration = transportDurations;
             Tags = tags ?? new List<string>();
             Validate();
         }
@@ -94,6 +111,11 @@ namespace Explorer.Tours.Core.Domain
             ArchivedAt = DateTime.UtcNow;
         }
 
+        public void SetPrice(Money price)
+        {
+            Price = price;
+        }
+
         public void AddTourPoint(TourPoint point)
         {
             Points.Add(point);
@@ -101,12 +123,19 @@ namespace Explorer.Tours.Core.Domain
 
         public void AddEquipment(Equipment equipment)
         {
+
             Equipment.Add(equipment);
         }
 
         public void AddEquipments(List<Equipment> equipments)
         {
+
             Equipment.AddRange(equipments);
+        }
+
+        public void AddTransportDuration(TourTransportDuration duration)
+        {
+            TransportDuration.Add(duration);
         }
     }
 }

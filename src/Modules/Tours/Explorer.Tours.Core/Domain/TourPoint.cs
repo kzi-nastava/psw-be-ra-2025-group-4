@@ -5,7 +5,7 @@ namespace Explorer.Tours.Core.Domain
     public class TourPoint : Entity
     {
         public int Id { get; set; }
-        public int TourId { get; private set; }
+        public long TourId { get; private set; }
         public string Name { get; private set; }
         public string Description { get; private set; }
         public double Latitude { get; private set; }
@@ -14,7 +14,7 @@ namespace Explorer.Tours.Core.Domain
 
         public Tour? Tour { get; private set; }
 
-        public TourPoint(int tourId, string name, string description, double latitude, double longitude, int order)
+        public TourPoint(long tourId, string name, string description, double latitude, double longitude, int order)
         {
             TourId = tourId;
             Name = name;
@@ -23,6 +23,11 @@ namespace Explorer.Tours.Core.Domain
             Longitude = longitude;
             Order = order;
             Validate();
+        }
+
+        private TourPoint()
+        {
+
         }
 
         public void Update(string name, string description, double latitude, double longitude, int order)

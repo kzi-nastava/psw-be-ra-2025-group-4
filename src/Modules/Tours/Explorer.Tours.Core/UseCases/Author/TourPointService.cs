@@ -45,7 +45,7 @@ namespace Explorer.Tours.Core.UseCases.Author
         public TourPointDto Update(int pointId, TourPointDto dto, int authorId)
         {
             var point = _pointRepo.Get(pointId);
-            var tour = _tourRepo.GetById(point.TourId);
+            var tour = _tourRepo.GetById((int)point.TourId);
             if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
 
             point.Update(dto.Name, dto.Description, dto.Latitude, dto.Longitude, dto.Order);
@@ -57,7 +57,7 @@ namespace Explorer.Tours.Core.UseCases.Author
         public void Delete(int pointId, int authorId)
         {
             var point = _pointRepo.Get(pointId);
-            var tour = _tourRepo.GetById(point.TourId);
+            var tour = _tourRepo.GetById((int)point.TourId);
             if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
 
             _pointRepo.Delete(pointId);

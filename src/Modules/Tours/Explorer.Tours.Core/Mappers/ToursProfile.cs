@@ -15,10 +15,15 @@ namespace Explorer.Tours.Core.Mappers
             CreateMap<TourStatus, TourDtoStatus>().ConvertUsing(src => (TourDtoStatus)src);
             CreateMap<TourDtoStatus, TourStatus>().ConvertUsing(src => (TourStatus)src);
 
+
+            CreateMap<Money, MoneyDto>().ReverseMap();
+            CreateMap<TourTransportDuration, TourTransportDurationDto>().ReverseMap();
+
             CreateMap<Tour, TourDto>()
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points.OrderBy(p => p.Order)))
                 .ReverseMap()
                 .ForMember(dest => dest.Points, opt => opt.Ignore());
+        
 
             CreateMap<CreateUpdateTourDto, Tour>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
