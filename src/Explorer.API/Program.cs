@@ -2,6 +2,7 @@ using Explorer.API.Hubs;
 using Explorer.API.Middleware;
 using Explorer.API.Startup;
 using Explorer.Blog.Infrastructure;
+using Microsoft.Extensions.FileProviders;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,15 @@ else
 {
     app.UseHsts();
 }
+
+app.UseStaticFiles();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "TourPointsImages")),
+    RequestPath = "/TourPointsImages"
+});
 
 app.UseRouting();
 app.UseCors(corsPolicy);
