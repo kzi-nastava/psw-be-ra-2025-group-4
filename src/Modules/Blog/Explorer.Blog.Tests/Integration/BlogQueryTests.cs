@@ -27,7 +27,7 @@ public class BlogQueryTests : BaseBlogIntegrationTest
         result.ShouldNotBeNull();
 
         var list = result.ToList();
-        list.Count.ShouldBe(2);
+        list.Count.ShouldBe(4);
 
         list.ShouldAllBe(b => b.UserId == 1);
     }

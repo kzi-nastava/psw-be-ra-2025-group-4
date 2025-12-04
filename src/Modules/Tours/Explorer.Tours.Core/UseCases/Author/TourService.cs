@@ -52,6 +52,22 @@ namespace Explorer.Tours.Core.UseCases.Author
             return dto;
         }
 
+        public TourDto GetById(int id)
+        {
+            var tour = _tourRepository.GetById(id);
+
+            var dto = _mapper.Map<TourDto>(tour);
+
+            if (dto.Points != null)
+            {
+                dto.Points = dto.Points
+                    .OrderBy(p => p.Order)
+                    .ToList();
+            }
+
+            return dto;
+        }
+
         public TourDto Create(CreateUpdateTourDto dto, int authorId)
         {
             var tour = new Tour(dto.Name, dto.Description,
