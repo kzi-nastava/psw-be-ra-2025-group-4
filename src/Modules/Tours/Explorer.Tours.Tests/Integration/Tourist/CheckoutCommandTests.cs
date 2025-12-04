@@ -31,7 +31,7 @@ namespace Explorer.Tours.Tests.Integration.Tourist
 
         private static Tour MakeTour(ToursContext db, string name, decimal price, int authorId = 999)
         {
-            var t = new Tour(name, "Desc", TourDifficulty.Easy, authorId);
+            var t = new Tour(name, "Desc", TourDifficulty.Easy, authorId, new List<TourTransportDuration>());
             t.SetStatus(TourStatus.Published);
             t.SetPrice(price);
             db.Tours.Add(t);
@@ -59,7 +59,7 @@ namespace Explorer.Tours.Tests.Integration.Tourist
                 scope.ServiceProvider.GetRequiredService<IShoppingCartService>())
             { ControllerContext = BuildContext(TestTourist) };
 
-            var addRes = cartCtl.AddToCart(tour.Id);
+            var addRes = cartCtl.AddToCart((int)tour.Id);
             var addOk = addRes.Result as OkObjectResult;
             addOk.ShouldNotBeNull("AddToCart mora vratiti 200 OK.");
 
@@ -67,7 +67,7 @@ namespace Explorer.Tours.Tests.Integration.Tourist
             cartDto.ShouldNotBeNull();
             cartDto!.TouristId.ShouldBe(touristId);
             cartDto.Items.Count.ShouldBe(1);
-            cartDto.Items.Single().TourId.ShouldBe(tour.Id);
+            cartDto.Items.Single().TourId.ShouldBe((int)tour.Id);
             cartDto.TotalPrice.ShouldBe(20m);
 
             // Checkout
@@ -130,8 +130,8 @@ namespace Explorer.Tours.Tests.Integration.Tourist
                 scope.ServiceProvider.GetRequiredService<IShoppingCartService>())
             { ControllerContext = BuildContext(TestTourist) };
 
-            (cartCtl.AddToCart(t1.Id).Result as OkObjectResult).ShouldNotBeNull();
-            (cartCtl.AddToCart(t2.Id).Result as OkObjectResult).ShouldNotBeNull();
+            (cartCtl.AddToCart((int)t1.Id).Result as OkObjectResult).ShouldNotBeNull();
+            (cartCtl.AddToCart((int)t2.Id).Result as OkObjectResult).ShouldNotBeNull();
 
             var checkoutCtl = new CheckoutController(
                 scope.ServiceProvider.GetRequiredService<ICheckoutService>())
@@ -160,14 +160,14 @@ namespace Explorer.Tours.Tests.Integration.Tourist
             var tour = MakeTour(db, "Once", 20m);
 
             
-            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, tour.Id));
+            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, (int)tour.Id));
             db.SaveChanges();
 
             
             var cartCtl = new ShoppingCartController(
                 scope.ServiceProvider.GetRequiredService<IShoppingCartService>())
             { ControllerContext = BuildContext(TestTourist) };
-            (cartCtl.AddToCart(tour.Id).Result as OkObjectResult).ShouldNotBeNull();
+            (cartCtl.AddToCart((int)tour.Id).Result as OkObjectResult).ShouldNotBeNull();
 
             var before = db.TourPurchaseTokens.Count(x => x.TouristId == touristId && x.TourId == tour.Id);
 

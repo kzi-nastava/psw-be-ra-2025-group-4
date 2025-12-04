@@ -23,6 +23,7 @@ public class TourDbRepository : ITourRepository
     {
         var task = _dbSet
             .Include(t => t.Points)
+            .Include(t => t.Equipment)
             .GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;
@@ -32,6 +33,7 @@ public class TourDbRepository : ITourRepository
     {
         var entity = _dbSet
             .Include(t => t.Points)
+            .Include(t => t.Equipment)
             .FirstOrDefault(t => t.Id == id);
 
         if (entity == null)
@@ -42,7 +44,7 @@ public class TourDbRepository : ITourRepository
 
     public Tour Create(Tour tour)
     {
-        _dbSet.Add(tour);
+        DbContext.Tours.Add(tour);
         DbContext.SaveChanges();
         return tour;
     }
@@ -72,6 +74,7 @@ public class TourDbRepository : ITourRepository
     {
         return _dbSet
             .Include(t => t.Points)
+            .Include(t => t.Equipment)
             .Where(t => t.AuthorId == authorId)
             .ToList();
     }

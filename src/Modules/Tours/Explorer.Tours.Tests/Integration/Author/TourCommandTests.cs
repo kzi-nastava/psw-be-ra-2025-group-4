@@ -30,6 +30,7 @@ public class TourCommandTests : BaseToursIntegrationTest
             Name = "New tour",
             Description = "Test description",
             Difficulty = TourDtoDifficulty.Easy,
+            TransportDuration = new List<TourTransportDurationDto>(),
             Tags = new List<string>()
         };
 
@@ -70,6 +71,7 @@ public class TourCommandTests : BaseToursIntegrationTest
             Name = "Updated tour",
             Description = "New description",
             Difficulty = TourDtoDifficulty.Medium,
+            TransportDuration = new List<TourTransportDurationDto>(),
             Tags = new List<string>()
         };
 
