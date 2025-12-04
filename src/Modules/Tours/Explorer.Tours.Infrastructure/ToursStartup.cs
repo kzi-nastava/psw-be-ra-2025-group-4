@@ -2,6 +2,7 @@ using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.API.Public.Author;
+using Explorer.Tours.API.Public.Shopping;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
@@ -43,7 +44,11 @@ public static class ToursStartup
         // Both features preserved
         services.AddScoped<IHistoricalMonumentService, HistoricalMonumentService>();
         services.AddScoped<ITourPointService, TourPointService>();
+
+        services.AddScoped<ICheckoutService, CheckoutService>();
+
         services.AddScoped<ITourExecutionService, TourExecutionService>();
+
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -75,5 +80,8 @@ public static class ToursStartup
         services.AddDbContext<ToursContext>(opt =>
             opt.UseNpgsql(dataSource,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "tours")));
+
+        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+
     }
 }

@@ -1,4 +1,4 @@
-using Explorer.Tours.Core.Domain;
+﻿using Explorer.Tours.Core.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Tours.Infrastructure.Database
@@ -20,6 +20,7 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<TourExecution> TourExecutions { get; set; }
 
+        public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -31,6 +32,10 @@ namespace Explorer.Tours.Infrastructure.Database
                 .WithOne(p => p.Tour)
                 .HasForeignKey(p => p.TourId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TourPurchaseToken>()
+                .HasIndex(t => new { t.TouristId, t.TourId })
+                .IsUnique();
 
 
             modelBuilder.Entity<ShoppingCart>(builder =>
@@ -59,6 +64,7 @@ namespace Explorer.Tours.Infrastructure.Database
                     owned.Property(o => o.Price).IsRequired();
                 });
             });
+
 
             base.OnModelCreating(modelBuilder);
 
