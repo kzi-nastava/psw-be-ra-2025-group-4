@@ -25,6 +25,16 @@ namespace Explorer.Blog.Infrastructure.Database.Repositories
             return blog;
         }
 
+        public IEnumerable<BlogPost> GetVisible(int userId)
+        {
+            return _dbSet
+                .Where(x =>
+                    x.Status == BlogStatus.Published ||
+                    x.Status == BlogStatus.Archived ||
+                    (x.Status == BlogStatus.Preparation && x.UserId == userId))   // Draft = stanje pripreme
+                .ToList();
+        }
+
         public BlogPost Get(int id)
         {
             var entity = _dbSet.Find(id);

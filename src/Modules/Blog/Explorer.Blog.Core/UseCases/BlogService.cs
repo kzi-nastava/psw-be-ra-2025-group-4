@@ -52,9 +52,28 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<BlogDto>(blog);
         }
 
+        public BlogDto GetForUser(int id, int userId)
+        {
+            var blog = _repository.Get(id);
+            if (blog == null)
+                throw new KeyNotFoundException("Blog not found.");
+
+            // ovde ograničavamo vidljivost:
+            if (blog.Status == BlogStatus.Preparation && blog.UserId != userId)
+                throw new UnauthorizedAccessException("You cannot see someone else's blog in draft state.");
+
+            return _mapper.Map<BlogDto>(blog);
+        }
+
         public IEnumerable<BlogDto> GetByUser(int userId)
         {
             var blogs = _repository.GetByUser(userId);
+            return _mapper.Map<IEnumerable<BlogDto>>(blogs);
+        }
+
+        public IEnumerable<BlogDto> GetVisible(int userId)
+        {
+            var blogs = _repository.GetVisible(userId);
             return _mapper.Map<IEnumerable<BlogDto>>(blogs);
         }
 

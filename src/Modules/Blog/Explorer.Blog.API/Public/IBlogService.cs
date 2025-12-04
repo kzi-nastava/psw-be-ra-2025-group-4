@@ -12,7 +12,11 @@ namespace Explorer.Blog.API.Public
         BlogDto CreateBlog(CreateUpdateBlogDto dto, int userId);
         BlogDto UpdateBlog(int id, CreateUpdateBlogDto dto, int userId);
         BlogDto Get(int id);
+
+        BlogDto GetForUser(int id, int userId);
         IEnumerable<BlogDto> GetByUser(int userId);
+
+        IEnumerable<BlogDto> GetVisible(int userId);
         void DeleteBlog(int id, int userId);
         void Publish(int id, int userId);
         void Archive(int id, int userId);

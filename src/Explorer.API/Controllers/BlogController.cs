@@ -28,6 +28,15 @@ namespace Explorer.API.Controllers
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
 
+        // NOVO: svi blogovi koje korisnik sme da vidi
+        [HttpGet]
+        public ActionResult<IEnumerable<BlogDto>> GetVisible()
+        {
+            var result = _blogService.GetVisible(GetUserId());
+            return Ok(result);
+        }
+
+        // Moji blogovi
         [HttpGet("mine")]
         public ActionResult<IEnumerable<BlogDto>> GetMine()
         {
@@ -35,13 +44,15 @@ namespace Explorer.API.Controllers
             return Ok(result);
         }
 
+        // Korišćenje GetForUser (NE Get!)
         [HttpGet("{id:int}")]
         public ActionResult<BlogDto> Get(int id)
         {
-            var result = _blogService.Get(id);
+            var result = _blogService.GetForUser(id, GetUserId());
             return Ok(result);
         }
 
+        // Create
         [HttpPost]
         public ActionResult<BlogDto> Create([FromBody] CreateUpdateBlogDto dto)
         {
@@ -49,6 +60,7 @@ namespace Explorer.API.Controllers
             return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
 
+        // Update
         [HttpPut("{id:int}")]
         public ActionResult<BlogDto> Update(int id, [FromBody] CreateUpdateBlogDto dto)
         {
@@ -56,6 +68,7 @@ namespace Explorer.API.Controllers
             return Ok(updated);
         }
 
+        // Delete
         [HttpDelete("{id:int}")]
         public IActionResult Delete(int id)
         {
@@ -63,6 +76,7 @@ namespace Explorer.API.Controllers
             return NoContent();
         }
 
+        // Publish
         [HttpPost("{id:int}/publish")]
         public IActionResult Publish(int id)
         {
@@ -70,12 +84,12 @@ namespace Explorer.API.Controllers
             return Ok();
         }
 
+        // Archive
         [HttpPost("{id:int}/archive")]
         public IActionResult Archive(int id)
         {
             _blogService.Archive(id, GetUserId());
             return Ok();
         }
-
     }
 }
