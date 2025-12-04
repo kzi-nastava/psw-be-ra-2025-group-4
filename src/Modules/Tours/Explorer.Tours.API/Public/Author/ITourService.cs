@@ -10,5 +10,11 @@ namespace Explorer.Tours.API.Public
         TourDto Create(CreateUpdateTourDto dto, int authorId);
         TourDto Update(int id, CreateUpdateTourDto dto, int authorId);
         void DeleteForAuthor(int authorId, int id);
+
+        void Publish(int tourId, int authorId);
+        void Archive(int tourId, int authorId);
+        void SetPrice(int tourId, int authorId, MoneyDto money);
+        void AddEquipment(int tourId, int authorId, List<EquipmentDto> equipment);
+        void AddTourPoint(int tourId, int authorId, TourPointDto tourPoint);
     }
 }

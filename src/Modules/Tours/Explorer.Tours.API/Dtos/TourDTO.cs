@@ -25,9 +25,10 @@ namespace Explorer.Tours.API.Dtos
         public TourDtoDifficulty Difficulty { get; set; }
         public List<string> Tags { get; set; } = new List<string>();
         public TourDtoStatus Status { get; set; } = TourDtoStatus.Draft;   
-        public decimal Price { get; set; }
+        public MoneyDto Price { get; set; }
         public int AuthorId { get; set; }
         public List<TourPointDto> Points { get; set; }
+        public List<TourTransportDurationDto> TransportDuration { get; set; }
 
     }
 }
