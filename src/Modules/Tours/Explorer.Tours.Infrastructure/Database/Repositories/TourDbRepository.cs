@@ -75,4 +75,12 @@ public class TourDbRepository : ITourRepository
             .Where(t => t.AuthorId == authorId)
             .ToList();
     }
+
+    public IEnumerable<Tour> GetPublishedAndArchived()
+    {
+        return _dbSet
+            .Include(t => t.Points)
+            .Where(t => t.Status == TourStatus.Published || t.Status == TourStatus.Archived)
+            .ToList();
+    }
 }

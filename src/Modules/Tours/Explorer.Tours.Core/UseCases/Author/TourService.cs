@@ -110,5 +110,25 @@ namespace Explorer.Tours.Core.UseCases.Author
 
             _tourRepository.Delete(id);
         }
+
+        public PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize)
+        {
+            var all = _tourRepository.GetPublishedAndArchived()
+                                     .OrderBy(t => t.Id)
+                                     .ToList();
+
+            var items = all.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var mapped = items.Select(t =>
+            {
+                var dto = _mapper.Map<TourDto>(t);
+                if (dto.Points != null)
+                {
+                    dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
+                }
+                return dto;
+            }).ToList();
+
+            return new PagedResult<TourDto>(mapped, all.Count);
+        }
     }
 }

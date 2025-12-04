@@ -8,5 +8,6 @@ public interface ITourExecutionService
     TourExecutionDto GetById(long executionId, long touristId);
     TourExecutionDto Complete(long executionId, long touristId);
     TourExecutionDto Abandon(long executionId, long touristId);
+    TourExecutionDto? GetActiveByTour(int tourId, long touristId);
 }
 
