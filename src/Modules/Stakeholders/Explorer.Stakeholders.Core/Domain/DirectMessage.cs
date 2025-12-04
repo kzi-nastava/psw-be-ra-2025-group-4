@@ -9,6 +9,12 @@ using System.Xml.Linq;
 
 namespace Explorer.Stakeholders.Core.Domain
 {
+    public enum ResourceType
+    {
+        None = 0,
+        Tour = 1,
+        Blog = 2
+    }
     public class DirectMessage : Entity
     {
         public User Sender { get; set; }
@@ -45,9 +51,3 @@ namespace Explorer.Stakeholders.Core.Domain
         }
     }
 }
-public enum ResourceType
-    {
-        None = 0,
-        Tour = 1,
-        Blog = 2
-    }
