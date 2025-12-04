@@ -18,6 +18,7 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<HistoricalMonument> HistoricalMonuments { get; set; }
         public DbSet<TourPoint> TourPoints { get; set; }
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        public DbSet<TourExecution> TourExecutions { get; set; }
 
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
