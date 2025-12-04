@@ -57,7 +57,7 @@ namespace Explorer.Tours.Tests.Unit
         [Fact]
         public void Checkout_throws_when_cart_is_empty()
         {
-            var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) }; // prazna
+            var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) }; 
             var tokenRepo = new TokenRepoStub();
             var svc = new CheckoutService(cartRepo, tokenRepo, Mapper());
 
@@ -72,12 +72,12 @@ namespace Explorer.Tours.Tests.Unit
             cartRepo.Cart.AddItem(11, "Tour B", 30m);
 
             var tokenRepo = new TokenRepoStub();
-            tokenRepo.Create(new TourPurchaseToken(123, 10)); // već kupljena TourId=10
+            tokenRepo.Create(new TourPurchaseToken(123, 10)); 
 
             var svc = new CheckoutService(cartRepo, tokenRepo, Mapper());
             var result = svc.Checkout(123);
 
-            result.Count.ShouldBe(1); // samo TourId=11 je novo
+            result.Count.ShouldBe(1); 
             tokenRepo.Store.Count.ShouldBe(2);
         }
     }

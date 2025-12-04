@@ -14,9 +14,8 @@ namespace Explorer.Tours.Core.Domain
 
         public TourPurchaseToken(int touristId, int tourId)
         {
-            if (touristId <= 0) throw new ArgumentException("Invalid tourist id.", nameof(touristId));
-            if (tourId <= 0) throw new ArgumentException("Invalid tour id.", nameof(tourId));
-
+            if (touristId == 0) throw new ArgumentException("Invalid tourist id.", nameof(touristId));
+            if (tourId == 0) throw new ArgumentException("Invalid tour id.", nameof(tourId));
             TouristId = touristId;
             TourId = tourId;
             PurchasedAt = DateTime.UtcNow;

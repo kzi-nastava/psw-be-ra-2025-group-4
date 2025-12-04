@@ -21,9 +21,13 @@ namespace Explorer.API.Controllers.Tourist
 
         private int GetTouristId()
         {
-            var pid = User.FindFirst("personId")?.Value ?? User.FindFirst("id")?.Value;
-            if (pid == null) throw new Exception("No person id found in token.");
-            return int.Parse(pid);
+            var id = User.FindFirst("id")?.Value;
+            if (!string.IsNullOrEmpty(id)) return int.Parse(id);
+
+            var pid = User.FindFirst("personId")?.Value;
+            if (!string.IsNullOrEmpty(pid)) return int.Parse(pid);
+
+            throw new Exception("No user id found");
         }
 
         /// <summary>
