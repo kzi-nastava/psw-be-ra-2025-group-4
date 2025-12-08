@@ -23,6 +23,7 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        EnsurePurchaseToken(db, -1, -2);
         CleanupActiveExecutions(db, -1, -2);
 
         var createDto = new TourExecutionCreateDto
@@ -51,6 +52,7 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        EnsurePurchaseToken(db, -1, -2);
         CleanupActiveExecutions(db, -1, -2);
 
         var createDto = new TourExecutionCreateDto
@@ -86,6 +88,7 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
         var service = scope.ServiceProvider.GetRequiredService<ITourExecutionService>();
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        EnsurePurchaseToken(db, -1, -2);
         CleanupActiveExecutions(db, -1, -2);
 
         var createDto = new TourExecutionCreateDto
@@ -97,6 +100,18 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
         var created = service.StartTour(createDto, -1);
 
         Should.Throw<ForbiddenException>(() => service.GetById(created.Id, -2));
+    }
+
+    private static void EnsurePurchaseToken(ToursContext db, int touristId, int tourId)
+    {
+        var existingToken = db.TourPurchaseTokens
+            .FirstOrDefault(t => t.TouristId == touristId && t.TourId == tourId);
+        
+        if (existingToken == null)
+        {
+            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, tourId));
+            db.SaveChanges();
+        }
     }
 
     private static void CleanupActiveExecutions(ToursContext db, long touristId, int tourId)
