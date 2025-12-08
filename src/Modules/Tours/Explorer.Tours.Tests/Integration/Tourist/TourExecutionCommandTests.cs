@@ -26,6 +26,8 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        EnsurePurchaseToken(db, -1, -2);
+
         var dto = new TourExecutionCreateDto
         {
             TourId = -2,
@@ -54,6 +56,8 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        EnsurePurchaseToken(db, -1, -3);
+
         var dto = new TourExecutionCreateDto
         {
             TourId = -3,
@@ -74,6 +78,9 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
     {
         using var scope = Factory.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<ITourExecutionService>();
+        var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        EnsurePurchaseToken(db, -1, -1);
 
         var dto = new TourExecutionCreateDto
         {
@@ -82,7 +89,8 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
             StartLongitude = 19.8335
         };
 
-        Should.Throw<InvalidOperationException>(() => service.StartTour(dto, -1));
+        Should.Throw<InvalidOperationException>(() => service.StartTour(dto, -1))
+            .Message.ShouldBe("Only published and archived tours can be started.");
     }
 
     [Fact]
@@ -108,6 +116,8 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
         var service = scope.ServiceProvider.GetRequiredService<ITourExecutionService>();
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        EnsurePurchaseToken(db, -1, -2);
+
         var existingExecutions = db.TourExecutions
             .Where(te => te.TouristId == -1 && te.TourId == -2 && te.Status == TourExecutionStatus.Active)
             .ToList();
@@ -128,6 +138,32 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
         service.StartTour(dto, -1);
 
         Should.Throw<InvalidOperationException>(() => service.StartTour(dto, -1));
+    }
+
+    [Fact]
+    public void Start_fails_tour_not_purchased()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<ITourExecutionService>();
+        var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        var existingToken = db.TourPurchaseTokens
+            .FirstOrDefault(t => t.TouristId == -1 && t.TourId == -2);
+        if (existingToken != null)
+        {
+            db.TourPurchaseTokens.Remove(existingToken);
+            db.SaveChanges();
+        }
+
+        var dto = new TourExecutionCreateDto
+        {
+            TourId = -2,
+            StartLatitude = 45.2671,
+            StartLongitude = 19.8335
+        };
+
+        Should.Throw<InvalidOperationException>(() => service.StartTour(dto, -1))
+            .Message.ShouldBe("Tour must be purchased before starting.");
     }
 
     [Fact]
@@ -283,6 +319,8 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
         var service = scope.ServiceProvider.GetRequiredService<ITourExecutionService>();
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
         
+        EnsurePurchaseToken(db, -1, tourId);
+        
         var existingExecutions = db.TourExecutions
             .Where(te => te.TouristId == -1 && te.TourId == tourId && te.Status == TourExecutionStatus.Active)
             .ToList();
@@ -303,6 +341,18 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
         var result = service.StartTour(dto, -1);
         result.ShouldNotBeNull();
         return result;
+    }
+
+    private static void EnsurePurchaseToken(ToursContext db, int touristId, int tourId)
+    {
+        var existingToken = db.TourPurchaseTokens
+            .FirstOrDefault(t => t.TouristId == touristId && t.TourId == tourId);
+        
+        if (existingToken == null)
+        {
+            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, tourId));
+            db.SaveChanges();
+        }
     }
 
     private static TourExecutionController CreateController(IServiceScope scope)
