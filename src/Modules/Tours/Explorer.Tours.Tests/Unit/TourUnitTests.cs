@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Explorer.Tours.Tests.Integration.Author
+namespace Explorer.Tours.Tests.Unit
 {
     [Collection("Sequential")]
     public class TourUnitTests : BaseToursIntegrationTest
@@ -74,6 +74,50 @@ namespace Explorer.Tours.Tests.Integration.Author
             tour.Points.ShouldContain(p => p.Name == name && p.Order == order);
         }
 
+        [Fact]
+        public void Updates_existing_tour_point()
+        {
+            var tour = GetTestTour(10);
+            var existing = tour.Points.First();
+
+            Should.NotThrow(() => tour.UpdateTourPoint(existing.Id, "Updated name", "Updated description", 11.1, 22.2, existing.Order, "updated.jpg", "Updated secret"));
+
+            var updated = tour.Points.Single(p => p.Id == existing.Id);
+            updated.Name.ShouldBe("Updated name");
+            updated.Description.ShouldBe("Updated description");
+            updated.Latitude.ShouldBe(11.1);
+            updated.Longitude.ShouldBe(22.2);
+            updated.ImageFileName.ShouldBe("updated.jpg");
+            updated.Secret.ShouldBe("Updated secret");
+        }
+
+        [Fact]
+        public void Update_tour_point_fails_for_unknown_id()
+        {
+            var tour = GetTestTour(10);
+
+            Should.Throw<ArgumentException>(() => tour.UpdateTourPoint(9999, "Name", "Desc", 10, 20, 1, null, null));
+        }
+
+        [Fact]
+        public void Removes_existing_tour_point()
+        {
+            var tour = GetTestTour(10);
+            var existingId = tour.Points.First().Id;
+
+            Should.NotThrow(() => tour.RemoveTourPoint(existingId));
+
+            tour.Points.Any(p => p.Id == existingId).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void Remove_tour_point_fails_for_unknown_id()
+        {
+            var tour = GetTestTour(10);
+
+            Should.Throw<ArgumentException>(() => tour.RemoveTourPoint(9999));
+        }
+
         [Theory]
         [InlineData(TourStatus.Draft)]
         [InlineData(TourStatus.Archived)]
@@ -93,13 +137,30 @@ namespace Explorer.Tours.Tests.Integration.Author
 
         private static Tour GetTestTour(long tourId)
         {
-            var points = tourId < 0
-                ? new List<TourPoint>()
-                : new List<TourPoint> { new(-1, "first", "first", 10, 20, 1, "", ""), new(-2, "second", "second", 10, 20, 2, "", "") }; // valid
+            List<TourPoint> points;
+
+            if (tourId < 0)
+            {
+                points = new List<TourPoint>();
+            }
+            else
+            {
+                var p1 = new TourPoint(tourId: tourId, name: "first", description: "first", latitude: 10, longitude: 20, order: 1, imageFileName: "", secret: "")
+                {
+                    Id = 1 
+                };
+
+                var p2 = new TourPoint(tourId: tourId, name: "second", description: "second", latitude: 10, longitude: 20, order: 2, imageFileName: "", secret: "")
+                {
+                    Id = 2  
+                };
+
+                points = new List<TourPoint> { p1, p2 };
+            }
 
             var durations = tourId < 0
                 ? new List<TourTransportDuration>()
-                : new List<TourTransportDuration> { new(10, Core.Domain.TourTransportType.Foot) };
+                : new List<TourTransportDuration> { new(10, TourTransportType.Foot) };
 
             var tags = tourId < 0
                 ? new List<string>()
@@ -107,6 +168,7 @@ namespace Explorer.Tours.Tests.Integration.Author
 
             return new Tour(tourId, "Test Tour", "A tour for testing", TourDifficulty.Easy, tags, TourStatus.Draft, 1, points, new List<Equipment>(), 1000.0m, durations, null, null);
         }
+
 
     }
 }

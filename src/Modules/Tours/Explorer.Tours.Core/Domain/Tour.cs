@@ -118,7 +118,25 @@ namespace Explorer.Tours.Core.Domain
 
         public void AddTourPoint(TourPoint point)
         {
+            if (point == null) throw new ArgumentException("Point not found.");
+
             Points.Add(point);
+        }
+
+        public void UpdateTourPoint(long pointId, string name, string description, double latitude, double longitude, int order, string? imageFileName, string? secret)
+        {
+            var point = Points.FirstOrDefault(p => p.Id == pointId);
+            if (point == null) throw new ArgumentException("Point not found.");
+
+            point.Update(name, description, latitude, longitude, order, imageFileName, secret);
+        }
+
+        public void RemoveTourPoint(long pointId)
+        {
+            var point = Points.FirstOrDefault(p => p.Id == pointId);
+            if (point == null) throw new ArgumentException("Point not found.");
+
+            Points.Remove(point);
         }
 
         public void AddEquipment(Equipment equipment)
