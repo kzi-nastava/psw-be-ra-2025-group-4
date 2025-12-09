@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Explorer.Tours.Core.Domain
 {
-    public class TourReview : AggregateRoot
+    public class TourReview : Entity
     {
         public long TouristId { get; private set; }
         public int TourId { get; private set; }

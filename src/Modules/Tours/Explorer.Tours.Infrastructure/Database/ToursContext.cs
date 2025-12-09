@@ -74,6 +74,11 @@ namespace Explorer.Tours.Infrastructure.Database
                 .OnDelete(DeleteBehavior.Cascade);
 
 
+            modelBuilder.Entity<TourReview>()
+                        .HasIndex(r => new { r.TouristId, r.TourId })
+                        .IsUnique();
+
+
             base.OnModelCreating(modelBuilder);
 
         }
