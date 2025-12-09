@@ -29,6 +29,7 @@ namespace Explorer.Tours.API.Dtos
         public int AuthorId { get; set; }
         public List<TourPointDto> Points { get; set; }
         public List<TourTransportDurationDto> TransportDuration { get; set; }
+        public double LengthInKm { get; set; }
 
     }
 }

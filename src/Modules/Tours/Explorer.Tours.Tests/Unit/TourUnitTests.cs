@@ -66,7 +66,7 @@ namespace Explorer.Tours.Tests.Unit
         [InlineData("Point B", -5, 100, 2)]
         public void Adds_tour_point(string name, double lat, double lng, int order)
         {
-            var tour = GetTestTour(10);
+            var tour = GetTestTour(-1);
             var point = new TourPoint(-1, name, name, lat, lng, order, "", "");
 
             Should.NotThrow(() => tour.AddTourPoint(point));
@@ -133,7 +133,54 @@ namespace Explorer.Tours.Tests.Unit
             tour.ArchivedAt.ShouldBeNull();
         }
 
+        [Fact]
+        public void Adding_second_tour_point_increases_tour_length()
+        {
+            var tour = GetTestTour(-1); 
 
+            var first = new TourPoint(-1, "A", "A", 45.0, 19.0, 1, "", "");
+            var second = new TourPoint(-2, "B", "B", 45.1, 19.1, 2, "", "");
+
+            tour.AddTourPoint(first);
+            tour.LengthInKm.ShouldBe(0);
+
+            tour.AddTourPoint(second);
+            tour.LengthInKm.ShouldBeGreaterThan(0);
+        }
+
+        [Fact]
+        public void Updating_point_recalculates_length()
+        {
+            var tour = GetTestTour(-1);
+
+            var p1 = new TourPoint(1, "A", "A", 45.0, 19.0, 1, "", "");
+            var p2 = new TourPoint(1, "B", "B", 45.1, 19.1, 2, "", "");
+
+            tour.AddTourPoint(p1);
+            tour.AddTourPoint(p2);
+            var original = tour.LengthInKm;
+
+            tour.UpdateTourPoint(p2.Id, "B2", "B2", 46.0, 20.0, 2, "", "");
+
+            tour.LengthInKm.ShouldNotBe(original);
+        }
+
+        [Fact]
+        public void Removing_point_recalculates_length()
+        {
+            var tour = GetTestTour(-1);
+
+            var p1 = new TourPoint(1, "A", "A", 45.0, 19.0, 1, "", "");
+            var p2 = new TourPoint(1, "B", "B", 45.1, 19.1, 2, "", "");
+
+            tour.AddTourPoint(p1);
+            tour.AddTourPoint(p2);
+            tour.LengthInKm.ShouldBeGreaterThan(0);
+
+            tour.RemoveTourPoint(p2.Id);
+
+            tour.LengthInKm.ShouldBe(0);  
+        }
 
         private static Tour GetTestTour(long tourId)
         {
