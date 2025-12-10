@@ -1,0 +1,13 @@
+ZAKOMENTARISANO ZA TESTIRANJE TAJNI:
+
+Fajl: Modules/Tours/Explorer.Tours.Core/UseCases/Tourist/TourExecutionService.cs
+Linije: 45-46
+
+Kod koji je zakomentarisan:
+if (!_tokenRepository.Exists((int)touristId, dto.TourId))
+    throw new InvalidOperationException("Tour must be purchased before starting.");
+
+Razlog: Kupovina još nije implementirana, potrebno za testiranje tajni funkcionalnosti.
+
+DA SE OTKOMENTARIŠE NAKON TESTIRANJA!
+
