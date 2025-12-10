@@ -134,52 +134,13 @@ namespace Explorer.Tours.Tests.Unit
         }
 
         [Fact]
-        public void Adding_second_tour_point_increases_tour_length()
+        public void Sets_length_from_route()
         {
-            var tour = GetTestTour(-1); 
+            var tour = GetTestTour(10);
 
-            var first = new TourPoint(-1, "A", "A", 45.0, 19.0, 1, "", "");
-            var second = new TourPoint(-2, "B", "B", 45.1, 19.1, 2, "", "");
+            Should.NotThrow(() => tour.SetLengthFromRoute(2.4));
 
-            tour.AddTourPoint(first);
-            tour.LengthInKm.ShouldBe(0);
-
-            tour.AddTourPoint(second);
-            tour.LengthInKm.ShouldBeGreaterThan(0);
-        }
-
-        [Fact]
-        public void Updating_point_recalculates_length()
-        {
-            var tour = GetTestTour(-1);
-
-            var p1 = new TourPoint(1, "A", "A", 45.0, 19.0, 1, "", "");
-            var p2 = new TourPoint(1, "B", "B", 45.1, 19.1, 2, "", "");
-
-            tour.AddTourPoint(p1);
-            tour.AddTourPoint(p2);
-            var original = tour.LengthInKm;
-
-            tour.UpdateTourPoint(p2.Id, "B2", "B2", 46.0, 20.0, 2, "", "");
-
-            tour.LengthInKm.ShouldNotBe(original);
-        }
-
-        [Fact]
-        public void Removing_point_recalculates_length()
-        {
-            var tour = GetTestTour(-1);
-
-            var p1 = new TourPoint(1, "A", "A", 45.0, 19.0, 1, "", "");
-            var p2 = new TourPoint(1, "B", "B", 45.1, 19.1, 2, "", "");
-
-            tour.AddTourPoint(p1);
-            tour.AddTourPoint(p2);
-            tour.LengthInKm.ShouldBeGreaterThan(0);
-
-            tour.RemoveTourPoint(p2.Id);
-
-            tour.LengthInKm.ShouldBe(0);  
+            tour.LengthInKm.ShouldBe(2.4);
         }
 
         private static Tour GetTestTour(long tourId)
@@ -213,7 +174,7 @@ namespace Explorer.Tours.Tests.Unit
                 ? new List<string>()
                 : new List<string> { "hiking" };
 
-            return new Tour(tourId, "Test Tour", "A tour for testing", TourDifficulty.Easy, tags, TourStatus.Draft, 1, points, new List<Equipment>(), 1000.0m, durations, null, null);
+            return new Tour(tourId, "Test Tour", "A tour for testing", TourDifficulty.Easy, tags, TourStatus.Draft, 1, points, new List<Equipment>(), 1000.0m, durations, null, null, 0);
         }
 
 

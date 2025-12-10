@@ -166,5 +166,17 @@ namespace Explorer.Tours.Core.UseCases.Author
 
             return new PagedResult<TourDto>(mapped, all.Count);
         }
+
+        public TourDto UpdateRouteLength(int tourId, int authorId, double lengthInKm)
+        {
+            var tour = _tourRepository.GetById(tourId) ?? throw new KeyNotFoundException($"Tour {tourId} not found.");
+
+            if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
+
+            tour.SetLengthFromRoute(lengthInKm);
+            _tourRepository.Update(tour);
+
+            return _mapper.Map<TourDto>(tour);
+        }
     }
 }

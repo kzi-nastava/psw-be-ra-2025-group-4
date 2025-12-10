@@ -40,7 +40,7 @@ namespace Explorer.Tours.Core.Domain
 
         }
 
-        public Tour(long id, string name, string description, TourDifficulty difficulty, List<string> tags, TourStatus status, int authorId, List<TourPoint> points, List<Equipment> equipment, decimal price, List<TourTransportDuration> transportDuration, DateTime? publishedAt, DateTime? archivedAt)
+        public Tour(long id, string name, string description, TourDifficulty difficulty, List<string> tags, TourStatus status, int authorId, List<TourPoint> points, List<Equipment> equipment, decimal price, List<TourTransportDuration> transportDuration, DateTime? publishedAt, DateTime? archivedAt, double lengthInKm)
         {
             Id = id;
             Name = name;
@@ -55,6 +55,7 @@ namespace Explorer.Tours.Core.Domain
             TransportDuration = transportDuration;
             PublishedAt = publishedAt;
             ArchivedAt = archivedAt;
+            LengthInKm = lengthInKm < 0 ? 0 : lengthInKm;
         }
 
         public Tour(string name, string description, TourDifficulty difficulty, int authorId, List<TourTransportDuration> transportDurations, List<string>? tags = null            )
@@ -126,8 +127,6 @@ namespace Explorer.Tours.Core.Domain
                 throw new ArgumentException("Tour point with same order already exists.");
 
             Points.Add(point);
-
-            RecalculateLength();
         }
 
         public void UpdateTourPoint(long pointId, string name, string description, double latitude, double longitude, int order, string? imageFileName, string? secret)
@@ -136,8 +135,6 @@ namespace Explorer.Tours.Core.Domain
             if (point == null) throw new ArgumentException("Point not found.");
 
             point.Update(name, description, latitude, longitude, order, imageFileName, secret);
-
-            RecalculateLength();
         }
 
         public void RemoveTourPoint(long pointId)
@@ -146,8 +143,6 @@ namespace Explorer.Tours.Core.Domain
             if (point == null) throw new ArgumentException("Point not found.");
 
             Points.Remove(point);
-
-            RecalculateLength();
         }
 
         public void AddEquipment(Equipment equipment)
@@ -167,34 +162,13 @@ namespace Explorer.Tours.Core.Domain
             TransportDuration.Add(duration);
         }
 
-        private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)
+        public void SetLengthFromRoute(double lengthInKm)
         {
-            const double R = 6371;
+            if (lengthInKm < 0)
+                throw new ArgumentException("Route length cannot be negative.", nameof(lengthInKm));
 
-            var dLat = DegreesToRadians(lat2 - lat1);
-            var dLon = DegreesToRadians(lon2 - lon1);
-
-            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            return R * c;
+            LengthInKm = Math.Round(lengthInKm, 1);
         }
 
-        private static double DegreesToRadians(double degrees)
-        {
-            return degrees * Math.PI / 180;
-        }
-
-        private void RecalculateLength()
-        {
-            LengthInKm = 0;
-
-            var ordered = Points.OrderBy(p => p.Order).ToList();
-
-            for (int i = 1; i < ordered.Count; i++)
-            {
-                LengthInKm += CalculateDistanceKm(ordered[i - 1].Latitude, ordered[i - 1].Longitude, ordered[i].Latitude, ordered[i].Longitude);
-            }
-        }
     }
 }

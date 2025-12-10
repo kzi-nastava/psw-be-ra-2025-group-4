@@ -18,5 +18,6 @@ namespace Explorer.Tours.API.Public
         void AddEquipment(int tourId, int authorId, List<EquipmentDto> equipment);
         void AddTourPoint(int tourId, int authorId, TourPointDto tourPoint);
         PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize);
+        TourDto UpdateRouteLength(int tourId, int authorId, double lengthInKm);
     }
 }
