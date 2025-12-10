@@ -20,11 +20,9 @@ namespace Explorer.API.Controllers
         private int GetUserId()
         {
             var id = User.FindFirst("id")?.Value;
-
             if (id != null) return int.Parse(id);
 
             var pid = User.FindFirst("personId")?.Value;
-
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
 
@@ -35,8 +33,8 @@ namespace Explorer.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id:int}")]
-        public ActionResult<BlogDto> Get(int id)
+        [HttpGet("{id:long}")]
+        public ActionResult<BlogDto> Get(long id)
         {
             var result = _blogService.Get(id);
             return Ok(result);
@@ -49,33 +47,32 @@ namespace Explorer.API.Controllers
             return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
 
-        [HttpPut("{id:int}")]
-        public ActionResult<BlogDto> Update(int id, [FromBody] CreateUpdateBlogDto dto)
+        [HttpPut("{id:long}")]
+        public ActionResult<BlogDto> Update(long id, [FromBody] CreateUpdateBlogDto dto)
         {
             var updated = _blogService.UpdateBlog(id, dto, GetUserId());
             return Ok(updated);
         }
 
-        [HttpDelete("{id:int}")]
-        public IActionResult Delete(int id)
+        [HttpDelete("{id:long}")]
+        public IActionResult Delete(long id)
         {
             _blogService.DeleteBlog(id, GetUserId());
             return NoContent();
         }
 
-        [HttpPost("{id:int}/publish")]
-        public IActionResult Publish(int id)
+        [HttpPost("{id:long}/publish")]
+        public IActionResult Publish(long id)
         {
             _blogService.Publish(id, GetUserId());
             return Ok();
         }
 
-        [HttpPost("{id:int}/archive")]
-        public IActionResult Archive(int id)
+        [HttpPost("{id:long}/archive")]
+        public IActionResult Archive(long id)
         {
             _blogService.Archive(id, GetUserId());
             return Ok();
         }
-
     }
 }
