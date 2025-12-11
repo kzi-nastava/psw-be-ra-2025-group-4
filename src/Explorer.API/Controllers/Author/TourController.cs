@@ -97,4 +97,13 @@ public class TourController : ControllerBase
         _tourService.AddTourPoint(id, GetAuthorId(), tourPoint);
         return NoContent();
     }
+
+    public record UpdateRouteLengthRequest(double LengthInKm);
+
+    [HttpPut("{id:int}/route-length")]
+    public ActionResult<TourDto> UpdateRouteLength(int id, [FromBody] UpdateRouteLengthRequest request)
+    {
+        var updated = _tourService.UpdateRouteLength(id, GetAuthorId(), request.LengthInKm);
+        return Ok(updated);
+    }
 }

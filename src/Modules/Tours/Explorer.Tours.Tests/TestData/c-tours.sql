@@ -2,7 +2,7 @@
 INSERT INTO tours."Tours" (
     "Id", "Name", "Description", "Difficulty",
     "AuthorId", "Price", "Status", "Tags",
-    "TransportDuration", "PublishedAt", "ArchivedAt"
+    "TransportDuration", "PublishedAt", "ArchivedAt", "LengthInKm"
 )
 VALUES
 (
@@ -16,14 +16,15 @@ VALUES
     ARRAY['test'],
     '[]',
     NULL,
-    NULL
+    NULL,
+    0.0
 );
 
 -- Tour 2
 INSERT INTO tours."Tours" (
     "Id", "Name", "Description", "Difficulty",
     "AuthorId", "Price", "Status", "Tags",
-    "TransportDuration", "PublishedAt", "ArchivedAt"
+    "TransportDuration", "PublishedAt", "ArchivedAt", "LengthInKm"
 )
 VALUES
 (
@@ -37,14 +38,15 @@ VALUES
     ARRAY['planina','avantura'],
     '[]',
     '2024-01-16 14:20:00+00',
-    NULL
+    NULL,
+    0.0
 );
 
 -- Tour 3
 INSERT INTO tours."Tours" (
     "Id", "Name", "Description", "Difficulty",
     "AuthorId", "Price", "Status", "Tags",
-    "TransportDuration", "PublishedAt", "ArchivedAt"
+    "TransportDuration", "PublishedAt", "ArchivedAt", "LengthInKm"
 )
 VALUES
 (
@@ -58,5 +60,6 @@ VALUES
     ARRAY['test'],
     '[]',
     '2023-11-16 14:20:00+00',
-    '2024-01-16 14:20:00+00'
+    '2024-01-16 14:20:00+00',
+    0.0
 );
