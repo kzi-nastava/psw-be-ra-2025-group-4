@@ -39,11 +39,15 @@ namespace Explorer.Tours.Core.Domain
         public void RemoveItem(int tourId)
         {
             var item = _items.FirstOrDefault(i => i.TourId == tourId);
-            if (item == null) return;
+            if (item == null)
+            {
+                throw new KeyNotFoundException($"Tour with ID {tourId} not found in cart.");
+            }
 
             _items.Remove(item);
             RecalculateTotal();
         }
+
 
         public void Clear()
         {
