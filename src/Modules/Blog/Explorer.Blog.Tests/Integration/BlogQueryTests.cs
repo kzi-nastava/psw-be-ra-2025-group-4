@@ -48,6 +48,39 @@ public class BlogQueryTests : BaseBlogIntegrationTest
         result.Title.ShouldBe("Test Blog 1");
         result.Description.ShouldBe("Opis bloga 1");
     }
+    [Fact]
+    public void Gets_active_blogs()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = new BlogController(scope.ServiceProvider.GetRequiredService<IBlogService>())
+        {
+            ControllerContext = BuildContext("1")
+        };
+
+        var result = ((ObjectResult)controller.GetActive().Result)?.Value as IEnumerable<BlogDto>;
+        result.ShouldNotBeNull();
+
+        var list = result.ToList();
+        list.Count.ShouldBe(1);
+        list[0].Id.ShouldBe(-2);
+    }
+
+    [Fact]
+    public void Gets_famous_blogs()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = new BlogController(scope.ServiceProvider.GetRequiredService<IBlogService>())
+        {
+            ControllerContext = BuildContext("1")
+        };
+
+        var result = ((ObjectResult)controller.GetFamous().Result)?.Value as IEnumerable<BlogDto>;
+        result.ShouldNotBeNull();
+
+        var list = result.ToList();
+        list.Count.ShouldBe(1);
+        list[0].Id.ShouldBe(-3);
+    }
 
     private static BlogController CreateController(IServiceScope scope, string userId = "1")
     {

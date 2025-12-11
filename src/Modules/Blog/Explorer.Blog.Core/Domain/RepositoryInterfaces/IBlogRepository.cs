@@ -13,5 +13,6 @@ namespace Explorer.Blog.Core.Domain.RepositoryInterfaces
         BlogPost Create(BlogPost blog);
         BlogPost Update(BlogPost blog);
         void Delete(long id);
+        IEnumerable<BlogPost> GetAll();
     }
 }

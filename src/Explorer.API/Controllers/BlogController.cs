@@ -74,5 +74,14 @@ namespace Explorer.API.Controllers
             _blogService.Archive(id, GetUserId());
             return Ok();
         }
+
+        [HttpGet("active")]
+        public ActionResult<IEnumerable<BlogDto>> GetActive()
+            => Ok(_blogService.GetActive());
+
+        [HttpGet("famous")]
+        public ActionResult<IEnumerable<BlogDto>> GetFamous()
+            => Ok(_blogService.GetFamous());
+
     }
 }
