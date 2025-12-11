@@ -23,4 +23,3 @@ namespace Explorer.Tours.API.Dtos
         public double DistanceKm { get; set; }
     }
 }
-
