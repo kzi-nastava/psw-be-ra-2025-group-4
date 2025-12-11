@@ -1,5 +1,6 @@
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Stakeholders.Infrastructure.Authentication;
+using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,7 @@ public class TourPointSecretController : ControllerBase
     }
 
     [HttpGet("{tourPointId:int}/secret")]
-    public ActionResult GetSecret(int tourPointId)
+    public ActionResult<TourPointSecretDto> GetSecret(int tourPointId)
     {
         try
         {
@@ -44,7 +45,7 @@ public class TourPointSecretController : ControllerBase
         }
         catch (ForbiddenException ex)
         {
-            return Forbid(ex.Message);
+            return StatusCode(403, new { message = ex.Message });
         }
         catch (Exception ex)
         {

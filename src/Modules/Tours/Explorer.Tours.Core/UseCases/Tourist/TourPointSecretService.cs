@@ -25,7 +25,6 @@ public class TourPointSecretService : ITourPointSecretService
         if (tourPoint == null)
             throw new NotFoundException($"Tour point with id {tourPointId} not found.");
 
-        // Check if tourist has completed this point in any tour execution
         var touristExecutions = _tourExecutionRepository.GetByTourist(touristId);
         var hasCompletedPoint = touristExecutions
             .Any(execution => execution.CompletedPoints
@@ -42,4 +41,5 @@ public class TourPointSecretService : ITourPointSecretService
         };
     }
 }
+
 

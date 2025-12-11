@@ -7,3 +7,4 @@ public interface ITourPointSecretService
     TourPointSecretDto GetSecret(int tourPointId, long touristId);
 }
 
+

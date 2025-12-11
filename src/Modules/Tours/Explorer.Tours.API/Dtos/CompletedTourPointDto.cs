@@ -8,5 +8,6 @@ public class CompletedTourPointDto
     public int TourPointId { get; set; }
     public DateTime CompletedAt { get; set; }
     public int? Order { get; set; }
+    public string? Name { get; set; }
 }
 

@@ -7,3 +7,4 @@ public class TourPointSecretDto
     public bool IsUnlocked { get; set; }
 }
 
+
