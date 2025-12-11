@@ -4,8 +4,8 @@ using Explorer.Blog.API.Public;
 using Explorer.Blog.Core.Domain;
 using Explorer.Blog.Infrastructure.Database;
 using Explorer.BuildingBlocks.Core.Exceptions;
-using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
@@ -17,69 +17,117 @@ public class BlogCommandTests : BaseBlogIntegrationTest
     public BlogCommandTests(BlogTestFactory factory) : base(factory) { }
 
     [Fact]
-    public void Creates_blog_in_preparation()
+    public void Creates()
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<BlogContext>();
 
-        var dto = new CreateUpdateBlogDto { Title = "Novi", Description = "Opis", Images = new() };
+        var dto = new CreateUpdateBlogDto
+        {
+            Title = "Novi blog",
+            Description = "Opis",
+            Images = new List<string>()
+        };
+
         var result = ((ObjectResult)controller.Create(dto).Result)?.Value as BlogDto;
 
         result.ShouldNotBeNull();
-        result.Status.ToString().ShouldBe("Preparation");
+        result.Id.ShouldNotBe(0);
+
+        var stored = db.BlogPosts.First(x => x.Id == result.Id);
+        stored.ShouldNotBeNull();
+        stored.Title.ShouldBe(dto.Title);
+        stored.Status.ShouldBe(BlogStatus.Preparation);
     }
 
     [Fact]
-    public void Updates_preparation_blog_fully()
+    public void Create_fails_invalid_data()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope);
+
+        var dto = new CreateUpdateBlogDto
+        {
+            Description = "Missing title"
+        };
+
+        Should.Throw<DbUpdateException>(() => controller.Create(dto));
+    }
+
+    [Fact]
+    public void Updates()
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<BlogContext>();
 
-        var dto = new CreateUpdateBlogDto { Title = "Novo", Description = "Novo", Images = new() };
-        controller.Update(-4, dto);
+        var dto = new CreateUpdateBlogDto
+        {
+            Title = "Updated",
+            Description = "New description",
+            Images = new List<string>()
+        };
+
+        var result = ((ObjectResult)controller.Update(-4, dto).Result)?.Value as BlogDto;
+
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(-4);
 
         var stored = db.BlogPosts.First(x => x.Id == -4);
-        stored.Title.ShouldBe("Novo");
-        stored.Description.ShouldBe("Novo");
+        stored.ShouldNotBeNull();
+        stored.Title.ShouldBe(dto.Title);
+        stored.Description.ShouldBe(dto.Description);
     }
 
     [Fact]
-    public void Updates_published_blog_description_only()
+    public void Update_fails_invalid_id()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope);
+
+        var dto = new CreateUpdateBlogDto
+        {
+            Title = "X",
+            Description = "Y",
+            Images = new List<string>()
+        };
+
+        Should.Throw<NotFoundException>(() => controller.Update(-999, dto));
+    }
+
+    [Fact]
+    public void Deletes()
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<BlogContext>();
 
-        var original = db.BlogPosts.First(x => x.Id == -2);
+        controller.Delete(-1);
 
-        var dto = new CreateUpdateBlogDto { Title = "Zabranjeno", Description = "Dozvoljeno", Images = new() };
-        controller.Update(-2, dto);
-
-        var stored = db.BlogPosts.First(x => x.Id == -2);
-        stored.Title.ShouldBe(original.Title);
-        stored.Images.ShouldBe(original.Images);
-        stored.Description.ShouldBe("Dozvoljeno");
-        stored.LastUpdatedAt.ShouldNotBeNull();
+        db.BlogPosts.FirstOrDefault(x => x.Id == -1).ShouldBeNull();
     }
 
     [Fact]
-    public void Fails_update_archived_blog()
+    public void Delete_fails_wrong_user()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, "2");
+
+        Should.Throw<UnauthorizedAccessException>(() => controller.Delete(-1));
+    }
+
+    [Fact]
+    public void Delete_fails_invalid_id()
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        var dto = new CreateUpdateBlogDto { Title = "X", Description = "Y", Images = new() };
-
-        Should.Throw<InvalidOperationException>(() =>
-        {
-            controller.Update(-3, dto);
-        });
+        Should.Throw<NotFoundException>(() => controller.Delete(-999));
     }
 
     [Fact]
-    public void Publishes_preparation_blog()
+    public void Publishes()
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
@@ -92,24 +140,16 @@ public class BlogCommandTests : BaseBlogIntegrationTest
     }
 
     [Fact]
-    public void Fails_publish_non_preparation_blog()
+    public void Publish_fails_invalid_id()
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        Should.Throw<InvalidOperationException>(() =>
-        {
-            controller.Publish(-2);
-        });
-
-        Should.Throw<InvalidOperationException>(() =>
-        {
-            controller.Publish(-3);
-        });
+        Should.Throw<NotFoundException>(() => controller.Publish(-999));
     }
 
     [Fact]
-    public void Archives_published_blog()
+    public void Archives()
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
@@ -122,58 +162,12 @@ public class BlogCommandTests : BaseBlogIntegrationTest
     }
 
     [Fact]
-    public void Fails_archive_non_published_blog()
+    public void Archive_fails_invalid_id()
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        Should.Throw<InvalidOperationException>(() =>
-        {
-            controller.Archive(-1);
-        });
-
-        Should.Throw<InvalidOperationException>(() =>
-        {
-            controller.Archive(-3);
-        });
-    }
-
-    [Fact]
-    public void Deletes_preparation_blog()
-    {
-        using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
-        var db = scope.ServiceProvider.GetRequiredService<BlogContext>();
-
-        controller.Delete(-1);
-
-        db.BlogPosts.FirstOrDefault(x => x.Id == -1).ShouldBeNull();
-    }
-
-    [Fact]
-    public void Fails_update_invalid_id()
-    {
-        using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
-
-        var dto = new CreateUpdateBlogDto { Title = "", Description = "", Images = new() };
-
-        Should.Throw<NotFoundException>(() =>
-        {
-            controller.Update(-999, dto);
-        });
-    }
-
-    [Fact]
-    public void Fails_delete_wrong_user()
-    {
-        using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope, userId: "2");
-
-        Should.Throw<UnauthorizedAccessException>(() =>
-        {
-            controller.Delete(-1);
-        });
+        Should.Throw<NotFoundException>(() => controller.Archive(-999));
     }
 
     private static BlogController CreateController(IServiceScope scope, string userId = "1")
