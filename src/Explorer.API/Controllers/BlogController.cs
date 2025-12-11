@@ -18,18 +18,20 @@ namespace Explorer.API.Controllers
             _blogService = blogService;
             _commentService = commentService;
         }
+
         private int GetUserId()
         {
             var id = User.FindFirst("id")?.Value;
-
             if (id != null) return int.Parse(id);
 
             var pid = User.FindFirst("personId")?.Value;
-
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
 
-        // NOVO: svi blogovi koje korisnik sme da vidi
+        // 🔹 Svi blogovi koje korisnik sme da vidi:
+        //  - Published
+        //  - Archived
+        //  - njegovi Preparation
         [HttpGet]
         public ActionResult<IEnumerable<BlogDto>> GetVisible()
         {
@@ -37,7 +39,7 @@ namespace Explorer.API.Controllers
             return Ok(result);
         }
 
-        // Moji blogovi
+        // Moji blogovi (svi koje sam ja kreirao)
         [HttpGet("mine")]
         public ActionResult<IEnumerable<BlogDto>> GetMine()
         {
@@ -45,9 +47,9 @@ namespace Explorer.API.Controllers
             return Ok(result);
         }
 
-        // Korišćenje GetForUser (NE Get!)
-        [HttpGet("{id:int}")]
-        public ActionResult<BlogDto> Get(int id)
+        // Pojedinačan blog sa proverom vidljivosti
+        [HttpGet("{id:long}")]
+        public ActionResult<BlogDto> Get(long id)
         {
             var result = _blogService.GetForUser(id, GetUserId());
             return Ok(result);
@@ -62,63 +64,69 @@ namespace Explorer.API.Controllers
         }
 
         // Update
-        [HttpPut("{id:int}")]
-        public ActionResult<BlogDto> Update(int id, [FromBody] CreateUpdateBlogDto dto)
+        [HttpPut("{id:long}")]
+        public ActionResult<BlogDto> Update(long id, [FromBody] CreateUpdateBlogDto dto)
         {
             var updated = _blogService.UpdateBlog(id, dto, GetUserId());
             return Ok(updated);
         }
 
         // Delete
-        [HttpDelete("{id:int}")]
-        public IActionResult Delete(int id)
+        [HttpDelete("{id:long}")]
+        public IActionResult Delete(long id)
         {
             _blogService.DeleteBlog(id, GetUserId());
             return NoContent();
         }
 
         // Publish
-        [HttpPost("{id:int}/publish")]
-        public IActionResult Publish(int id)
+        [HttpPost("{id:long}/publish")]
+        public IActionResult Publish(long id)
         {
             _blogService.Publish(id, GetUserId());
             return Ok();
         }
 
         // Archive
-        [HttpPost("{id:int}/archive")]
-        public IActionResult Archive(int id)
+        [HttpPost("{id:long}/archive")]
+        public IActionResult Archive(long id)
         {
             _blogService.Archive(id, GetUserId());
             return Ok();
         }
 
-        [HttpGet("{id:int}/comments")]
-        public ActionResult<IEnumerable<CommentDto>> GetComments(int id)
+        // ======================
+        //       COMMENTS
+        // ======================
+
+        // svi komentari za blog
+        [HttpGet("{id:long}/comments")]
+        public ActionResult<IEnumerable<CommentDto>> GetComments(long id)
         {
             var result = _commentService.GetByBlog(id);
             return Ok(result);
         }
 
         // kreiranje komentara (samo ako je blog objavljen)
-        [HttpPost("{id:int}/comments")]
-        public ActionResult<CommentDto> CreateComment(int id, [FromBody] CreateUpdateCommentDto dto)
+        [HttpPost("{id:long}/comments")]
+        public ActionResult<CommentDto> CreateComment(long id, [FromBody] CreateUpdateCommentDto dto)
         {
             var created = _commentService.Create(id, GetUserId(), dto);
             return CreatedAtAction(nameof(GetComments), new { id }, created);
         }
 
         // izmena komentara (autor + 15 minuta)
-        [HttpPut("comments/{commentId:int}")]
-        public ActionResult<CommentDto> UpdateComment(int commentId, [FromBody] CreateUpdateCommentDto dto)
+        // 3) Izmena komentara (autor + 15 minuta)
+        [HttpPut("comments/{commentId:long}")]
+        public ActionResult<CommentDto> UpdateComment(long commentId, [FromBody] CreateUpdateCommentDto dto)
         {
             var updated = _commentService.Update(commentId, GetUserId(), dto);
             return Ok(updated);
         }
 
-        // brisanje komentara (autor + 15 minuta)
-        [HttpDelete("comments/{commentId:int}")]
-        public IActionResult DeleteComment(int commentId)
+        // 4) Brisanje komentara (autor + 15 minuta)
+        [HttpDelete("comments/{commentId:long}")]
+        public IActionResult DeleteComment(long commentId)
         {
             _commentService.Delete(commentId, GetUserId());
             return NoContent();

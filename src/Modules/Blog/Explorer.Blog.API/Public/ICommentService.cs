@@ -5,9 +5,9 @@ namespace Explorer.Blog.API.Public
 {
     public interface ICommentService
     {
-        IEnumerable<CommentDto> GetByBlog(int blogId);
-        CommentDto Create(int blogId, int userId, CreateUpdateCommentDto dto);
-        CommentDto Update(int id, int userId, CreateUpdateCommentDto dto);
-        void Delete(int id, int userId);
+        IEnumerable<CommentDto> GetByBlog(long blogId);
+        CommentDto Create(long blogId, int userId, CreateUpdateCommentDto dto);
+        CommentDto Update(long id, int userId, CreateUpdateCommentDto dto);
+        void Delete(long id, int userId);
     }
 }

@@ -5,7 +5,7 @@ namespace Explorer.Blog.Core.Domain
 {
     public class Comment : Entity
     {
-        public int BlogId { get; private set; }
+        public long BlogId { get; private set; }
         public int UserId { get; private set; }
         public string Text { get; private set; }
         public DateTime CreatedAt { get; private set; }
@@ -15,12 +15,20 @@ namespace Explorer.Blog.Core.Domain
 
         protected Comment() { }
 
-        public Comment(int blogId, int userId, string text)
+        public Comment(long blogId, int userId, string text)
         {
             BlogId = blogId;
             UserId = userId;
             Text = text;
             CreatedAt = DateTime.UtcNow;
+        }
+
+        public Comment(long blogId, int userId, string text, DateTime createdAt)
+        {
+            BlogId = blogId;
+            UserId = userId;
+            Text = text;
+            CreatedAt = createdAt;
         }
 
         public void UpdateText(string text, DateTime now)

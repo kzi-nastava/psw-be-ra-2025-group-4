@@ -27,9 +27,6 @@ namespace Explorer.API.Controllers
             return long.Parse(pid ?? throw new Exception("No user id found"));
         }
 
-
-
-
         [HttpGet("mine")]
         public ActionResult<UserProfileDto> GetMyProfile()
         {
@@ -37,9 +34,6 @@ namespace Explorer.API.Controllers
             var profile = _profileService.Get(userId);
             return Ok(profile);
         }
-
-
-
 
         [HttpPut("{id:long}")]
         public ActionResult<UserProfileDto> Update(long id, [FromBody] UpdateUserProfileDto UserProfiledto)
@@ -53,5 +47,13 @@ namespace Explorer.API.Controllers
             var updated = _profileService.Update(id, UserProfiledto);
             return Ok(updated);
         }
+
+        [HttpGet("{userId:long}")]
+        public ActionResult<UserProfileDto> GetByUser(long userId)
+        {
+            var profile = _profileService.Get(userId);
+            return Ok(profile);
+        }
+
     }
 }

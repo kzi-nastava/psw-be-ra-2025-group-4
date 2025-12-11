@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Explorer.BuildingBlocks.Core.Domain;
 
 namespace Explorer.Blog.Core.Domain
 {
-    public class BlogPost
+    public class BlogPost : AggregateRoot
     {
-        public int Id { get; private set; }
         public string Title { get; private set; }
         public string Description { get; private set; }
         public DateTime CreatedAt { get; private set; }
@@ -13,6 +13,9 @@ namespace Explorer.Blog.Core.Domain
         public List<string> Images { get; private set; }
         public int UserId { get; private set; }
         public BlogStatus Status { get; private set; }
+
+        public List<Comment> Comments { get; private set; } = new();
+
 
         protected BlogPost() { }
 

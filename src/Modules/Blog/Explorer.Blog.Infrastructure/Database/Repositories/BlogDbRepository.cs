@@ -25,17 +25,7 @@ namespace Explorer.Blog.Infrastructure.Database.Repositories
             return blog;
         }
 
-        public IEnumerable<BlogPost> GetVisible(int userId)
-        {
-            return _dbSet
-                .Where(x =>
-                    x.Status == BlogStatus.Published ||
-                    x.Status == BlogStatus.Archived ||
-                    (x.Status == BlogStatus.Preparation && x.UserId == userId))   // Draft = stanje pripreme
-                .ToList();
-        }
-
-        public BlogPost Get(int id)
+        public BlogPost Get(long id)
         {
             var entity = _dbSet.Find(id);
             if (entity == null) throw new NotFoundException("Blog not found: " + id);
@@ -61,11 +51,20 @@ namespace Explorer.Blog.Infrastructure.Database.Repositories
             return blog;
         }
 
-        public void Delete(int id)
+        public void Delete(long id)
         {
             var entity = Get(id);
             _dbSet.Remove(entity);
             _dbContext.SaveChanges();
+        }
+
+        public IEnumerable<BlogPost> GetVisible(int userId)
+        {
+            return _dbSet.Where(x =>
+                    x.Status == BlogStatus.Published ||
+                    x.Status == BlogStatus.Archived ||
+                    (x.Status == BlogStatus.Preparation && x.UserId == userId))
+                .ToList();
         }
     }
 }

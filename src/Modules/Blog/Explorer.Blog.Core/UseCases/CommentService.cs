@@ -24,13 +24,13 @@ namespace Explorer.Blog.Core.UseCases
             _mapper = mapper;
         }
 
-        public IEnumerable<CommentDto> GetByBlog(int blogId)
+        public IEnumerable<CommentDto> GetByBlog(long blogId)
         {
             var comments = _commentRepository.GetByBlog(blogId);
             return _mapper.Map<IEnumerable<CommentDto>>(comments);
         }
 
-        public CommentDto Create(int blogId, int userId, CreateUpdateCommentDto dto)
+        public CommentDto Create(long blogId, int userId, CreateUpdateCommentDto dto)
         {
             var blog = _blogRepository.Get(blogId);
 
@@ -44,7 +44,7 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<CommentDto>(created);
         }
 
-        public CommentDto Update(int id, int userId, CreateUpdateCommentDto dto)
+        public CommentDto Update(long id, int userId, CreateUpdateCommentDto dto)
         {
             var comment = _commentRepository.Get(id);
 
@@ -57,7 +57,7 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<CommentDto>(comment);
         }
 
-        public void Delete(int id, int userId)
+        public void Delete(long id, int userId)
         {
             var comment = _commentRepository.Get(id);
 

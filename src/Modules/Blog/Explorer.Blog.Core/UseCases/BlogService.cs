@@ -26,7 +26,7 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<BlogDto>(created);
         }
 
-        public BlogDto UpdateBlog(int id, CreateUpdateBlogDto dto, int userId)
+        public BlogDto UpdateBlog(long id, CreateUpdateBlogDto dto, int userId)
         {
             var blog = _repository.Get(id);
 
@@ -42,7 +42,7 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<BlogDto>(blog);
         }
 
-        public BlogDto Get(int id)
+        public BlogDto Get(long id)
         {
             var blog = _repository.Get(id);
 
@@ -52,7 +52,7 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<BlogDto>(blog);
         }
 
-        public BlogDto GetForUser(int id, int userId)
+        public BlogDto GetForUser(long id, int userId)
         {
             var blog = _repository.Get(id);
             if (blog == null)
@@ -77,7 +77,7 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<IEnumerable<BlogDto>>(blogs);
         }
 
-        public void DeleteBlog(int id, int userId)
+        public void DeleteBlog(long id, int userId)
         {
             var blog = _repository.Get(id);
 
@@ -90,7 +90,7 @@ namespace Explorer.Blog.Core.UseCases
             _repository.Delete(id);
         }
 
-        public void Publish(int id, int userId)
+        public void Publish(long id, int userId)
         {
             var blog = _repository.Get(id);
             if (blog == null)
@@ -103,7 +103,7 @@ namespace Explorer.Blog.Core.UseCases
             _repository.Update(blog);
         }
 
-        public void Archive(int id, int userId)
+        public void Archive(long id, int userId)
         {
             var blog = _repository.Get(id);
             if (blog == null)

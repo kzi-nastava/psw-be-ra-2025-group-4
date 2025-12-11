@@ -5,10 +5,11 @@ namespace Explorer.Blog.Core.Domain.RepositoryInterfaces
 {
     public interface ICommentRepository
     {
-        IEnumerable<Comment> GetByBlog(int blogId);
-        Comment Get(int id);
+      
+        IEnumerable<Comment> GetByBlog(long blogId);
+        Comment Get(long id);
         Comment Create(Comment comment);
         Comment Update(Comment comment);
-        void Delete(int id);
+        void Delete(long id);
     }
 }
