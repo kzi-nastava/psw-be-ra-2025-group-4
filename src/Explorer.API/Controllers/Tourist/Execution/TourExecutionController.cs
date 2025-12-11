@@ -25,7 +25,7 @@ public class TourExecutionController : ControllerBase
     {
         try
         {
-            long touristId = User.PersonId();
+            long touristId = GetTouristId();
             var result = _tourExecutionService.StartTour(dto, touristId);
             return Ok(result);
         }
@@ -35,12 +35,23 @@ public class TourExecutionController : ControllerBase
         }
     }
 
+    private long GetTouristId()
+    {
+        var id = User.FindFirst("id")?.Value;
+        if (!string.IsNullOrEmpty(id)) return long.Parse(id);
+
+        var pid = User.FindFirst("personId")?.Value;
+        if (!string.IsNullOrEmpty(pid)) return long.Parse(pid);
+
+        throw new Exception("No user id found");
+    }
+
     [HttpPut("{executionId:long}/complete")]
     public ActionResult<TourExecutionDto> Complete(long executionId)
     {
         try
         {
-            long touristId = User.PersonId();
+            long touristId = GetTouristId();
             var result = _tourExecutionService.Complete(executionId, touristId);
             return Ok(result);
         }
@@ -59,7 +70,7 @@ public class TourExecutionController : ControllerBase
     {
         try
         {
-            long touristId = User.PersonId();
+            long touristId = GetTouristId();
             var result = _tourExecutionService.Abandon(executionId, touristId);
             return Ok(result);
         }
@@ -78,7 +89,7 @@ public class TourExecutionController : ControllerBase
     {
         try
         {
-            long touristId = User.PersonId();
+            long touristId = GetTouristId();
             var result = _tourExecutionService.GetById(executionId, touristId);
             return Ok(result);
         }
@@ -97,7 +108,7 @@ public class TourExecutionController : ControllerBase
     long executionId,
     [FromBody] TourExecutionTrackDto dto)
     {
-        var touristId = User.PersonId();
+        var touristId = GetTouristId();
         return Ok(_tourExecutionService.Track(executionId, touristId, dto));
     }
 
@@ -107,7 +118,7 @@ public class TourExecutionController : ControllerBase
     {
         try
         {
-            long touristId = User.PersonId();
+            long touristId = GetTouristId();
             var result = _tourExecutionService.GetActiveByTour(tourId, touristId);
             if (result == null)
                 return NotFound();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Explorer.Tours.API.Dtos;
 
@@ -13,6 +14,7 @@ public class TourExecutionDto
     public TourExecutionStatusDto Status { get; set; }
     public DateTime? EndTime { get; set; }
     public TourPointDto? NextKeyPoint { get; set; }
+    public List<CompletedTourPointDto> CompletedPoints { get; set; } = new();
 }
 
 public enum TourExecutionStatusDto
