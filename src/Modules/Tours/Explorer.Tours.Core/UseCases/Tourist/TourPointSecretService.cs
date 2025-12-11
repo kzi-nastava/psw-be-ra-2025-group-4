@@ -19,7 +19,7 @@ public class TourPointSecretService : ITourPointSecretService
         _tourExecutionRepository = tourExecutionRepository;
     }
 
-    public TourPointSecretDto GetSecret(int tourPointId, long touristId)
+    public TourPointSecretDto GetSecret(long tourPointId, long touristId)
     {
         var tourPoint = _tourPointRepository.Get(tourPointId);
         if (tourPoint == null)

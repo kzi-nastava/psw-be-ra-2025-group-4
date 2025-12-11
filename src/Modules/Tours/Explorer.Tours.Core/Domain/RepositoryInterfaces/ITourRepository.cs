@@ -11,6 +11,7 @@ namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
         void Delete(int id);
         IEnumerable<Tour> GetByAuthor(int authorId);
         IEnumerable<Tour> GetPublishedAndArchived();
+        IEnumerable<Tour> GetPublished();
 
     }
 }

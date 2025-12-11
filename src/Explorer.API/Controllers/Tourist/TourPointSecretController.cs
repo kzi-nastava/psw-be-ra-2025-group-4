@@ -30,8 +30,8 @@ public class TourPointSecretController : ControllerBase
         throw new Exception("No user id found");
     }
 
-    [HttpGet("{tourPointId:int}/secret")]
-    public ActionResult<TourPointSecretDto> GetSecret(int tourPointId)
+    [HttpGet("{tourPointId:long}/secret")]
+    public ActionResult<TourPointSecretDto> GetSecret(long tourPointId)
     {
         try
         {

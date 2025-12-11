@@ -34,23 +34,26 @@ namespace Explorer.Tours.Core.UseCases.Author
             var tour = _tourRepo.GetById(tourId);
             if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
 
-            var current = _pointRepo.GetByTour(tourId);
-            var order = current.Any() ? current.Max(p => p.Order) + 1 : 1;
+            var order = tour.Points.Any() ? tour.Points.Max(p => p.Order) + 1 : 1;
             var point = new TourPoint(tourId, dto.Name, dto.Description, dto.Latitude, dto.Longitude, order, dto.ImageFileName, dto.Secret);
 
-            var created = _pointRepo.Create(point);
-            return _mapper.Map<TourPointDto>(created);
+            tour.AddTourPoint(point);
+            _tourRepo.Update(tour);
+
+            return _mapper.Map<TourPointDto>(point);
         }
 
         public TourPointDto Update(int pointId, TourPointDto dto, int authorId)
         {
-            var point = _pointRepo.Get(pointId);
+            var point = _pointRepo.Get(pointId);         
             var tour = _tourRepo.GetById((int)point.TourId);
             if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
 
-            point.Update(dto.Name, dto.Description, dto.Latitude, dto.Longitude, dto.Order, dto.ImageFileName, dto.Secret);
-            var updated = _pointRepo.Update(point);
+            tour.UpdateTourPoint(pointId, dto.Name, dto.Description, dto.Latitude, dto.Longitude, dto.Order, dto.ImageFileName, dto.Secret);
 
+            _tourRepo.Update(tour);
+
+            var updated = tour.Points.Single(p => p.Id == pointId);
             return _mapper.Map<TourPointDto>(updated);
         }
 
@@ -60,7 +63,8 @@ namespace Explorer.Tours.Core.UseCases.Author
             var tour = _tourRepo.GetById((int)point.TourId);
             if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
 
-            _pointRepo.Delete(pointId);
+            tour.RemoveTourPoint(pointId);
+            _tourRepo.Update(tour);
         }
     }
 }

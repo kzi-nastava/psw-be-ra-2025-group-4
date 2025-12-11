@@ -28,7 +28,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
         var execution = CreateExecution(scope, -2);
 
         var tourPoint = db.TourPoints
-            .FirstOrDefault(tp => tp.TourId == -2);
+            .FirstOrDefault(tp => tp.Id == -200);
         tourPoint.ShouldNotBeNull();
 
         var trackDto = new TourExecutionTrackDto
@@ -41,7 +41,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
         trackController.Track(execution.Id, trackDto);
 
         var actionResult = controller.GetSecret(tourPoint.Id);
-        var okResult = actionResult.Result as ObjectResult;
+        var okResult = actionResult.Result as OkObjectResult;
         okResult.ShouldNotBeNull();
         
         var secretDto = okResult.Value as TourPointSecretDto;
@@ -113,7 +113,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
         trackController.Track(execution.Id, trackDto);
 
         var actionResult = controller.GetSecret(tourPoint.Id);
-        var okResult = actionResult.Result as ObjectResult;
+        var okResult = actionResult.Result as OkObjectResult;
         okResult.ShouldNotBeNull();
         
         var secretDto = okResult.Value as TourPointSecretDto;

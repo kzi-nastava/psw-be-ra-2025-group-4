@@ -6,5 +6,6 @@ namespace Explorer.Tours.API.Public.Tourist
     {
         ShoppingCartDto GetForTourist(int touristId);
         ShoppingCartDto AddToCart(int touristId, int tourId);
+        ShoppingCartDto RemoveFromCart(int touristId, int tourId);
     }
 }

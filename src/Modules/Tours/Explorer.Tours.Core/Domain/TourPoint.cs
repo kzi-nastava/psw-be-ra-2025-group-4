@@ -5,7 +5,6 @@ namespace Explorer.Tours.Core.Domain
 {
     public class TourPoint : Entity
     {
-        public int Id { get; set; }
         public long TourId { get; private set; }
         public string Name { get; private set; }
         public string Description { get; private set; }
@@ -16,6 +15,20 @@ namespace Explorer.Tours.Core.Domain
         public string? Secret { get; private set; }
 
         public Tour? Tour { get; private set; }
+
+        public TourPoint(long id, long tourId, string name, string description, double latitude, double longitude, int order, string? imageFileName, string? secret)
+        {
+            Id = id;
+            TourId = tourId;
+            Name = name;
+            Description = description;
+            Latitude = latitude;
+            Longitude = longitude;
+            Order = order;
+            ImageFileName = imageFileName;
+            Secret = secret;
+            Validate();
+        }
 
         public TourPoint(long tourId, string name, string description, double latitude, double longitude, int order, string? imageFileName, string? secret)
         {

@@ -7,12 +7,12 @@ namespace Explorer.Tours.Core.Domain;
 public class CompletedTourPoint
 {
     public int Id { get; private set; }
-    public int TourPointId { get; private set; }
+    public long TourPointId { get; private set; }
     public DateTime CompletedAt { get; private set; }
 
     private CompletedTourPoint() { }
 
-    public CompletedTourPoint(int tourPointId)
+    public CompletedTourPoint(long tourPointId)
     {
         TourPointId = tourPointId;
         CompletedAt = DateTime.UtcNow;
@@ -84,7 +84,7 @@ public class TourExecution : AggregateRoot
         LastActivity = DateTime.UtcNow;
     }
 
-    public bool TryCompletePoint(int tourPointId)
+    public bool TryCompletePoint(long tourPointId)
     {
         if (Status != TourExecutionStatus.Active)
             throw new InvalidOperationException("Cannot complete point on inactive tour execution."); 
