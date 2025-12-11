@@ -8,5 +8,7 @@ public interface ITourExecutionRepository
     TourExecution GetById(long id);
     TourExecution Update(TourExecution tourExecution);
     IEnumerable<TourExecution> GetByTourist(long touristId);
+
+    IEnumerable<TourExecution> GetByTouristAndTour(int touristId, int tourId);
 }
 

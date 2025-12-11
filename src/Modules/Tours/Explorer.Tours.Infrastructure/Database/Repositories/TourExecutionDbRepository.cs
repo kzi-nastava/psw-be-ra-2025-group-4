@@ -58,5 +58,14 @@ public class TourExecutionDbRepository : ITourExecutionRepository
             .OrderByDescending(te => te.StartTime)
             .ToList();
     }
+
+    public IEnumerable<TourExecution> GetByTouristAndTour(int touristId, int tourId)
+    {
+        return _dbSet
+            .Where(te => te.TouristId == touristId && te.TourId == tourId)
+            .Include(te => te.CompletedPoints)
+            .OrderByDescending(te => te.LastActivity)
+            .ToList();
+    }
 }
 

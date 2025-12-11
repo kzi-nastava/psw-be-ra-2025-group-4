@@ -70,7 +70,11 @@ namespace Explorer.Tours.Core.Mappers
 
             CreateMap<TourExecutionStatus, TourExecutionStatusDto>().ConvertUsing(src => (TourExecutionStatusDto)src);
             CreateMap<TourExecutionStatusDto, TourExecutionStatus>().ConvertUsing(src => (TourExecutionStatus)src);
-            CreateMap<TourExecution, TourExecutionDto>().ReverseMap();
+            CreateMap<CompletedTourPoint, CompletedTourPointDto>().ReverseMap();
+            CreateMap<TourExecution, TourExecutionDto>()
+                .ForMember(dest => dest.CompletedPoints, opt => opt.MapFrom(src => src.CompletedPoints))
+                .ReverseMap()
+                .ForMember(dest => dest.CompletedPoints, opt => opt.Ignore());
             CreateMap<TourExecutionCreateDto, TourExecution>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.TouristId, opt => opt.Ignore())
@@ -79,6 +83,8 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.EndTime, opt => opt.Ignore());
 
 
+            CreateMap<TourReviewDTO, TourReview>().ReverseMap();
+            CreateMap<TourReview, TourReviewDTO>();
         }
     }
 }

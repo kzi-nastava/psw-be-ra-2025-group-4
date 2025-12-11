@@ -96,5 +96,20 @@ namespace Explorer.Blog.Core.UseCases
             blog.Archive();
             _repository.Update(blog);
         }
+
+        public IEnumerable<BlogDto> GetActive()
+        {
+            var blogs = _repository.GetAll(); 
+            var filtered = blogs.Where(b => b.Popularity == BlogPopularity.Active);
+            return _mapper.Map<IEnumerable<BlogDto>>(filtered);
+        }
+
+        public IEnumerable<BlogDto> GetFamous()
+        {
+            var blogs = _repository.GetAll();
+            var filtered = blogs.Where(b => b.Popularity == BlogPopularity.Famous);
+            return _mapper.Map<IEnumerable<BlogDto>>(filtered);
+        }
+
     }
 }

@@ -49,6 +49,9 @@ public static class ToursStartup
 
         services.AddScoped<ITourExecutionService, TourExecutionService>();
         services.AddScoped<ITourSearchService, TourSearchService>();
+        services.AddScoped<ITourPointSecretService, TourPointSecretService>();
+
+        services.AddScoped<ITourReviewService, TourReviewService>();
 
     }
 
@@ -73,6 +76,9 @@ public static class ToursStartup
         services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
         services.AddScoped<IShoppingCartService, ShoppingCartService>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
+        services.AddScoped<ITourReviewRepository, TourReviewDbRepository>();
+
+        services.AddScoped<ITourSearchService, TourSearchService>();
 
         services.AddScoped<ITourSearchService, TourSearchService>();
 
@@ -85,6 +91,8 @@ public static class ToursStartup
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "tours")));
 
         services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+
+        
 
     }
 }
