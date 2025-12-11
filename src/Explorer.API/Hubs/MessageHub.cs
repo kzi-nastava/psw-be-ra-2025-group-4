@@ -13,11 +13,15 @@ namespace Explorer.API.Hubs
     public class MessageHub : Hub
     {
         private readonly IDirectMessageService _directMessageService;
+        private readonly INotificationService _notificationService;
 
-        public MessageHub(IDirectMessageService directMessageService)
+        public MessageHub(IDirectMessageService directMessageService,
+                          INotificationService notificationService)
         {
             _directMessageService = directMessageService;
+            _notificationService = notificationService;
         }
+
 
         public override async Task OnConnectedAsync()
         {
@@ -63,6 +67,16 @@ namespace Explorer.API.Hubs
                 await Clients.Group($"user_{recipientId}").SendAsync("ReceiveMessage", sentMessage);
 
                 await Clients.Caller.SendAsync("MessageSent", sentMessage);
+
+                var notification = _notificationService.CreateMessageNotification(
+                    recipientId,
+                    content,
+                    sentMessage.ResourceUrl
+                );
+
+                await Clients.Group($"user_{recipientId}")
+                    .SendAsync("ReceiveNotification", notification);
+
             }
             catch (Exception ex)
             {

@@ -16,6 +16,8 @@ public class StakeholdersContext : DbContext
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<ClubMessage> ClubMessages { get; set; }
     public DbSet<Follow> Follows { get; set; }
+  
+    public DbSet<Notification> Notifications { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
@@ -24,6 +26,8 @@ public class StakeholdersContext : DbContext
         modelBuilder.HasDefaultSchema("stakeholders");
 
         modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+
+        modelBuilder.Entity<Notification>();
 
         ConfigureStakeholder(modelBuilder);
         ConfigureDirectMessage(modelBuilder);

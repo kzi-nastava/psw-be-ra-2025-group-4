@@ -7,6 +7,9 @@ using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Explorer.API.Hubs;
+using Explorer.Stakeholders.API.Public;
 
 namespace Explorer.API.Controllers.Message
 {
@@ -16,11 +19,20 @@ namespace Explorer.API.Controllers.Message
     public class DirectMessageController : ControllerBase
     {
         private readonly IDirectMessageService _directMessageService;
+        private readonly IHubContext<MessageHub> _hubContext;
+        private readonly INotificationService _notificationService;
 
-        public DirectMessageController(IDirectMessageService directMessageService)
+
+        public DirectMessageController(
+            IDirectMessageService directMessageService,
+            IHubContext<MessageHub> hubContext,
+            INotificationService notificationService)
         {
             _directMessageService = directMessageService;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
+
 
         [HttpGet]
         public ActionResult<PagedResult<DirectMessageDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
@@ -40,13 +52,52 @@ namespace Explorer.API.Controllers.Message
             return Ok(_directMessageService.GetPagedBetweenUsers(page, pageSize, User.PersonId(), userId));
         }
 
+        [HttpPost("start")]
+        public async Task<ActionResult<DirectMessageDto>> StartConversation(
+            [FromBody] ConversationStartDto messageDto)
+        {
+            try
+            {
+                var result = _directMessageService.StartConversation(User.PersonId(), messageDto);
+
+                var notification = _notificationService.CreateMessageNotification(
+                    result.RecipientId,
+                    result.Content,
+                    result.ResourceUrl
+                );
+
+                await _hubContext.Clients
+                    .Group($"user_{result.RecipientId}")
+                    .SendAsync("ReceiveNotification", notification);
+
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpPost]
-        public ActionResult<DirectMessageDto> SendMessage([FromBody] DirectMessageDto directMessage)
+        public async Task<ActionResult<DirectMessageDto>> SendMessage([FromBody] DirectMessageDto directMessage)
         {
             try
             {
                 var result = _directMessageService.SendMessage(User.PersonId(), directMessage);
+
+                // ➤➤➤ DODAJ OVO: kreiranje notifikacije
+                var notification = _notificationService.CreateMessageNotification(
+                    result.RecipientId,
+                    result.Content,
+                    result.ResourceUrl
+                );
+
+                // ➤➤➤ DODAJ OVO: slanje SignalR notifikacije
+                await _hubContext.Clients
+                    .Group($"user_{result.RecipientId}")
+                    .SendAsync("ReceiveNotification", notification);
+
                 return Ok(result);
             }
             catch (ArgumentException ex)
@@ -58,6 +109,7 @@ namespace Explorer.API.Controllers.Message
                 return StatusCode(500, ex.Message);
             }
         }
+
 
 
         [HttpPut("{id:long}")]

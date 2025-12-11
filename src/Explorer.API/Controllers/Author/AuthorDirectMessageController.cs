@@ -3,8 +3,10 @@ using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Infrastructure.Authentication;
+using Explorer.API.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Explorer.API.Controllers.Author
 {
@@ -14,10 +16,17 @@ namespace Explorer.API.Controllers.Author
     public class AuthorDirectMessageController : ControllerBase
     {
         private readonly IDirectMessageService _directMessageService;
+        private readonly INotificationService _notificationService;
+        private readonly IHubContext<MessageHub> _hubContext;
 
-        public AuthorDirectMessageController(IDirectMessageService directMessageService)
+        public AuthorDirectMessageController(
+            IDirectMessageService directMessageService,
+            INotificationService notificationService,
+            IHubContext<MessageHub> hubContext)
         {
             _directMessageService = directMessageService;
+            _notificationService = notificationService;
+            _hubContext = hubContext;
         }
 
         [HttpGet("conversations")]
@@ -37,12 +46,27 @@ namespace Explorer.API.Controllers.Author
             return Ok(_directMessageService.GetPagedBetweenUsers(page, pageSize, GetUserId(), otherUserId));
         }
 
+        // ✅ SEND MESSAGE + NOTIFICATION
         [HttpPost]
-        public ActionResult<DirectMessageDto> SendMessage([FromBody] DirectMessageDto messageDto)
+        public async Task<ActionResult<DirectMessageDto>> SendMessage(
+            [FromBody] DirectMessageDto messageDto)
         {
             try
             {
                 var result = _directMessageService.SendMessage(GetUserId(), messageDto);
+
+                // ➊ Kreiraj notifikaciju
+                var notification = _notificationService.CreateMessageNotification(
+                    result.RecipientId,
+                    result.Content,
+                    result.ResourceUrl
+                );
+
+                // ➋ Pošalji real-time SignalR notifikaciju
+                await _hubContext.Clients
+                    .Group($"user_{result.RecipientId}")
+                    .SendAsync("ReceiveNotification", notification);
+
                 return Ok(result);
             }
             catch (ArgumentException ex)
@@ -56,25 +80,35 @@ namespace Explorer.API.Controllers.Author
         }
 
         [HttpPost("start")]
-        public ActionResult<DirectMessageDto> StartConversation([FromBody] ConversationStartDto messageDto)
+        public async Task<ActionResult<DirectMessageDto>> StartConversation(
+            [FromBody] ConversationStartDto messageDto)
         {
             try
             {
                 var result = _directMessageService.StartConversation(GetUserId(), messageDto);
+
+                var notification = _notificationService.CreateMessageNotification(
+                    result.RecipientId,
+                    result.Content,
+                    result.ResourceUrl
+                );
+
+                await _hubContext.Clients
+                    .Group($"user_{result.RecipientId}")
+                    .SendAsync("ReceiveNotification", notification);
+
                 return Ok(result);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
         }
 
+
         [HttpPut]
-        public ActionResult<DirectMessageDto> UpdateMessage([FromBody] DirectMessageDto messageDto)
+        public ActionResult<DirectMessageDto> UpdateMessage(
+            [FromBody] DirectMessageDto messageDto)
         {
             try
             {
@@ -108,11 +142,9 @@ namespace Explorer.API.Controllers.Author
         private int GetUserId()
         {
             var id = User.FindFirst("id")?.Value;
-
             if (id != null) return int.Parse(id);
 
             var pid = User.FindFirst("personId")?.Value;
-
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
     }
