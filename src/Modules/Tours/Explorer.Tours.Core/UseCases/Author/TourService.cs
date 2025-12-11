@@ -182,6 +182,8 @@ namespace Explorer.Tours.Core.UseCases.Author
             _tourRepository.Update(tour);
 
             return _mapper.Map<TourDto>(tour);
+        }
+
         public PagedResult<TourDto> GetPublished(int page, int pageSize)
         {
             var all = _tourRepository.GetPublished()
