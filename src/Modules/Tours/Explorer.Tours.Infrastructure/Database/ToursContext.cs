@@ -20,6 +20,7 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<TourPoint> TourPoints { get; set; }
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<TourExecution> TourExecutions { get; set; }
+        public DbSet<TourReview> TourReviews { get; set; }
 
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
@@ -102,6 +103,14 @@ namespace Explorer.Tours.Infrastructure.Database
                 .WithOne()
                 .HasForeignKey("TourExecutionId")
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TourReview>()
+                        .Property(tr => tr.Images)
+                        .HasColumnType("jsonb")
+                        .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                        v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null) ?? new List<string>()
+                        );
 
 
             base.OnModelCreating(modelBuilder);

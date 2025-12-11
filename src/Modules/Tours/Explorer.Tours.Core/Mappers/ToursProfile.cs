@@ -79,6 +79,8 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.EndTime, opt => opt.Ignore());
 
 
+            CreateMap<TourReviewDTO, TourReview>().ReverseMap();
+            CreateMap<TourReview, TourReviewDTO>();
         }
     }
 }
