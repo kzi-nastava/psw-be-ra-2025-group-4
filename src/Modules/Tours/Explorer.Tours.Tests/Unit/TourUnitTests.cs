@@ -67,7 +67,7 @@ namespace Explorer.Tours.Tests.Unit
         public void Adds_tour_point(string name, double lat, double lng, int order)
         {
             var tour = GetTestTour(-1);
-            var point = new TourPoint(-1, name, name, lat, lng, order, "", "");
+            var point = new TourPoint(-1, -1, name, name, lat, lng, order, "", "");
 
             Should.NotThrow(() => tour.AddTourPoint(point));
 
@@ -153,15 +153,9 @@ namespace Explorer.Tours.Tests.Unit
             }
             else
             {
-                var p1 = new TourPoint(tourId: tourId, name: "first", description: "first", latitude: 10, longitude: 20, order: 1, imageFileName: "", secret: "")
-                {
-                    Id = 1 
-                };
+                var p1 = new TourPoint(id: 1, tourId: tourId, name: "first", description: "first", latitude: 10, longitude: 20, order: 1, imageFileName: "", secret: "");
 
-                var p2 = new TourPoint(tourId: tourId, name: "second", description: "second", latitude: 10, longitude: 20, order: 2, imageFileName: "", secret: "")
-                {
-                    Id = 2  
-                };
+                var p2 = new TourPoint(id: 2, tourId: tourId, name: "second", description: "second", latitude: 10, longitude: 20, order: 2, imageFileName: "", secret: "");
 
                 points = new List<TourPoint> { p1, p2 };
             }
