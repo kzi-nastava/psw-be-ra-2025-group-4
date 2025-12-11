@@ -5,6 +5,6 @@ namespace Explorer.Tours.API.Public.Tourist
 {
     public interface ITourSearchService
     {
-        //List<TourSearchResultDto> Search(TourSearchRequestDto request);
+        List<TourSearchResultDto> Search(TourSearchRequestDto request);
     }
 }

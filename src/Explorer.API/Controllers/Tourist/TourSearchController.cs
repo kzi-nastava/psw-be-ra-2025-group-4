@@ -16,7 +16,7 @@ namespace Explorer.API.Controllers.Tours
             _service = service;
         }
 
-        /*
+        
         [HttpPost]
         public ActionResult<List<TourSearchResultDto>> Search([FromBody] TourSearchRequestDto req)
         {
@@ -31,6 +31,6 @@ namespace Explorer.API.Controllers.Tours
             // 200 — validan unos
             var result = _service.Search(req);
             return Ok(result);
-        }*/
+        }
     }
 }
