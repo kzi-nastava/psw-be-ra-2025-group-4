@@ -86,5 +86,39 @@ namespace Explorer.Tours.Core.UseCases.Tourist
 
             return _mapper.Map<ShoppingCartDto>(cart);
         }
+
+        public ShoppingCartDto RemoveFromCart(int touristId, int tourId)
+        {
+            
+            var cart = _cartRepository.GetByTouristId(touristId);
+
+            
+            if (cart == null)
+            {
+                return new ShoppingCartDto
+                {
+                    TouristId = touristId,
+                    Items = new(),
+                    TotalPrice = 0
+                };
+            }
+
+            var previousTotal = cart.TotalPrice;
+
+            
+            cart.RemoveItem(tourId);
+
+            
+            if (cart.TotalPrice == previousTotal)
+            {
+                return _mapper.Map<ShoppingCartDto>(cart);
+            }
+
+            
+            cart = _cartRepository.Update(cart);
+
+            return _mapper.Map<ShoppingCartDto>(cart);
+        }
+
     }
 }
