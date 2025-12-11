@@ -126,12 +126,31 @@ namespace Explorer.Tours.Core.Domain
 
             Equipment.Add(equipment);
         }
-
-        public void AddEquipments(List<Equipment> equipments)
+        public void AddEquipments(List<Equipment> newEquipment)
         {
+            if(Status == TourStatus.Archived)
+                throw new InvalidOperationException("Cannot modify equipment of an archived tour.");
+            
 
-            Equipment.AddRange(equipments);
+            var toRemove = Equipment
+                .Where(old => !newEquipment.Any(n => n.Id == old.Id))
+                .ToList();
+
+            foreach (var remove in toRemove)
+            {
+                Equipment.Remove(remove);
+            }
+
+            var toAdd = newEquipment
+                .Where(n => !Equipment.Any(old => old.Id == n.Id))
+                .ToList();
+
+            foreach (var add in toAdd)
+            {
+                Equipment.Add(add);
+            }
         }
+
 
         public void AddTransportDuration(TourTransportDuration duration)
         {
