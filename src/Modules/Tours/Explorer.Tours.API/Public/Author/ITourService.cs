@@ -19,5 +19,6 @@ namespace Explorer.Tours.API.Public
         void AddTourPoint(int tourId, int authorId, TourPointDto tourPoint);
         PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize);
         TourDto UpdateRouteLength(int tourId, int authorId, double lengthInKm);
+        PagedResult<TourDto> GetPublished(int page, int pageSize);
     }
 }

@@ -148,7 +148,7 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
         var existingToken = db.TourPurchaseTokens
-            .FirstOrDefault(t => t.TouristId == -1 && t.TourId == -2);
+            .FirstOrDefault(t => t.TouristId == -1 && t.TourId == -3);
         if (existingToken != null)
         {
             db.TourPurchaseTokens.Remove(existingToken);
@@ -157,7 +157,7 @@ public class TourExecutionCommandTests : BaseToursIntegrationTest
 
         var dto = new TourExecutionCreateDto
         {
-            TourId = -2,
+            TourId = -3,
             StartLatitude = 45.2671,
             StartLongitude = 19.8335
         };
