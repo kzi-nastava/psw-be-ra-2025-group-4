@@ -4,6 +4,7 @@ using Explorer.Blog.API.Public;
 using Explorer.Blog.Core.Domain;
 using Explorer.Blog.Infrastructure.Database;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -26,7 +27,7 @@ public class BlogCommandTests : BaseBlogIntegrationTest
         var result = ((ObjectResult)controller.Create(dto).Result)?.Value as BlogDto;
 
         result.ShouldNotBeNull();
-        result.Status.ShouldBe("Preparation");
+        result.Status.ToString().ShouldBe("Preparation");
     }
 
     [Fact]

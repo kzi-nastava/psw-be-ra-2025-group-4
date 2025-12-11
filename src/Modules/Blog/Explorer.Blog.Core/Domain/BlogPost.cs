@@ -13,6 +13,7 @@ namespace Explorer.Blog.Core.Domain
         public List<string> Images { get; private set; }
         public int UserId { get; private set; }
         public BlogStatus Status { get; private set; }
+        public BlogPopularity Popularity { get; private set; } = BlogPopularity.None;
 
         protected BlogPost() { }
 

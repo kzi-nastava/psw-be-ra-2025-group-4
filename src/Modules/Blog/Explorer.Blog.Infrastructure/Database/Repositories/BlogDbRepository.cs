@@ -57,5 +57,10 @@ namespace Explorer.Blog.Infrastructure.Database.Repositories
             _dbSet.Remove(entity);
             _dbContext.SaveChanges();
         }
+        public IEnumerable<BlogPost> GetAll()
+        {
+            return _dbSet.ToList();
+        }
+
     }
 }
