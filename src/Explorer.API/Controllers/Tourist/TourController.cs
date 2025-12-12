@@ -12,6 +12,7 @@ namespace Explorer.API.Controllers.Tourist;
 public class TourController : ControllerBase
 {
     private readonly ITourService _tourService;
+    private readonly ITourReviewService _tourReviewService;
 
     public TourController(ITourService tourService)
     {
@@ -28,6 +29,7 @@ public class TourController : ControllerBase
     public ActionResult<TourDto> GetById(int id)
     {
         var tour = _tourService.GetById(id);
+        tour.AverageGrade = _tourReviewService.GetTourAverageGrade(id);
         return Ok(tour);
     }
 
