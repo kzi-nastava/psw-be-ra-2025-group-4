@@ -14,9 +14,10 @@ public class TourController : ControllerBase
     private readonly ITourService _tourService;
     private readonly ITourReviewService _tourReviewService;
 
-    public TourController(ITourService tourService)
+    public TourController(ITourService tourService, ITourReviewService tourReviewService)
     {
         _tourService = tourService;
+        _tourReviewService = tourReviewService;
     }
 
     /*[HttpGet]
