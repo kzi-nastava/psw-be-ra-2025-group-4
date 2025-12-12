@@ -84,5 +84,41 @@ namespace Explorer.Tours.Tests.Integration.Tourist
             item.Price.ShouldBe(20.00m);
             dto.TotalPrice.ShouldBe(20.00m);
         }
+
+        [Fact]
+        public void Removes_item_from_cart()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope, personId: "2");   
+            var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+
+            var addResult = controller.AddToCart(-2);
+            var addOk = addResult.Result as OkObjectResult;
+            addOk.ShouldNotBeNull();
+
+            
+            var removeResult = controller.RemoveFromCart(-2);
+            var removeOk = removeResult.Result as OkObjectResult;
+            removeOk.ShouldNotBeNull();
+
+            var dto = removeOk.Value as ShoppingCartDto;
+            dto.ShouldNotBeNull();
+
+           
+            dto.TouristId.ShouldBe(2);
+            dto.Items.Count.ShouldBe(0);
+            dto.TotalPrice.ShouldBe(0m);
+
+            
+            var storedCart = dbContext.ShoppingCarts
+                .Include(c => c.Items)
+                .FirstOrDefault(c => c.TouristId == 2);
+
+            storedCart.ShouldNotBeNull();
+            storedCart.Items.Count.ShouldBe(0);
+            storedCart.TotalPrice.ShouldBe(0m);
+        }
+
     }
 }

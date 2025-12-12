@@ -66,5 +66,10 @@ namespace Explorer.Blog.Infrastructure.Database.Repositories
                     (x.Status == BlogStatus.Preparation && x.UserId == userId))
                 .ToList();
         }
+        public IEnumerable<BlogPost> GetAll()
+        {
+            return _dbSet.ToList();
+        }
+
     }
 }

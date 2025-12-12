@@ -23,7 +23,7 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
                          .ToList();
         }
 
-        public TourPoint Get(int id)
+        public TourPoint Get(long id)
         {
             var p = _dbSet.Find(id);
             if (p == null) throw new NotFoundException($"Point not found {id}");

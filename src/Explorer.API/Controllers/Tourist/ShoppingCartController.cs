@@ -45,5 +45,14 @@ namespace Explorer.API.Controllers.Tourist
         }
 
         
+        [HttpDelete("{tourId:int}")]
+        public ActionResult<ShoppingCartDto> RemoveFromCart(int tourId)
+        {
+            var result = _shoppingCartService.RemoveFromCart(GetTouristId(), tourId);
+            return Ok(result);
+        }
+
+
+
     }
 }

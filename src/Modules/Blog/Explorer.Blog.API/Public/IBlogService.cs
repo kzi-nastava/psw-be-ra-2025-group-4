@@ -19,5 +19,9 @@ namespace Explorer.Blog.API.Public
 
         BlogDto GetForUser(long id, int userId);
         IEnumerable<BlogDto> GetVisible(int userId);
+        IEnumerable<BlogDto> GetActive();
+        public IEnumerable<BlogDto> GetFamous();
+
+
     }
 }

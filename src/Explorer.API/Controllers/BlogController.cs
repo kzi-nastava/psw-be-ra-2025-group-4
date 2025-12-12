@@ -28,10 +28,7 @@ namespace Explorer.API.Controllers
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
 
-        // 🔹 Svi blogovi koje korisnik sme da vidi:
-        //  - Published
-        //  - Archived
-        //  - njegovi Preparation
+      
         [HttpGet]
         public ActionResult<IEnumerable<BlogDto>> GetVisible()
         {
@@ -39,7 +36,7 @@ namespace Explorer.API.Controllers
             return Ok(result);
         }
 
-        // Moji blogovi (svi koje sam ja kreirao)
+      
         [HttpGet("mine")]
         public ActionResult<IEnumerable<BlogDto>> GetMine()
         {
@@ -47,7 +44,6 @@ namespace Explorer.API.Controllers
             return Ok(result);
         }
 
-        // Pojedinačan blog sa proverom vidljivosti
         [HttpGet("{id:long}")]
         public ActionResult<BlogDto> Get(long id)
         {
@@ -94,6 +90,14 @@ namespace Explorer.API.Controllers
             _blogService.Archive(id, GetUserId());
             return Ok();
         }
+
+        [HttpGet("active")]
+        public ActionResult<IEnumerable<BlogDto>> GetActive()
+    => Ok(_blogService.GetActive());
+
+        [HttpGet("famous")]
+        public ActionResult<IEnumerable<BlogDto>> GetFamous()
+            => Ok(_blogService.GetFamous());
 
         // ======================
         //       COMMENTS
