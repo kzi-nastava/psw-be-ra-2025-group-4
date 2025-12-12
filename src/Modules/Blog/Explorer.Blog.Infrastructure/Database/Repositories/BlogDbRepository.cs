@@ -57,6 +57,15 @@ namespace Explorer.Blog.Infrastructure.Database.Repositories
             _dbSet.Remove(entity);
             _dbContext.SaveChanges();
         }
+
+        public IEnumerable<BlogPost> GetVisible(int userId)
+        {
+            return _dbSet.Where(x =>
+                    x.Status == BlogStatus.Published ||
+                    x.Status == BlogStatus.Archived ||
+                    (x.Status == BlogStatus.Preparation && x.UserId == userId))
+                .ToList();
+        }
         public IEnumerable<BlogPost> GetAll()
         {
             return _dbSet.ToList();

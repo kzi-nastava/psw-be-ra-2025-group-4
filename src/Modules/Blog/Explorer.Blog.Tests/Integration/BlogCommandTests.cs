@@ -172,7 +172,10 @@ public class BlogCommandTests : BaseBlogIntegrationTest
 
     private static BlogController CreateController(IServiceScope scope, string userId = "1")
     {
-        return new BlogController(scope.ServiceProvider.GetRequiredService<IBlogService>())
+        return new BlogController(
+            scope.ServiceProvider.GetRequiredService<IBlogService>(),
+            scope.ServiceProvider.GetRequiredService<ICommentService>()   // FIX
+        )
         {
             ControllerContext = BuildContext(userId)
         };

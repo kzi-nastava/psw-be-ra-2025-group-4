@@ -11,10 +11,12 @@ namespace Explorer.API.Controllers
     public class BlogController : ControllerBase
     {
         private readonly IBlogService _blogService;
+        private readonly ICommentService _commentService;
 
-        public BlogController(IBlogService blogService)
+        public BlogController(IBlogService blogService, ICommentService commentService)
         {
             _blogService = blogService;
+            _commentService = commentService;
         }
 
         private int GetUserId()
@@ -26,6 +28,15 @@ namespace Explorer.API.Controllers
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
 
+      
+        [HttpGet]
+        public ActionResult<IEnumerable<BlogDto>> GetVisible()
+        {
+            var result = _blogService.GetVisible(GetUserId());
+            return Ok(result);
+        }
+
+      
         [HttpGet("mine")]
         public ActionResult<IEnumerable<BlogDto>> GetMine()
         {
@@ -36,10 +47,11 @@ namespace Explorer.API.Controllers
         [HttpGet("{id:long}")]
         public ActionResult<BlogDto> Get(long id)
         {
-            var result = _blogService.Get(id);
+            var result = _blogService.GetForUser(id, GetUserId());
             return Ok(result);
         }
 
+        // Create
         [HttpPost]
         public ActionResult<BlogDto> Create([FromBody] CreateUpdateBlogDto dto)
         {
@@ -47,6 +59,7 @@ namespace Explorer.API.Controllers
             return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
 
+        // Update
         [HttpPut("{id:long}")]
         public ActionResult<BlogDto> Update(long id, [FromBody] CreateUpdateBlogDto dto)
         {
@@ -54,6 +67,7 @@ namespace Explorer.API.Controllers
             return Ok(updated);
         }
 
+        // Delete
         [HttpDelete("{id:long}")]
         public IActionResult Delete(long id)
         {
@@ -61,6 +75,7 @@ namespace Explorer.API.Controllers
             return NoContent();
         }
 
+        // Publish
         [HttpPost("{id:long}/publish")]
         public IActionResult Publish(long id)
         {
@@ -68,6 +83,7 @@ namespace Explorer.API.Controllers
             return Ok();
         }
 
+        // Archive
         [HttpPost("{id:long}/archive")]
         public IActionResult Archive(long id)
         {
@@ -77,11 +93,47 @@ namespace Explorer.API.Controllers
 
         [HttpGet("active")]
         public ActionResult<IEnumerable<BlogDto>> GetActive()
-            => Ok(_blogService.GetActive());
+    => Ok(_blogService.GetActive());
 
         [HttpGet("famous")]
         public ActionResult<IEnumerable<BlogDto>> GetFamous()
             => Ok(_blogService.GetFamous());
 
+        // ======================
+        //       COMMENTS
+        // ======================
+
+        // svi komentari za blog
+        [HttpGet("{id:long}/comments")]
+        public ActionResult<IEnumerable<CommentDto>> GetComments(long id)
+        {
+            var result = _commentService.GetByBlog(id);
+            return Ok(result);
+        }
+
+        // kreiranje komentara (samo ako je blog objavljen)
+        [HttpPost("{id:long}/comments")]
+        public ActionResult<CommentDto> CreateComment(long id, [FromBody] CreateUpdateCommentDto dto)
+        {
+            var created = _commentService.Create(id, GetUserId(), dto);
+            return CreatedAtAction(nameof(GetComments), new { id }, created);
+        }
+
+        // izmena komentara (autor + 15 minuta)
+        // 3) Izmena komentara (autor + 15 minuta)
+        [HttpPut("comments/{commentId:long}")]
+        public ActionResult<CommentDto> UpdateComment(long commentId, [FromBody] CreateUpdateCommentDto dto)
+        {
+            var updated = _commentService.Update(commentId, GetUserId(), dto);
+            return Ok(updated);
+        }
+
+        // 4) Brisanje komentara (autor + 15 minuta)
+        [HttpDelete("comments/{commentId:long}")]
+        public IActionResult DeleteComment(long commentId)
+        {
+            _commentService.Delete(commentId, GetUserId());
+            return NoContent();
+        }
     }
 }

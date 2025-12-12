@@ -15,6 +15,9 @@ namespace Explorer.Blog.Core.Domain
         public BlogStatus Status { get; private set; }
         public BlogPopularity Popularity { get; private set; } = BlogPopularity.None;
 
+        public List<Comment> Comments { get; private set; } = new();
+
+
         protected BlogPost() { }
 
         public BlogPost(string title, string description, int userId, List<string>? images = null)
