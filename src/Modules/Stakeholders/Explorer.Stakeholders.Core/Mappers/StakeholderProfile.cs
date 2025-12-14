@@ -29,6 +29,13 @@ public class StakeholderProfile : Profile
                .ForMember(dest => dest.Id, opt => opt.Ignore())
                .ForMember(dest => dest.AuthorId, opt => opt.Ignore())
                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Username,
+                opt => opt.MapFrom(src => src.Username))
+            .ForMember(dest => dest.Role,
+                opt => opt.MapFrom(src => src.GetPrimaryRoleName()))
+            .ForMember(dest => dest.IsActive,
+                opt => opt.MapFrom(src => src.IsActive));
 
 
     }

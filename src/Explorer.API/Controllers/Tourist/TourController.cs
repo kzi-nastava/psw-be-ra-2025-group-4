@@ -1,4 +1,5 @@
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.API.Dtos;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Authorization;
@@ -34,10 +35,27 @@ public class TourController : ControllerBase
         return Ok(tour);
     }
 
-    [HttpGet]
+    /*[HttpGet]
     public ActionResult<PagedResult<TourDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
     {
         return Ok(_tourService.GetPublished(page, pageSize));
+    }*/
+
+    [HttpGet]
+    public ActionResult<PagedResult<TourDto>> GetAll(
+    [FromQuery] int page,
+    [FromQuery] int pageSize)
+    {
+        var result = _tourService.GetPublished(page, pageSize);
+
+        foreach (var tour in result.Results)
+        {
+            tour.AverageGrade =
+                _tourReviewService.GetTourAverageGrade(tour.Id);
+        }
+
+        return Ok(result);
     }
+
 }
 

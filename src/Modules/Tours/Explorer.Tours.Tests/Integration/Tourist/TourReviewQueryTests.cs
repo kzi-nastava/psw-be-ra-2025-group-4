@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Explorer.API.Controllers.Tourist;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Mvc;
@@ -85,7 +86,10 @@ namespace Explorer.Tours.Tests.Integration.Tourist
 
         private static TourReviewController CreateController(IServiceScope scope)
         {
-            return new TourReviewController(scope.ServiceProvider.GetRequiredService<ITourReviewService>())
+            return new TourReviewController(
+                scope.ServiceProvider.GetRequiredService<ITourReviewService>(),
+                scope.ServiceProvider.GetRequiredService<IUserService>()
+                )
             {
                 ControllerContext = BuildContext("-1")
             };
