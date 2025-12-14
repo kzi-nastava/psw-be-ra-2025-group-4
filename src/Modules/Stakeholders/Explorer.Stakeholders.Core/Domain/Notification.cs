@@ -18,10 +18,13 @@ namespace Explorer.Stakeholders.Core.Domain
         public DateTime CreatedAt { get; private set; }
         public string? ResourceUrl { get; private set; }
         public NotificationType Type { get; private set; }
+        public long? ActorId { get; private set; }
+        public string? ActorUsername { get; private set; }
+        public int Count { get; private set; } = 1;
 
         protected Notification() { }
 
-        public Notification(long userId, string content, NotificationType type, string? resourceUrl = null)
+        public Notification(long userId, string content, NotificationType type, string? resourceUrl = null, long ? actorId = null, string? actorUsername = null)
         {
             if (userId <= 0)
                 throw new EntityValidationException("Invalid user id.");
@@ -33,7 +36,8 @@ namespace Explorer.Stakeholders.Core.Domain
             Content = content;
             Type = type;
             ResourceUrl = resourceUrl;
-
+            ActorId = actorId;
+            ActorUsername = actorUsername;
             IsRead = false;
             CreatedAt = DateTime.UtcNow;
         }
@@ -42,5 +46,13 @@ namespace Explorer.Stakeholders.Core.Domain
         {
             IsRead = true;
         }
+        public void Increment(string latestContent)
+        {
+            Count++;
+            Content = latestContent;
+            IsRead = false;
+            CreatedAt = DateTime.UtcNow;
+        }
+
     }
 }

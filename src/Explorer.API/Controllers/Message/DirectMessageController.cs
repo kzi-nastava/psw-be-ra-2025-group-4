@@ -1,15 +1,16 @@
-﻿using Explorer.BuildingBlocks.Core.Exceptions;
+﻿using Explorer.API.Hubs;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Explorer.API.Hubs;
-using Explorer.Stakeholders.API.Public;
 
 namespace Explorer.API.Controllers.Message
 {
@@ -21,16 +22,19 @@ namespace Explorer.API.Controllers.Message
         private readonly IDirectMessageService _directMessageService;
         private readonly IHubContext<MessageHub> _hubContext;
         private readonly INotificationService _notificationService;
+        private readonly IUserRepository _userRepository;
 
 
         public DirectMessageController(
             IDirectMessageService directMessageService,
             IHubContext<MessageHub> hubContext,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IUserRepository userRepository)
         {
             _directMessageService = directMessageService;
             _hubContext = hubContext;
             _notificationService = notificationService;
+            _userRepository = userRepository;
         }
 
 
@@ -58,10 +62,14 @@ namespace Explorer.API.Controllers.Message
         {
             try
             {
+                var senderId = GetUserId();
+                var sender = _userRepository.Get(senderId);
                 var result = _directMessageService.StartConversation(User.PersonId(), messageDto);
 
                 var notification = _notificationService.CreateMessageNotification(
                     result.RecipientId,
+                    senderId,
+                    sender.Username,
                     result.Content,
                     result.ResourceUrl
                 );
@@ -84,11 +92,15 @@ namespace Explorer.API.Controllers.Message
         {
             try
             {
+                var senderId = GetUserId();
+                var sender = _userRepository.Get(senderId);
                 var result = _directMessageService.SendMessage(User.PersonId(), directMessage);
 
                 // ➤➤➤ DODAJ OVO: kreiranje notifikacije
                 var notification = _notificationService.CreateMessageNotification(
                     result.RecipientId,
+                    senderId,
+                    sender.Username,
                     result.Content,
                     result.ResourceUrl
                 );
@@ -143,6 +155,14 @@ namespace Explorer.API.Controllers.Message
             {
                 return NotFound(ex.Message);
             }
+        }
+        private int GetUserId()
+        {
+            var id = User.FindFirst("id")?.Value;
+            if (id != null) return int.Parse(id);
+
+            var pid = User.FindFirst("personId")?.Value;
+            return int.Parse(pid ?? throw new Exception("No user id found"));
         }
     }
 }

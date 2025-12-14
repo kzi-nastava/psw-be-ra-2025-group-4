@@ -10,5 +10,10 @@ namespace Explorer.Stakeholders.API.Dtos
         public DateTime CreatedAt { get; set; }
         public string? ResourceUrl { get; set; }
         public string Type { get; set; }
+        public long? ActorId { get; set; }
+        public string? ActorUsername { get; set; }
+        public int Count { get; set; }
+
+
     }
 }

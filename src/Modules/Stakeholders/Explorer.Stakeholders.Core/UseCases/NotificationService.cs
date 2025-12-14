@@ -19,12 +19,30 @@ namespace Explorer.Stakeholders.Core.UseCases
             _mapper = mapper;
         }
 
-        public NotificationDto CreateMessageNotification(long userId, string content, string? resourceUrl)
+        public NotificationDto CreateMessageNotification(long userId, long actorId, string actorUsername, string content, string? resourceUrl)
         {
-            var notif = new Notification(userId, content, NotificationType.Message, resourceUrl);
+            var existing = _repo.GetUnreadMessageNotification(userId, actorId);
+
+            if (existing != null)
+            {
+                existing.Increment(content);
+                _repo.Update(existing);
+                return _mapper.Map<NotificationDto>(existing);
+            }
+
+            var notif = new Notification(
+                userId,
+                content,
+                NotificationType.Message,
+                resourceUrl,
+                actorId,
+                actorUsername
+            );
+
             var created = _repo.Create(notif);
             return _mapper.Map<NotificationDto>(created);
         }
+
 
         public NotificationDto CreateClubNotification(long userId, string content, string? resourceUrl)
         {
@@ -51,5 +69,10 @@ namespace Explorer.Stakeholders.Core.UseCases
         {
             _repo.MarkAllAsRead(userId);
         }
+        public void MarkConversationAsRead(long userId, long actorId)
+        {
+            _repo.MarkMessageNotificationsAsRead(userId, actorId);
+        }
+
     }
 }

@@ -55,5 +55,28 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             foreach (var n in unread) n.MarkAsRead();
             _context.SaveChanges();
         }
+        public Notification? GetUnreadMessageNotification(long userId, long actorId)
+        {
+            return _set.FirstOrDefault(n =>
+                n.UserId == userId &&
+                !n.IsRead &&
+                n.Type == NotificationType.Message &&
+                n.ActorId == actorId
+            );
+        }
+
+        public void MarkMessageNotificationsAsRead(long userId, long actorId)
+        {
+            var items = _set.Where(n =>
+                n.UserId == userId &&
+                n.Type == NotificationType.Message &&
+                n.ActorId == actorId &&
+                !n.IsRead
+            ).ToList();
+
+            foreach (var n in items) n.MarkAsRead();
+            _context.SaveChanges();
+        }
+
     }
 }

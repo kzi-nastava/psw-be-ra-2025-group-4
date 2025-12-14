@@ -69,11 +69,16 @@ namespace Explorer.API.Hubs
 
                 await Clients.Caller.SendAsync("MessageSent", sentMessage);
 
+                var senderUsername = sentMessage.Sender ?? "";
+
                 var notification = _notificationService.CreateMessageNotification(
                     recipientId,
+                    senderId,
+                    senderUsername,
                     content,
                     sentMessage.ResourceUrl
                 );
+
 
                 await Clients.Group($"user_{recipientId}")
                     .SendAsync("ReceiveNotification", notification);

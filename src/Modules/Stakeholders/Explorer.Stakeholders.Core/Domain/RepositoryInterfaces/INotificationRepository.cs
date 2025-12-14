@@ -10,5 +10,8 @@ namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces
         PagedResult<Notification> GetPaged(long userId, int page, int pageSize);
         void Update(Notification notification);
         void MarkAllAsRead(long userId);
+        Notification? GetUnreadMessageNotification(long userId, long actorId);
+        void MarkMessageNotificationsAsRead(long userId, long actorId);
+
     }
 }

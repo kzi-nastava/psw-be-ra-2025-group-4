@@ -54,5 +54,14 @@ namespace Explorer.API.Controllers.Message
 
             return Ok();
         }
+
+        [HttpPut("messages/from/{actorId:long}/read")]
+        public IActionResult MarkConversationAsRead(long actorId)
+        {
+            long userId = User.PersonId();
+            _notificationService.MarkConversationAsRead(userId, actorId);
+            return Ok();
+        }
+
     }
 }

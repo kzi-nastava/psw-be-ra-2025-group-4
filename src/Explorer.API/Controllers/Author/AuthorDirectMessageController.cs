@@ -1,9 +1,10 @@
-﻿using Explorer.BuildingBlocks.Core.Exceptions;
+﻿using Explorer.API.Hubs;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Infrastructure.Authentication;
-using Explorer.API.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -18,15 +19,19 @@ namespace Explorer.API.Controllers.Author
         private readonly IDirectMessageService _directMessageService;
         private readonly INotificationService _notificationService;
         private readonly IHubContext<MessageHub> _hubContext;
+        private readonly IUserRepository _userRepository;
+
 
         public AuthorDirectMessageController(
             IDirectMessageService directMessageService,
             INotificationService notificationService,
-            IHubContext<MessageHub> hubContext)
+            IHubContext<MessageHub> hubContext,
+            IUserRepository userRepository)
         {
             _directMessageService = directMessageService;
             _notificationService = notificationService;
             _hubContext = hubContext;
+            _userRepository = userRepository;
         }
 
         [HttpGet("conversations")]
@@ -46,23 +51,24 @@ namespace Explorer.API.Controllers.Author
             return Ok(_directMessageService.GetPagedBetweenUsers(page, pageSize, GetUserId(), otherUserId));
         }
 
-        // ✅ SEND MESSAGE + NOTIFICATION
         [HttpPost]
         public async Task<ActionResult<DirectMessageDto>> SendMessage(
             [FromBody] DirectMessageDto messageDto)
         {
             try
             {
+                var senderId = GetUserId();
+                var sender = _userRepository.Get(senderId);
                 var result = _directMessageService.SendMessage(GetUserId(), messageDto);
 
-                // ➊ Kreiraj notifikaciju
                 var notification = _notificationService.CreateMessageNotification(
                     result.RecipientId,
+                    senderId,
+                    sender.Username,
                     result.Content,
                     result.ResourceUrl
                 );
 
-                // ➋ Pošalji real-time SignalR notifikaciju
                 await _hubContext.Clients
                     .Group($"user_{result.RecipientId}")
                     .SendAsync("ReceiveNotification", notification);
@@ -85,10 +91,14 @@ namespace Explorer.API.Controllers.Author
         {
             try
             {
+                var senderId = GetUserId();
+                var sender = _userRepository.Get(senderId);
                 var result = _directMessageService.StartConversation(GetUserId(), messageDto);
 
                 var notification = _notificationService.CreateMessageNotification(
                     result.RecipientId,
+                    senderId,
+                    sender.Username,
                     result.Content,
                     result.ResourceUrl
                 );
