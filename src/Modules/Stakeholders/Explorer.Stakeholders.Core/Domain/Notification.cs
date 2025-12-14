@@ -21,10 +21,11 @@ namespace Explorer.Stakeholders.Core.Domain
         public long? ActorId { get; private set; }
         public string? ActorUsername { get; private set; }
         public int Count { get; private set; } = 1;
+        public long? ClubId { get; private set; }
 
         protected Notification() { }
 
-        public Notification(long userId, string content, NotificationType type, string? resourceUrl = null, long ? actorId = null, string? actorUsername = null)
+        public Notification(long userId, string content, NotificationType type, string? resourceUrl = null, long ? actorId = null, string? actorUsername = null, long? clubId = null)
         {
             if (userId <= 0)
                 throw new EntityValidationException("Invalid user id.");
@@ -40,6 +41,7 @@ namespace Explorer.Stakeholders.Core.Domain
             ActorUsername = actorUsername;
             IsRead = false;
             CreatedAt = DateTime.UtcNow;
+            ClubId = clubId;
         }
 
         public void MarkAsRead()

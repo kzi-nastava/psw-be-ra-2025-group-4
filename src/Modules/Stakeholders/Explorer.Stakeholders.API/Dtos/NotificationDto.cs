@@ -13,7 +13,7 @@ namespace Explorer.Stakeholders.API.Dtos
         public long? ActorId { get; set; }
         public string? ActorUsername { get; set; }
         public int Count { get; set; }
-
+        public long? ClubId { get; set; }
 
     }
 }

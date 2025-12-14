@@ -43,13 +43,22 @@ namespace Explorer.Stakeholders.Core.UseCases
             return _mapper.Map<NotificationDto>(created);
         }
 
-
-        public NotificationDto CreateClubNotification(long userId, string content, string? resourceUrl)
+        public NotificationDto CreateClubNotification(long userId, string content, long actorId, string actorUsername, long clubId)
         {
-            var notif = new Notification(userId, content, NotificationType.ClubActivity, resourceUrl);
+            var notif = new Notification(
+                userId: userId,
+                content: content,
+                type: NotificationType.ClubActivity,
+                resourceUrl: null,
+                actorId: actorId,
+                actorUsername: actorUsername,
+                clubId: clubId
+            );
+
             var created = _repo.Create(notif);
             return _mapper.Map<NotificationDto>(created);
         }
+
 
         public PagedResult<NotificationDto> GetPaged(long userId, int page, int pageSize)
         {
