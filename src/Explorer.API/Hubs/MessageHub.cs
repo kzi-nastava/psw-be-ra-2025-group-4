@@ -50,7 +50,7 @@ namespace Explorer.API.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task SendMessage(long recipientId, string content)
+        public async Task SendMessage(long recipientId, string content, string? resourceUrl = null)
         {
             try
             {
@@ -59,7 +59,8 @@ namespace Explorer.API.Hubs
                 var messageDto = new DirectMessageDto
                 {
                     RecipientId = recipientId,
-                    Content = content
+                    Content = content,
+                    ResourceUrl = resourceUrl
                 };
 
                 var sentMessage = _directMessageService.SendMessage(senderId, messageDto);

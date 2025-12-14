@@ -122,7 +122,7 @@ namespace Explorer.API.Controllers.Message
             }
             catch (NotFoundException ex)
             {
-                return NotFound(ex.Message); 
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
