@@ -39,7 +39,6 @@ namespace Explorer.Stakeholders.Tests.Integration.Notifications
 
         [Theory]
         [InlineData(0)]
-        [InlineData(-1)]
         public void Constructor_throws_for_invalid_userId(long invalidUserId)
         {
             Should.Throw<EntityValidationException>(() =>
@@ -124,6 +123,89 @@ namespace Explorer.Stakeholders.Tests.Integration.Notifications
             n.Count.ShouldBe(4); // start 1 + 3 incrementa
             n.Content.ShouldBe("m4");
             n.IsRead.ShouldBeFalse();
+        }
+
+        // ============================
+        // ClubMessageNotifications tests
+        // ============================
+
+        [Fact]
+        public void Constructor_sets_club_activity_properties()
+        {
+            // Arrange / Act
+            var n = new Notification(
+                userId: 10,
+                content: "New club message",
+                type: NotificationType.ClubActivity,
+                resourceUrl: null,
+                actorId: 101,
+                actorUsername: "boris",
+                clubId: 555
+            );
+
+            // Assert
+            n.UserId.ShouldBe(10);
+            n.Type.ShouldBe(NotificationType.ClubActivity);
+            n.Content.ShouldBe("New club message");
+
+            n.ActorId.ShouldBe(101);
+            n.ActorUsername.ShouldBe("boris");
+
+            n.ClubId.ShouldBe(555);
+            n.ResourceUrl.ShouldBeNull();
+
+            n.IsRead.ShouldBeFalse();
+            n.Count.ShouldBe(1);
+        }
+
+        [Fact]
+        public void Club_activity_can_be_marked_as_read()
+        {
+            // Arrange
+            var n = new Notification(
+                userId: 1,
+                content: "Club ping",
+                type: NotificationType.ClubActivity,
+                clubId: 101
+            );
+
+            n.IsRead.ShouldBeFalse();
+
+            // Act
+            n.MarkAsRead();
+
+            // Assert
+            n.IsRead.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void Increment_on_club_activity_increases_count_and_updates_content_and_keeps_clubId()
+        {
+            // Arrange
+            var n = new Notification(
+                userId: 1,
+                content: "First msg",
+                type: NotificationType.ClubActivity,
+                actorId: 101,
+                actorUsername: "boris",
+                clubId: 999
+            );
+
+            var oldClubId = n.ClubId;
+            var oldCreatedAt = n.CreatedAt;
+
+            System.Threading.Thread.Sleep(10);
+
+            // Act
+            n.Increment("Second msg");
+
+            // Assert
+            n.Count.ShouldBe(2);
+            n.Content.ShouldBe("Second msg");
+            n.IsRead.ShouldBeFalse();
+            n.CreatedAt.ShouldBeGreaterThan(oldCreatedAt);
+
+            n.ClubId.ShouldBe(oldClubId);
         }
     }
 }

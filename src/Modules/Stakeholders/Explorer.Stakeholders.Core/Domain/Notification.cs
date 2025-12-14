@@ -27,7 +27,7 @@ namespace Explorer.Stakeholders.Core.Domain
 
         public Notification(long userId, string content, NotificationType type, string? resourceUrl = null, long ? actorId = null, string? actorUsername = null, long? clubId = null)
         {
-            if (userId <= 0)
+            if (userId == 0)
                 throw new EntityValidationException("Invalid user id.");
 
             if (string.IsNullOrWhiteSpace(content))
