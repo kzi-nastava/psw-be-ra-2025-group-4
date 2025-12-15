@@ -2,6 +2,7 @@
 using Explorer.Blog.API.Dtos;
 using Explorer.Blog.API.Public;
 using Explorer.Blog.Infrastructure.Database;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -73,7 +74,8 @@ public class BlogQueryTests : BaseBlogIntegrationTest
     {
         return new BlogController(
             scope.ServiceProvider.GetRequiredService<IBlogService>(),
-            scope.ServiceProvider.GetRequiredService<ICommentService>())
+            scope.ServiceProvider.GetRequiredService<ICommentService>(),
+            scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>())
         {
             ControllerContext = BuildContext(userId)
         };

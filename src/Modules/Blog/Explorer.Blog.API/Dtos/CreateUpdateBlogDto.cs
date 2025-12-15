@@ -10,6 +10,11 @@ namespace Explorer.Blog.API.Dtos
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public List<string> Images { get; set; }
+
+     
+        public List<string> Images { get; set; } = new();
+
+       
+        public List<string>? ImagesBase64 { get; set; }
     }
 }

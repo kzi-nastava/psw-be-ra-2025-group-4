@@ -2,6 +2,11 @@
 using Explorer.Blog.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
 
 namespace Explorer.API.Controllers
 {
@@ -12,12 +17,15 @@ namespace Explorer.API.Controllers
     {
         private readonly IBlogService _blogService;
         private readonly ICommentService _commentService;
+        private readonly IWebHostEnvironment _env;
 
-        public BlogController(IBlogService blogService, ICommentService commentService)
+        public BlogController(IBlogService blogService, ICommentService commentService, IWebHostEnvironment env)
         {
             _blogService = blogService;
             _commentService = commentService;
+            _env = env;
         }
+
 
         private int GetUserId()
         {
@@ -55,17 +63,45 @@ namespace Explorer.API.Controllers
         [HttpPost]
         public ActionResult<BlogDto> Create([FromBody] CreateUpdateBlogDto dto)
         {
+            if (dto.ImagesBase64 != null && dto.ImagesBase64.Count > 0)
+            {
+                dto.Images ??= new List<string>();
+
+                foreach (var img in dto.ImagesBase64.Where(x => !string.IsNullOrWhiteSpace(x)))
+                {
+                    var fileName = SaveImageFromBase64(img);
+                    dto.Images.Add($"/BlogImages/{fileName}"); // preporuka da u DB čuvaš putanju
+                }
+
+                dto.ImagesBase64 = null;
+            }
+
             var created = _blogService.CreateBlog(dto, GetUserId());
             return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
+
 
         // Update
         [HttpPut("{id:long}")]
         public ActionResult<BlogDto> Update(long id, [FromBody] CreateUpdateBlogDto dto)
         {
+            if (dto.ImagesBase64 != null && dto.ImagesBase64.Count > 0)
+            {
+                dto.Images ??= new List<string>();
+
+                foreach (var img in dto.ImagesBase64.Where(x => !string.IsNullOrWhiteSpace(x)))
+                {
+                    var fileName = SaveImageFromBase64(img);
+                    dto.Images.Add($"/BlogImages/{fileName}");
+                }
+
+                dto.ImagesBase64 = null;
+            }
+
             var updated = _blogService.UpdateBlog(id, dto, GetUserId());
             return Ok(updated);
         }
+
 
         // Delete
         [HttpDelete("{id:long}")]
@@ -135,5 +171,28 @@ namespace Explorer.API.Controllers
             _commentService.Delete(commentId, GetUserId());
             return NoContent();
         }
+
+        private string SaveImageFromBase64(string base64)
+        {
+            var commaIndex = base64.IndexOf(',');
+            if (commaIndex >= 0) base64 = base64[(commaIndex + 1)..];
+
+            var bytes = Convert.FromBase64String(base64);
+
+            var webRoot = _env.WebRootPath;
+            if (string.IsNullOrWhiteSpace(webRoot))
+                webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            var folder = Path.Combine(webRoot, "BlogImages");
+            Directory.CreateDirectory(folder);
+
+            var fileName = $"{Guid.NewGuid()}.jpg"; // ili detektuj ext ako želiš
+            var fullPath = Path.Combine(folder, fileName);
+
+            System.IO.File.WriteAllBytes(fullPath, bytes);
+
+            return fileName; // ili vrati "/BlogImages/" + fileName
+        }
+
     }
 }
