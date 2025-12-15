@@ -65,5 +65,41 @@ namespace Explorer.Stakeholders.Core.UseCases
             var clubs = _clubRepository.GetByOwner(ownerId);
             return _mapper.Map<List<ClubDto>>(clubs);
         }
+        public void InviteMember(long clubId, long ownerId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.InviteMember(ownerId, touristId);
+
+            // privremeno: ovde ce kasnije ici Notification
+            _clubRepository.Update(club);
+        }
+
+        public void AcceptInvite(long clubId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.AddMember(touristId);
+            _clubRepository.Update(club);
+        }
+
+        public void RemoveMember(long clubId, long ownerId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.RemoveMember(ownerId, touristId);
+            _clubRepository.Update(club);
+        }
+
+        public void CloseClub(long clubId, long ownerId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.Close(ownerId);
+            _clubRepository.Update(club);
+        }
+
+        public void ActivateClub(long clubId, long ownerId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.Activate(ownerId);
+            _clubRepository.Update(club);
+        }
     }
 }

@@ -75,5 +75,43 @@ namespace Explorer.API.Controllers.Tourist
             _clubService.Delete(id, GetTouristId());
             return NoContent();
         }
+
+        [HttpPost("{clubId}/invite/{touristId}")]
+        public IActionResult Invite(long clubId, long touristId)
+        {
+            var ownerId = GetTouristId();
+            _clubService.InviteMember(clubId, ownerId, touristId);
+            return Ok();
+        }
+
+        [HttpPost("{clubId}/accept-invite")]
+        public IActionResult AcceptInvite(long clubId)
+        {
+            var touristId = GetTouristId();
+            _clubService.AcceptInvite(clubId, touristId);
+            return Ok();
+        }
+
+        [HttpDelete("{clubId}/members/{touristId}")]
+        public IActionResult RemoveMember(long clubId, long touristId)
+        {
+            var ownerId = GetTouristId();
+            _clubService.RemoveMember(clubId, ownerId, touristId);
+            return Ok();
+        }
+
+        [HttpPut("{id:long}/close")]
+        public IActionResult CloseClub(long id)
+        {
+            _clubService.CloseClub(id, GetTouristId());
+            return NoContent();
+        }
+
+        [HttpPut("{id:long}/activate")]
+        public IActionResult ActivateClub(long id)
+        {
+            _clubService.ActivateClub(id, GetTouristId());
+            return NoContent();
+        }
     }
 }
