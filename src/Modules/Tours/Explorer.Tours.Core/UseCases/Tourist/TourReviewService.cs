@@ -137,5 +137,16 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             if (daysSinceLastActivity > 7)
                 throw new InvalidOperationException("More than 7 days have passed since the last activity on this tour");
         }
+
+        public string GetTourAverageGrade(int tourId)
+        {
+            var allReviews = _repository.GetByTour(tourId).ToList();
+            if (!allReviews.Any())
+                return "No reviews";
+
+            var averageRating = allReviews.Average(r => r.Rating);
+            return averageRating.ToString("0.0");
+        }
+
     }
 }

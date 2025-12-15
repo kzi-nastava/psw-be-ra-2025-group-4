@@ -9,6 +9,7 @@ using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
+using Explorer.Stakeholders.API.Public;
 
 namespace Explorer.Tours.Tests.Integration.Tourist
 {
@@ -198,7 +199,10 @@ namespace Explorer.Tours.Tests.Integration.Tourist
 
         private static TourReviewController CreateController(IServiceScope scope)
         {
-            return new TourReviewController(scope.ServiceProvider.GetRequiredService<ITourReviewService>())
+            return new TourReviewController(
+                scope.ServiceProvider.GetRequiredService<ITourReviewService>(),
+                scope.ServiceProvider.GetRequiredService<IUserService>()
+                )
             {
                 ControllerContext = BuildContext("-1")
             };
