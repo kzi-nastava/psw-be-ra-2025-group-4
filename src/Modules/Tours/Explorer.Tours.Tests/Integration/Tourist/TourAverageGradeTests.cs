@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Explorer.API.Controllers.Tourist;
-using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Mvc;
@@ -10,26 +9,40 @@ using Shouldly;
 namespace Explorer.Tours.Tests.Integration.Tourist;
 
 [Collection("Sequential")]
-public class TourPublishedListingTests : BaseToursIntegrationTest
+public class TourAverageGradeTests : BaseToursIntegrationTest
 {
-    public TourPublishedListingTests(ToursTestFactory factory) : base(factory) { }
-
+    public TourAverageGradeTests(ToursTestFactory factory) : base(factory) { }
 
     [Fact]
-    public void Retrieves_all_published()
+    public void Retrieves_average_grade_for_tour()
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
         // Act
-        var result = ((ObjectResult)controller.GetAll(1, 10).Result)?.Value as PagedResult<TourDto>;
+        var result = ((ObjectResult)controller.GetById(-1).Result)?.Value as TourDto;
 
         // Assert
         result.ShouldNotBeNull();
-        result.Results.Count.ShouldBe(1);
-        result.TotalCount.ShouldBe(1);
+        result.AverageGrade.ShouldBe("4.0");
     }
+
+    [Fact]
+    public void Retrieves_no_reviews_for_tour()
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope);
+
+        // Act
+        var result = ((ObjectResult)controller.GetById(-3).Result)?.Value as TourDto;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.AverageGrade.ShouldBe("No reviews");
+    }
+
     private static TourController CreateController(IServiceScope scope)
     {
         return new TourController(

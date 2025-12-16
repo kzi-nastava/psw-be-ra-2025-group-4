@@ -1,4 +1,5 @@
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.API.Dtos;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Authorization;
@@ -12,10 +13,12 @@ namespace Explorer.API.Controllers.Tourist;
 public class TourController : ControllerBase
 {
     private readonly ITourService _tourService;
+    private readonly ITourReviewService _tourReviewService;
 
-    public TourController(ITourService tourService)
+    public TourController(ITourService tourService, ITourReviewService tourReviewService)
     {
         _tourService = tourService;
+        _tourReviewService = tourReviewService;
     }
 
     /*[HttpGet]
@@ -28,13 +31,31 @@ public class TourController : ControllerBase
     public ActionResult<TourDto> GetById(int id)
     {
         var tour = _tourService.GetById(id);
+        tour.AverageGrade = _tourReviewService.GetTourAverageGrade(id);
         return Ok(tour);
     }
 
-    [HttpGet]
+    /*[HttpGet]
     public ActionResult<PagedResult<TourDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
     {
         return Ok(_tourService.GetPublished(page, pageSize));
+    }*/
+
+    [HttpGet]
+    public ActionResult<PagedResult<TourDto>> GetAll(
+    [FromQuery] int page,
+    [FromQuery] int pageSize)
+    {
+        var result = _tourService.GetPublished(page, pageSize);
+
+        foreach (var tour in result.Results)
+        {
+            tour.AverageGrade =
+                _tourReviewService.GetTourAverageGrade(tour.Id);
+        }
+
+        return Ok(result);
     }
+
 }
 

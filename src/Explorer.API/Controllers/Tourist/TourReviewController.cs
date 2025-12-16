@@ -1,6 +1,9 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.API.Dtos;
+using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
+using Explorer.Tours.Core.UseCases.Author;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,10 +15,12 @@ namespace Explorer.API.Controllers.Tourist
     public class TourReviewController : ControllerBase
     {
         private readonly ITourReviewService _tourReviewService;
+        private readonly IUserService _userService;
 
-        public TourReviewController(ITourReviewService tourReviewService)
+        public TourReviewController(ITourReviewService tourReviewService, IUserService userService)
         {
             _tourReviewService = tourReviewService;
+            _userService = userService;
         }
 
         private int GetTouristId()
@@ -35,7 +40,16 @@ namespace Explorer.API.Controllers.Tourist
         [HttpGet("tour/{tourId:int}")]
         public ActionResult<PagedResult<TourReviewDTO>> GetByTour(int tourId, [FromQuery] int page, [FromQuery] int pageSize)
         {
-            return Ok(_tourReviewService.GetPagedByTour(tourId, page, pageSize));
+            var result = _tourReviewService.GetPagedByTour(tourId, page, pageSize);
+
+            foreach (var tour in result.Results)
+            {
+                UserDto? u = _userService.GetById(tour.TouristId);
+                if (u == null) continue;
+                tour.TouristUsername = u.Username;
+            }
+
+            return Ok(result);
         }
 
         [HttpGet("{id:int}")]

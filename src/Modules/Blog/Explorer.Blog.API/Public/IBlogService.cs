@@ -16,6 +16,9 @@ namespace Explorer.Blog.API.Public
         void DeleteBlog(long id, int userId);
         void Publish(long id, int userId);
         void Archive(long id, int userId);
+
+        BlogDto GetForUser(long id, int userId);
+        IEnumerable<BlogDto> GetVisible(int userId);
         IEnumerable<BlogDto> GetActive();
         public IEnumerable<BlogDto> GetFamous();
 

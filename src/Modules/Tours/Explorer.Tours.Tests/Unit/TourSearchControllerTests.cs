@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Explorer.Tours.Tests.Unit
 {
-    public class TourSearchServiceTests
+    public class TourSearchControllerTests
     {
         private class TourRepoStub : ITourRepository
         {

@@ -26,6 +26,7 @@ public static class BlogStartup
     {
         services.AddScoped<IDigitalDiaryService, DigitalDiaryService>();
         services.AddScoped<IBlogService, BlogService>();
+        services.AddScoped<ICommentService, CommentService>();
 
     }
 
@@ -33,6 +34,7 @@ public static class BlogStartup
     {
         services.AddScoped<IDigitalDiaryRepository, DigitalDiaryDbRepository>();
         services.AddScoped<IBlogRepository, BlogDbRepository>();
+        services.AddScoped<ICommentRepository, CommentDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("blog"));
         dataSourceBuilder.EnableDynamicJson();
