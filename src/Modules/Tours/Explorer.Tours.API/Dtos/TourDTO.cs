@@ -31,6 +31,7 @@ namespace Explorer.Tours.API.Dtos
         public List<TourTransportDurationDto> TransportDuration { get; set; }
         public double LengthInKm { get; set; }
         public List<EquipmentDto> Equipment { get; set; }
+        public string AverageGrade { get; set; }
 
     }
 }

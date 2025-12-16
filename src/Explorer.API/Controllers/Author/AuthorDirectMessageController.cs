@@ -1,10 +1,13 @@
-﻿using Explorer.BuildingBlocks.Core.Exceptions;
+﻿using Explorer.API.Hubs;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Explorer.API.Controllers.Author
 {
@@ -14,10 +17,21 @@ namespace Explorer.API.Controllers.Author
     public class AuthorDirectMessageController : ControllerBase
     {
         private readonly IDirectMessageService _directMessageService;
+        private readonly INotificationService _notificationService;
+        private readonly IHubContext<MessageHub> _hubContext;
+        private readonly IUserRepository _userRepository;
 
-        public AuthorDirectMessageController(IDirectMessageService directMessageService)
+
+        public AuthorDirectMessageController(
+            IDirectMessageService directMessageService,
+            INotificationService notificationService,
+            IHubContext<MessageHub> hubContext,
+            IUserRepository userRepository)
         {
             _directMessageService = directMessageService;
+            _notificationService = notificationService;
+            _hubContext = hubContext;
+            _userRepository = userRepository;
         }
 
         [HttpGet("conversations")]
@@ -38,11 +52,27 @@ namespace Explorer.API.Controllers.Author
         }
 
         [HttpPost]
-        public ActionResult<DirectMessageDto> SendMessage([FromBody] DirectMessageDto messageDto)
+        public async Task<ActionResult<DirectMessageDto>> SendMessage(
+            [FromBody] DirectMessageDto messageDto)
         {
             try
             {
+                var senderId = GetUserId();
+                var sender = _userRepository.Get(senderId);
                 var result = _directMessageService.SendMessage(GetUserId(), messageDto);
+
+                var notification = _notificationService.CreateMessageNotification(
+                    result.RecipientId,
+                    senderId,
+                    sender.Username,
+                    result.Content,
+                    result.ResourceUrl
+                );
+
+                await _hubContext.Clients
+                    .Group($"user_{result.RecipientId}")
+                    .SendAsync("ReceiveNotification", notification);
+
                 return Ok(result);
             }
             catch (ArgumentException ex)
@@ -56,25 +86,39 @@ namespace Explorer.API.Controllers.Author
         }
 
         [HttpPost("start")]
-        public ActionResult<DirectMessageDto> StartConversation([FromBody] ConversationStartDto messageDto)
+        public async Task<ActionResult<DirectMessageDto>> StartConversation(
+            [FromBody] ConversationStartDto messageDto)
         {
             try
             {
+                var senderId = GetUserId();
+                var sender = _userRepository.Get(senderId);
                 var result = _directMessageService.StartConversation(GetUserId(), messageDto);
+
+                var notification = _notificationService.CreateMessageNotification(
+                    result.RecipientId,
+                    senderId,
+                    sender.Username,
+                    result.Content,
+                    result.ResourceUrl
+                );
+
+                await _hubContext.Clients
+                    .Group($"user_{result.RecipientId}")
+                    .SendAsync("ReceiveNotification", notification);
+
                 return Ok(result);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
         }
 
+
         [HttpPut]
-        public ActionResult<DirectMessageDto> UpdateMessage([FromBody] DirectMessageDto messageDto)
+        public ActionResult<DirectMessageDto> UpdateMessage(
+            [FromBody] DirectMessageDto messageDto)
         {
             try
             {
@@ -108,11 +152,9 @@ namespace Explorer.API.Controllers.Author
         private int GetUserId()
         {
             var id = User.FindFirst("id")?.Value;
-
             if (id != null) return int.Parse(id);
 
             var pid = User.FindFirst("personId")?.Value;
-
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
     }

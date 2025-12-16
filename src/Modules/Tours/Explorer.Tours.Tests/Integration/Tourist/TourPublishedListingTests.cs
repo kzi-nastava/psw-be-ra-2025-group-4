@@ -32,7 +32,10 @@ public class TourPublishedListingTests : BaseToursIntegrationTest
     }
     private static TourController CreateController(IServiceScope scope)
     {
-        return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>())
+        return new TourController(
+            scope.ServiceProvider.GetRequiredService<ITourService>(),
+            scope.ServiceProvider.GetRequiredService<ITourReviewService>()
+        )
         {
             ControllerContext = BuildContext("-1")
         };

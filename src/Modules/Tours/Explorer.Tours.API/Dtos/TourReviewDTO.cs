@@ -13,5 +13,7 @@ namespace Explorer.Tours.API.Dtos
         public List<string> Images { get; set; }
         public DateTime CreatedAt { get; set; }
         public double TourCompletionPercentage { get; set; }
+
+        public string TouristUsername { get; set; }
     }
 }

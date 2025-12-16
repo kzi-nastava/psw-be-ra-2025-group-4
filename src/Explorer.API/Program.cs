@@ -16,7 +16,6 @@ builder.Services.ConfigureAuth();
 builder.Services.RegisterModules();
 builder.Services.ConfigureBlogModule();
 
-
 builder.Services.AddSignalR();
 
 var app = builder.Build();

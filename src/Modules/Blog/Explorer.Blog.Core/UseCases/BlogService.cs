@@ -52,9 +52,28 @@ namespace Explorer.Blog.Core.UseCases
             return _mapper.Map<BlogDto>(blog);
         }
 
+        public BlogDto GetForUser(long id, int userId)
+        {
+            var blog = _repository.Get(id);
+            if (blog == null)
+                throw new KeyNotFoundException("Blog not found.");
+
+            // ovde ograničavamo vidljivost:
+            if (blog.Status == BlogStatus.Preparation && blog.UserId != userId)
+                throw new UnauthorizedAccessException("You cannot see someone else's blog in draft state.");
+
+            return _mapper.Map<BlogDto>(blog);
+        }
+
         public IEnumerable<BlogDto> GetByUser(int userId)
         {
             var blogs = _repository.GetByUser(userId);
+            return _mapper.Map<IEnumerable<BlogDto>>(blogs);
+        }
+
+        public IEnumerable<BlogDto> GetVisible(int userId)
+        {
+            var blogs = _repository.GetVisible(userId);
             return _mapper.Map<IEnumerable<BlogDto>>(blogs);
         }
 
@@ -96,5 +115,20 @@ namespace Explorer.Blog.Core.UseCases
             blog.Archive();
             _repository.Update(blog);
         }
+
+        public IEnumerable<BlogDto> GetActive()
+        {
+            var blogs = _repository.GetAll(); 
+            var filtered = blogs.Where(b => b.Popularity == BlogPopularity.Active);
+            return _mapper.Map<IEnumerable<BlogDto>>(filtered);
+        }
+
+        public IEnumerable<BlogDto> GetFamous()
+        {
+            var blogs = _repository.GetAll();
+            var filtered = blogs.Where(b => b.Popularity == BlogPopularity.Famous);
+            return _mapper.Map<IEnumerable<BlogDto>>(filtered);
+        }
+
     }
 }
