@@ -11,5 +11,7 @@ namespace Explorer.Blog.Core.Domain.RepositoryInterfaces
         Comment Create(Comment comment);
         Comment Update(Comment comment);
         void Delete(long id);
+
+        int CountByBlog(long blogId);
     }
 }

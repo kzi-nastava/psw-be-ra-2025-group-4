@@ -1,16 +1,55 @@
 INSERT INTO blog."BlogPosts"
 ("Id", "Title", "Description", "UserId", "Images", "CreatedAt", "LastUpdatedAt", "Status", "Popularity")
 VALUES
-    (-1, 'Test Blog 1', 'Opis bloga 1', 1, ARRAY['slika.jpg'], NOW(), NULL, 0, 0), 
-    (-2, 'Test Blog 2', 'Opis bloga 2', 1, ARRAY['slika.jpg'], NOW(), NULL, 1, 1), 
-    (-3, 'Test Blog 3', 'Opis bloga 3', 1, ARRAY['slika.jpg'], NOW(), NULL, 2, 2),  
-    (-4, 'Test Blog 4', 'Opis bloga 4', 1, ARRAY['slika.jpg'], NOW(), NULL, 0, 0),  
-    (-5, 'Test Blog 5', 'Opis bloga 5', 2, ARRAY['slika.jpg'], NOW(), NULL, 0, 0); 
+    (-1, 'Test Blog 1', 'Opis bloga 1', 1, ARRAY['slika.jpg'], NOW(), NULL, 0, 0),
+    (-2, 'Test Blog 2', 'Opis bloga 2', 1, ARRAY['slika.jpg'], NOW(), NULL, 1, 0),
+    (-3, 'Test Blog 3', 'Opis bloga 3', 1, ARRAY['slika.jpg'], NOW(), NULL, 2, 0),
+    (-4, 'Test Blog 4', 'Opis bloga 4', 1, ARRAY['slika.jpg'], NOW(), NULL, 0, 0),
+    (-5, 'Test Blog 5', 'Opis bloga 5', 2, ARRAY['slika.jpg'], NOW(), NULL, 0, 0);
 
-
-    INSERT INTO blog."Comments"
+INSERT INTO blog."Comments"
 ("Id", "BlogId", "UserId", "Text", "CreatedAt", "LastModifiedAt")
 VALUES
-    (-1, -2, 1, 'Komentar na objavljen blog', NOW(), NULL),            
-    (-2, -2, 2, 'Drugi user komentar', NOW(), NULL),                   
-    (-3, -2, 1, 'Stari komentar', NOW() - INTERVAL '20 minutes', NULL);
+    (-1, -2, 1, 'Komentar 1', NOW(), NULL),
+    (-2, -2, 2, 'Komentar 2', NOW(), NULL),
+    (-3, -2, 1, 'Komentar 3', NOW(), NULL),
+    (-4, -2, 1, 'Komentar 4', NOW(), NULL),
+    (-5, -2, 1, 'Komentar 5', NOW(), NULL),
+    (-6, -2, 1, 'Komentar 6', NOW(), NULL),
+    (-7, -2, 1, 'Komentar 7', NOW(), NULL),
+    (-8, -2, 1, 'Komentar 8', NOW(), NULL),
+    (-9, -2, 1, 'Komentar 9', NOW(), NULL),
+    (-10, -2, 1, 'Komentar 10', NOW(), NULL),
+    (-11, -2, 1, 'Komentar 11', NOW(), NULL),
+
+    (-20, -3, 1, 'Komentar 1', NOW(), NULL),
+    (-21, -3, 1, 'Komentar 2', NOW(), NULL),
+    (-22, -3, 1, 'Komentar 3', NOW(), NULL),
+    (-23, -3, 1, 'Komentar 4', NOW(), NULL),
+    (-24, -3, 1, 'Komentar 5', NOW(), NULL),
+    (-25, -3, 1, 'Komentar 6', NOW(), NULL),
+    (-26, -3, 1, 'Komentar 7', NOW(), NULL),
+    (-27, -3, 1, 'Komentar 8', NOW(), NULL),
+    (-28, -3, 1, 'Komentar 9', NOW(), NULL),
+    (-29, -3, 1, 'Komentar 10', NOW(), NULL),
+    (-30, -3, 1, 'Komentar 11', NOW(), NULL),
+    (-31, -3, 1, 'Komentar 12', NOW(), NULL),
+    (-32, -3, 1, 'Komentar 13', NOW(), NULL),
+    (-33, -3, 1, 'Komentar 14', NOW(), NULL),
+    (-34, -3, 1, 'Komentar 15', NOW(), NULL),
+    (-35, -3, 1, 'Komentar 16', NOW(), NULL),
+    (-36, -3, 1, 'Komentar 17', NOW(), NULL),
+    (-37, -3, 1, 'Komentar 18', NOW(), NULL),
+    (-38, -3, 1, 'Komentar 19', NOW(), NULL),
+    (-39, -3, 1, 'Komentar 20', NOW(), NULL),
+    (-40, -3, 1, 'Komentar 21', NOW(), NULL),
+    (-41, -3, 1, 'Komentar 22', NOW(), NULL),
+    (-42, -3, 1, 'Komentar 23', NOW(), NULL),
+    (-43, -3, 1, 'Komentar 24', NOW(), NULL),
+    (-44, -3, 1, 'Komentar 25', NOW(), NULL),
+    (-45, -3, 1, 'Komentar 26', NOW(), NULL),
+    (-46, -3, 1, 'Komentar 27', NOW(), NULL),
+    (-47, -3, 1, 'Komentar 28', NOW(), NULL),
+    (-48, -3, 1, 'Komentar 29', NOW(), NULL),
+    (-49, -3, 1, 'Komentar 30', NOW(), NULL),
+    (-50, -3, 1, 'Komentar 31', NOW(), NULL);

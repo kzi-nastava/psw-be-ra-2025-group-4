@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using Explorer.Blog.API.Dtos;
 using Explorer.Blog.API.Public;
@@ -11,14 +12,45 @@ namespace Explorer.Blog.Core.UseCases
     public class BlogService : IBlogService
     {
         private readonly IBlogRepository _repository;
+        private readonly ICommentRepository _commentRepository;
         private readonly IMapper _mapper;
 
-        public BlogService(IBlogRepository repository, IMapper mapper)
+        public BlogService(
+            IBlogRepository repository,
+            ICommentRepository commentRepository,
+            IMapper mapper)
         {
             _repository = repository;
+            _commentRepository = commentRepository;
             _mapper = mapper;
         }
 
+        // =========================
+        // Popularity (po komentarima)
+        // =========================
+        private static BlogPopularityDTO CalculatePopularityDto(int commentsCount)
+        {
+            if (commentsCount > 30) return BlogPopularityDTO.Famous;
+            if (commentsCount > 10) return BlogPopularityDTO.Active;
+            return BlogPopularityDTO.None;
+        }
+
+        private BlogDto MapWithPopularity(BlogPost blog)
+        {
+            var dto = _mapper.Map<BlogDto>(blog);
+            var commentsCount = _commentRepository.CountByBlog(blog.Id);
+            dto.Popularity = CalculatePopularityDto(commentsCount);
+            return dto;
+        }
+
+        private IEnumerable<BlogDto> MapListWithPopularity(IEnumerable<BlogPost> blogs)
+        {
+            return blogs.Select(MapWithPopularity).ToList();
+        }
+
+        // =========================
+        // CRUD
+        // =========================
         public BlogDto CreateBlog(CreateUpdateBlogDto dto, int userId)
         {
             var blog = new BlogPost(dto.Title, dto.Description, userId, dto.Images);
@@ -29,7 +61,6 @@ namespace Explorer.Blog.Core.UseCases
         public BlogDto UpdateBlog(long id, CreateUpdateBlogDto dto, int userId)
         {
             var blog = _repository.Get(id);
-
             if (blog == null)
                 throw new KeyNotFoundException("Blog not found.");
 
@@ -39,17 +70,16 @@ namespace Explorer.Blog.Core.UseCases
             blog.Update(dto.Title, dto.Description, dto.Images);
             _repository.Update(blog);
 
-            return _mapper.Map<BlogDto>(blog);
+            return MapWithPopularity(blog);
         }
 
         public BlogDto Get(long id)
         {
             var blog = _repository.Get(id);
-
             if (blog == null)
                 throw new KeyNotFoundException("Blog not found.");
 
-            return _mapper.Map<BlogDto>(blog);
+            return MapWithPopularity(blog);
         }
 
         public BlogDto GetForUser(long id, int userId)
@@ -58,29 +88,27 @@ namespace Explorer.Blog.Core.UseCases
             if (blog == null)
                 throw new KeyNotFoundException("Blog not found.");
 
-            // ovde ograničavamo vidljivost:
             if (blog.Status == BlogStatus.Preparation && blog.UserId != userId)
                 throw new UnauthorizedAccessException("You cannot see someone else's blog in draft state.");
 
-            return _mapper.Map<BlogDto>(blog);
+            return MapWithPopularity(blog);
         }
 
         public IEnumerable<BlogDto> GetByUser(int userId)
         {
             var blogs = _repository.GetByUser(userId);
-            return _mapper.Map<IEnumerable<BlogDto>>(blogs);
+            return MapListWithPopularity(blogs);
         }
 
         public IEnumerable<BlogDto> GetVisible(int userId)
         {
             var blogs = _repository.GetVisible(userId);
-            return _mapper.Map<IEnumerable<BlogDto>>(blogs);
+            return MapListWithPopularity(blogs);
         }
 
         public void DeleteBlog(long id, int userId)
         {
             var blog = _repository.Get(id);
-
             if (blog == null)
                 throw new KeyNotFoundException("Blog not found.");
 
@@ -116,19 +144,21 @@ namespace Explorer.Blog.Core.UseCases
             _repository.Update(blog);
         }
 
+        // =========================
+        // Filters
+        // =========================
         public IEnumerable<BlogDto> GetActive()
         {
-            var blogs = _repository.GetAll(); 
-            var filtered = blogs.Where(b => b.Popularity == BlogPopularity.Active);
-            return _mapper.Map<IEnumerable<BlogDto>>(filtered);
+            var blogs = _repository.GetAll();
+            var dtos = MapListWithPopularity(blogs);
+            return dtos.Where(b => b.Popularity == BlogPopularityDTO.Active);
         }
 
         public IEnumerable<BlogDto> GetFamous()
         {
             var blogs = _repository.GetAll();
-            var filtered = blogs.Where(b => b.Popularity == BlogPopularity.Famous);
-            return _mapper.Map<IEnumerable<BlogDto>>(filtered);
+            var dtos = MapListWithPopularity(blogs);
+            return dtos.Where(b => b.Popularity == BlogPopularityDTO.Famous);
         }
-
     }
 }

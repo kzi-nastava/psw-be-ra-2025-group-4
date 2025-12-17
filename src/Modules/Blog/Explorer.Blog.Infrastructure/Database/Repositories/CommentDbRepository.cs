@@ -50,4 +50,11 @@ public class CommentDbRepository : ICommentRepository
         _dbSet.Remove(entity);
         _dbContext.SaveChanges();
     }
+
+    public int CountByBlog(long blogId)
+    {
+        return _dbContext.Comments.Count(c => c.BlogId == blogId);
+    }
+
+
 }
