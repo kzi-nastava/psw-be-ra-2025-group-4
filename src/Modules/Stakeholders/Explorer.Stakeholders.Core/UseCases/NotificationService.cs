@@ -82,6 +82,25 @@ namespace Explorer.Stakeholders.Core.UseCases
         {
             _repo.MarkMessageNotificationsAsRead(userId, actorId);
         }
+        public NotificationDto CreateFollowNotification(long userId, long actorId, string actorUsername, string resourceUrl)
+        {
+
+            resourceUrl = $"/followers/{userId}";
+            var content = $"{actorUsername} started following you.";
+
+            var notif = new Notification(
+                userId: userId,
+                content: content,
+                type: NotificationType.Follow,
+                resourceUrl: resourceUrl,
+                actorId: actorId,
+                actorUsername: actorUsername
+            );
+
+            var created = _repo.Create(notif);
+            return _mapper.Map<NotificationDto>(created);
+        }
+
 
     }
 }
