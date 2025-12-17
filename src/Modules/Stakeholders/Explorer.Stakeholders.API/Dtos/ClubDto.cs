@@ -15,5 +15,7 @@ namespace Explorer.Stakeholders.API.Dtos
         public List<string> ImageUrls { get; set; } = new();
         public string Status { get; set; } 
         public List<long> Members { get; set; } = new();
+        public List<long> InvitedTourist { get; set; } = new();
+        public List<long> RequestedTourists { get; set; } = new();
     }
 }
