@@ -29,7 +29,6 @@
 
 
   <ItemGroup>
-    <Folder Include="Controllers\Author\" />
 	<Folder Include="wwwroot\TourPointsImages\" />
   </ItemGroup>
 

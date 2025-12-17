@@ -4,6 +4,7 @@ using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Infrastructure.Database;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,8 @@ public class UserProfileControllerTests : BaseStakeholdersIntegrationTest
     private static UserProfileController CreateController(IServiceScope scope, long userId)
     {
         return new UserProfileController(
-            scope.ServiceProvider.GetRequiredService<IUserProfileService>()
+            scope.ServiceProvider.GetRequiredService<IUserProfileService>(),
+            scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>()
         )
         {
             ControllerContext = BuildContextWithTestAuth(userId)

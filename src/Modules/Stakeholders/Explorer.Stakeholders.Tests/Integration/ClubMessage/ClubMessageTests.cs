@@ -1,14 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using Explorer.API.Controllers.Tourist;
+using Explorer.API.Hubs;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Infrastructure.Database;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
-using System.Security.Claims;
+using Xunit;
 
 namespace Explorer.Stakeholders.Tests.Integration.Clubs;
 
@@ -33,7 +39,11 @@ public class ClubMessageControllerTests : BaseStakeholdersIntegrationTest
     private ClubMessagesController CreateController(IServiceScope scope, long userId)
     {
         return new ClubMessagesController(
-            scope.ServiceProvider.GetRequiredService<IClubMessageService>())
+            scope.ServiceProvider.GetRequiredService<IClubMessageService>(),
+            scope.ServiceProvider.GetRequiredService<INotificationService>(),
+            scope.ServiceProvider.GetRequiredService<IHubContext<MessageHub>>(),
+            scope.ServiceProvider.GetRequiredService<IUserRepository>()
+        )
         {
             ControllerContext = FakeUser(userId)
         };
@@ -52,7 +62,6 @@ public class ClubMessageControllerTests : BaseStakeholdersIntegrationTest
         var controller = CreateController(scope, -21);
 
         var result = controller.Get(-1).Result as OkObjectResult;
-
         result.ShouldNotBeNull();
 
         var list = result!.Value as List<ClubMessageDto>;
@@ -66,11 +75,10 @@ public class ClubMessageControllerTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
 
-        
         db.ClubMessages.RemoveRange(db.ClubMessages);
         db.SaveChanges();
 
-        var controller = CreateController(scope, -21); 
+        var controller = CreateController(scope, -21);
 
         var dto = new ClubMessageCreateDto
         {
@@ -79,18 +87,20 @@ public class ClubMessageControllerTests : BaseStakeholdersIntegrationTest
             ResourceType = null
         };
 
-        var result = controller.Create(-1, dto).Result as ObjectResult;
+        // Create vraća Task<ActionResult<ClubMessageDto>>
+        var action = controller.Create(-1, dto).Result;
 
-        
-        result.ShouldNotBeNull();
-        result!.StatusCode.ShouldBe(201);
+        // IActionResult je u action.Result
+        var createdResult = action.Result as CreatedResult;
+        createdResult.ShouldNotBeNull();
+        createdResult!.StatusCode.ShouldBe(201);
 
-        var created = result.Value as ClubMessageDto;
-        created.ShouldNotBeNull();
-        created!.Text.ShouldBe("Hello club!");
-        created.AuthorId.ShouldBe(-21);
+        var createdDto = createdResult.Value as ClubMessageDto;
+        createdDto.ShouldNotBeNull();
+        createdDto!.Text.ShouldBe("Hello club!");
+        createdDto.AuthorId.ShouldBe(-21);
+        createdDto.ClubId.ShouldBe(-1);
     }
-
 
     [Fact]
     public void Updates_own_message()
@@ -107,7 +117,6 @@ public class ClubMessageControllerTests : BaseStakeholdersIntegrationTest
         var dto = new ClubMessageCreateDto { Text = "Edited message" };
 
         var result = controller.Update(-1, msg.Id, dto).Result as OkObjectResult;
-
         result.ShouldNotBeNull();
 
         var updated = result!.Value as ClubMessageDto;
@@ -125,15 +134,14 @@ public class ClubMessageControllerTests : BaseStakeholdersIntegrationTest
         db.ClubMessages.Add(msg);
         db.SaveChanges();
 
-        var controller = CreateController(scope, -22); // drugi korisnik
+        var controller = CreateController(scope, -22);
 
         var dto = new ClubMessageCreateDto { Text = "Hacking attempt" };
 
-        Should.Throw<Explorer.BuildingBlocks.Core.Exceptions.ForbiddenException>(() =>
+        Should.Throw<ForbiddenException>(() =>
         {
-            controller.Update(-1,msg.Id,dto);
+            controller.Update(-1, msg.Id, dto);
         });
-
     }
 
     [Fact]
@@ -149,7 +157,6 @@ public class ClubMessageControllerTests : BaseStakeholdersIntegrationTest
         var controller = CreateController(scope, -21);
 
         var result = controller.Delete(-1, msg.Id) as NoContentResult;
-
         result.ShouldNotBeNull();
         result!.StatusCode.ShouldBe(204);
     }
@@ -166,10 +173,9 @@ public class ClubMessageControllerTests : BaseStakeholdersIntegrationTest
 
         var controller = CreateController(scope, -22);
 
-        Should.Throw<Explorer.BuildingBlocks.Core.Exceptions.ForbiddenException>(() =>
+        Should.Throw<ForbiddenException>(() =>
         {
             controller.Delete(-1, msg.Id);
         });
-
     }
 }

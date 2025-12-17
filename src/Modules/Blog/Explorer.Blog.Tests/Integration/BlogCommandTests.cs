@@ -4,6 +4,7 @@ using Explorer.Blog.API.Public;
 using Explorer.Blog.Core.Domain;
 using Explorer.Blog.Infrastructure.Database;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -174,7 +175,8 @@ public class BlogCommandTests : BaseBlogIntegrationTest
     {
         return new BlogController(
             scope.ServiceProvider.GetRequiredService<IBlogService>(),
-            scope.ServiceProvider.GetRequiredService<ICommentService>()   // FIX
+            scope.ServiceProvider.GetRequiredService<ICommentService>(),// FIX
+            scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>()
         )
         {
             ControllerContext = BuildContext(userId)
