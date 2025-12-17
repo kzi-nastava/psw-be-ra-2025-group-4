@@ -7,7 +7,8 @@ namespace Explorer.Stakeholders.Core.Domain
     public enum NotificationType
     {
         Message = 0,
-        ClubActivity = 1
+        ClubActivity = 1,
+        Follow = 2
     }
 
     public class Notification : AggregateRoot
