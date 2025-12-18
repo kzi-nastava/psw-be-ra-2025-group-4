@@ -107,7 +107,6 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             return averageRating.ToString("0.0");
         }
 
-        // ====== OVU METODU DODAJ NA KRAJ (NOVA METODA) ======
         public ReviewEligibilityInfo GetReviewEligibilityInfo(int touristId, int tourId)
         {
             try
@@ -170,7 +169,6 @@ namespace Explorer.Tours.Core.UseCases.Tourist
                 };
             }
         }
-        // ====== KRAJ NOVE METODE ======
 
         private double CalculateCompletionPercentage(int touristId, int tourId)
         {
