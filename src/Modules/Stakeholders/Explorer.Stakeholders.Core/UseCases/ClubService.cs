@@ -16,12 +16,15 @@ namespace Explorer.Stakeholders.Core.UseCases
         private readonly IClubRepository _clubRepository;
         private readonly IMapper _mapper;
         private readonly INotificationService _notificationService;
+        private readonly IUserRepository _userRepository;
 
-        public ClubService(IClubRepository clubRepository, IMapper mapper, INotificationService notificationService)
+
+        public ClubService(IClubRepository clubRepository, IMapper mapper, INotificationService notificationService, IUserRepository userRepository)
         {
             _clubRepository = clubRepository;
             _mapper = mapper;
             _notificationService = notificationService;
+            _userRepository = userRepository;
         }
 
         public ClubDto Create(ClubDto clubDto)
@@ -79,6 +82,19 @@ namespace Explorer.Stakeholders.Core.UseCases
             var club = _clubRepository.GetById(clubId);
             club.InviteMember(ownerId, touristId);
 
+            _clubRepository.Update(club);
+        }
+        public void InviteMemberByUsername(long clubId, long ownerId, string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Username is required.");
+
+            var user = _userRepository.GetActiveByName(username.Trim());
+            if (user == null)
+                throw new KeyNotFoundException("User not found.");
+
+            var club = _clubRepository.GetById(clubId);
+            club.InviteMember(ownerId, user.Id);
             _clubRepository.Update(club);
         }
 

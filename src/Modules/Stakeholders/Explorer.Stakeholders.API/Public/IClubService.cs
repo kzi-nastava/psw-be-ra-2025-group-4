@@ -19,6 +19,8 @@ namespace Explorer.Stakeholders.API.Public
         List<ClubDto> GetInvitesForMe(long touristId);
 
         void InviteMember(long clubId, long ownerId, long touristId);
+        void InviteMemberByUsername(long clubId, long ownerId, string username);
+
         void AcceptInvite(long clubId, long touristId);
         void RemoveMember(long clubId, long ownerId, long touristId);
 

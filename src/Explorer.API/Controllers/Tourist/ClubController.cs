@@ -150,6 +150,13 @@ namespace Explorer.API.Controllers.Tourist
             _clubService.DeclineJoinRequest(clubId, ownerId, touristId);
             return Ok();
         }
+        [HttpPost("{clubId}/invite-by-username/{username}")]
+        public IActionResult InviteByUsername(long clubId, string username)
+        {
+            var ownerId = GetTouristId();
+            _clubService.InviteMemberByUsername(clubId, ownerId, username);
+            return Ok();
+        }
 
     }
 }
