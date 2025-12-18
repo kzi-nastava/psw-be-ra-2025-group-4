@@ -59,6 +59,25 @@ namespace Explorer.Stakeholders.Core.UseCases
             return _mapper.Map<NotificationDto>(created);
         }
 
+        public NotificationDto CreateClubJoinRequestResponseNotification(long userId, long actorId, long clubId, string clubName, bool accepted)
+        {
+            var content = accepted
+                ? $"Your request to join '{clubName}' was accepted."
+                : $"Your request to join '{clubName}' was declined.";
+
+            var notif = new Notification(
+                userId: userId,
+                content: content,
+                type: NotificationType.ClubJoinRequestResponse,
+                resourceUrl: null,
+                actorId: actorId,
+                actorUsername: null, // ne mora username
+                clubId: clubId
+            );
+
+            var created = _repo.Create(notif);
+            return _mapper.Map<NotificationDto>(created);
+        }
 
         public PagedResult<NotificationDto> GetPaged(long userId, int page, int pageSize)
         {

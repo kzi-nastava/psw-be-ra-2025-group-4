@@ -15,11 +15,13 @@ namespace Explorer.Stakeholders.Core.UseCases
     {
         private readonly IClubRepository _clubRepository;
         private readonly IMapper _mapper;
+        private readonly INotificationService _notificationService;
 
-        public ClubService(IClubRepository clubRepository, IMapper mapper)
+        public ClubService(IClubRepository clubRepository, IMapper mapper, INotificationService notificationService)
         {
             _clubRepository = clubRepository;
             _mapper = mapper;
+            _notificationService = notificationService;
         }
 
         public ClubDto Create(ClubDto clubDto)
@@ -125,7 +127,13 @@ namespace Explorer.Stakeholders.Core.UseCases
             club.AcceptJoinRequest(ownerId, touristId);
             _clubRepository.Update(club);
             // ✅ Notifikacija: "Prihvaćen zahtev"
-            //treba dodati notifikacije
+            _notificationService.CreateClubJoinRequestResponseNotification(
+                userId: touristId,
+                actorId: ownerId,
+                clubId: clubId,
+                clubName: club.Name,
+                accepted: true
+            );
         }
         public void DeclineJoinRequest(long clubId, long ownerId, long touristId)
         {
@@ -133,7 +141,13 @@ namespace Explorer.Stakeholders.Core.UseCases
             club.DeclineJoinRequest(ownerId, touristId);
             _clubRepository.Update(club);
             // ✅ Notifikacija: "Odbijen zahtev"
-            //treba dodati notifikacije
+            _notificationService.CreateClubJoinRequestResponseNotification(
+                  userId: touristId,
+                  actorId: ownerId,
+                  clubId: clubId,
+                  clubName: club.Name,
+                  accepted: false
+              );
         }
 
     }
