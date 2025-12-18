@@ -14,6 +14,10 @@ public class StakeholdersContext : DbContext
     public DbSet<TouristLocation> TouristLocations { get; set; }
 
     public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<ClubMessage> ClubMessages { get; set; }
+    public DbSet<Follow> Follows { get; set; }
+  
+    public DbSet<Notification> Notifications { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
@@ -23,8 +27,11 @@ public class StakeholdersContext : DbContext
 
         modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
 
+        modelBuilder.Entity<Notification>();
+
         ConfigureStakeholder(modelBuilder);
         ConfigureDirectMessage(modelBuilder);
+        ConfigureFollow(modelBuilder);
     }
 
     private static void ConfigureStakeholder(ModelBuilder modelBuilder)
@@ -46,5 +53,23 @@ public class StakeholdersContext : DbContext
             .HasOne(dm => dm.Recipient)
             .WithMany()
             .HasForeignKey(dm => dm.RecipientId);
+    }
+    private static void ConfigureFollow(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Follow>()
+            .HasOne(f => f.Follower)
+            .WithMany()
+            .HasForeignKey(f => f.FollowerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Follow>()
+            .HasOne(f => f.Followed)
+            .WithMany()
+            .HasForeignKey(f => f.FollowedId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Follow>()
+            .HasIndex(f => new { f.FollowerId, f.FollowedId })
+            .IsUnique();
     }
 }

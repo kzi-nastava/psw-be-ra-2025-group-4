@@ -15,11 +15,16 @@ namespace Explorer.Stakeholders.Core.UseCases
     {
         private readonly IClubRepository _clubRepository;
         private readonly IMapper _mapper;
+        private readonly INotificationService _notificationService;
+        private readonly IUserRepository _userRepository;
 
-        public ClubService(IClubRepository clubRepository, IMapper mapper)
+
+        public ClubService(IClubRepository clubRepository, IMapper mapper, INotificationService notificationService, IUserRepository userRepository)
         {
             _clubRepository = clubRepository;
             _mapper = mapper;
+            _notificationService = notificationService;
+            _userRepository = userRepository;
         }
 
         public ClubDto Create(ClubDto clubDto)
@@ -65,5 +70,101 @@ namespace Explorer.Stakeholders.Core.UseCases
             var clubs = _clubRepository.GetByOwner(ownerId);
             return _mapper.Map<List<ClubDto>>(clubs);
         }
+        public List<ClubDto> GetInvitesForMe(long touristId)
+        {
+            return _clubRepository.GetAll()
+                .Where(c => c.InvitedTourist != null && c.InvitedTourist.Contains(touristId))
+                .Select(c => _mapper.Map<ClubDto>(c))
+                .ToList();
+        }
+        public void InviteMember(long clubId, long ownerId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.InviteMember(ownerId, touristId);
+
+            _clubRepository.Update(club);
+        }
+        public void InviteMemberByUsername(long clubId, long ownerId, string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Username is required.");
+
+            var user = _userRepository.GetActiveByName(username.Trim());
+            if (user == null)
+                throw new KeyNotFoundException("User not found.");
+
+            var club = _clubRepository.GetById(clubId);
+            club.InviteMember(ownerId, user.Id);
+            _clubRepository.Update(club);
+        }
+
+        public void AcceptInvite(long clubId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.AcceptInvite(touristId);
+            _clubRepository.Update(club);
+        }
+
+        public void RemoveMember(long clubId, long ownerId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.RemoveMember(ownerId, touristId);
+            _clubRepository.Update(club);
+        }
+
+        public void CloseClub(long clubId, long ownerId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.Close(ownerId);
+            _clubRepository.Update(club);
+        }
+
+        public void ActivateClub(long clubId, long ownerId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.Activate(ownerId);
+            _clubRepository.Update(club);
+        }
+        public void RequestToJoinClub(long clubId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.RequestToJoin(touristId);
+            _clubRepository.Update(club);
+        }
+        public void CancelJoinRequest(long clubId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.CancelJoinRequest(touristId);
+            _clubRepository.Update(club);
+        }
+        public void AcceptJoinRequest(long clubId, long ownerId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.AcceptJoinRequest(ownerId, touristId);
+            _clubRepository.Update(club);
+            // ✅ Notifikacija: "Prihvaćen zahtev"
+            _notificationService.CreateClubJoinRequestResponseNotification(
+                userId: touristId,
+                actorId: ownerId,
+                clubId: clubId,
+                clubName: club.Name,
+                accepted: true
+            );
+        }
+        public void DeclineJoinRequest(long clubId, long ownerId, long touristId)
+        {
+            var club = _clubRepository.GetById(clubId);
+            club.DeclineJoinRequest(ownerId, touristId);
+            _clubRepository.Update(club);
+            // ✅ Notifikacija: "Odbijen zahtev"
+            _notificationService.CreateClubJoinRequestResponseNotification(
+                  userId: touristId,
+                  actorId: ownerId,
+                  clubId: clubId,
+                  clubName: club.Name,
+                  accepted: false
+              );
+        }
+
     }
 }

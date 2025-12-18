@@ -31,7 +31,7 @@ namespace Explorer.API.Controllers.Tourist
             return long.Parse(pid ?? throw new Exception("No user id found"));
         }
 
-        
+
         [HttpGet]
         public ActionResult<List<ClubDto>> GetAll()
         {
@@ -39,7 +39,7 @@ namespace Explorer.API.Controllers.Tourist
             return Ok(clubs);
         }
 
-        
+
         [HttpGet("mine")]
         public ActionResult<List<ClubDto>> GetMine()
         {
@@ -47,18 +47,18 @@ namespace Explorer.API.Controllers.Tourist
             return Ok(clubs);
         }
 
-        
+
         [HttpPost]
         public ActionResult<ClubDto> Create([FromBody] ClubDto clubDto)
         {
             clubDto.OwnerId = GetTouristId();
 
             var created = _clubService.Create(clubDto);
-            
+
             return Created(string.Empty, created);
         }
 
-        
+
         [HttpPut("{id:long}")]
         public ActionResult<ClubDto> Update(long id, [FromBody] ClubDto clubDto)
         {
@@ -68,12 +68,95 @@ namespace Explorer.API.Controllers.Tourist
             return Ok(updated);
         }
 
-        
+
         [HttpDelete("{id:long}")]
         public IActionResult Delete(long id)
         {
             _clubService.Delete(id, GetTouristId());
             return NoContent();
         }
+
+        [HttpGet("invites")]
+        public ActionResult<List<ClubDto>> GetMyInvites()
+        {
+            var touristId = GetTouristId();
+            var clubs = _clubService.GetInvitesForMe(touristId);
+            return Ok(clubs);
+        }
+
+        [HttpPost("{clubId}/invite/{touristId}")]
+        public IActionResult Invite(long clubId, long touristId)
+        {
+            var ownerId = GetTouristId();
+            _clubService.InviteMember(clubId, ownerId, touristId);
+            return Ok();
+        }
+
+        [HttpPost("{clubId}/accept-invite")]
+        public IActionResult AcceptInvite(long clubId)
+        {
+            var touristId = GetTouristId();
+            _clubService.AcceptInvite(clubId, touristId);
+            return Ok();
+        }
+
+        [HttpDelete("{clubId}/members/{touristId}")]
+        public IActionResult RemoveMember(long clubId, long touristId)
+        {
+            var ownerId = GetTouristId();
+            _clubService.RemoveMember(clubId, ownerId, touristId);
+            return Ok();
+        }
+
+        [HttpPut("{id:long}/close")]
+        public IActionResult CloseClub(long id)
+        {
+            _clubService.CloseClub(id, GetTouristId());
+            return NoContent();
+        }
+
+        [HttpPut("{id:long}/activate")]
+        public IActionResult ActivateClub(long id)
+        {
+            _clubService.ActivateClub(id, GetTouristId());
+            return NoContent();
+        }
+
+        [HttpPost("{clubId}/request-join")]
+        public IActionResult RequestToJoinClub(long clubId)
+        {
+            var touristId = GetTouristId();
+            _clubService.RequestToJoinClub(clubId, touristId);
+            return Ok();
+        }
+        [HttpDelete("{clubId}/request-join")]
+        public IActionResult CancelJoinRequest(long clubId)
+        {
+            var touristId = GetTouristId();
+            _clubService.CancelJoinRequest(clubId, touristId);
+            return Ok();
+        }
+        [HttpPost("{clubId}/accept-request/{touristId}")]
+        public IActionResult AcceptJoinRequest(long clubId, long touristId)
+        {
+            var ownerId = GetTouristId();
+            _clubService.AcceptJoinRequest(clubId, ownerId, touristId);
+            return Ok();
+        }
+        [HttpPost("{clubId}/decline-request/{touristId}")]
+        public IActionResult DeclineJoinRequest(long clubId, long touristId)
+        {
+            var ownerId = GetTouristId();
+            _clubService.DeclineJoinRequest(clubId, ownerId, touristId);
+            return Ok();
+        }
+        [HttpPost("{clubId}/invite-by-username/{username}")]
+        public IActionResult InviteByUsername(long clubId, string username)
+        {
+            var ownerId = GetTouristId();
+            _clubService.InviteMemberByUsername(clubId, ownerId, username);
+            return Ok();
+        }
+
     }
 }

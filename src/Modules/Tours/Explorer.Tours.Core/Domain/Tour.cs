@@ -18,25 +18,55 @@ namespace Explorer.Tours.Core.Domain
         Hard
     }
 
-    public class Tour : Entity
+    public class Tour : AggregateRoot
     {
-        public int Id { get; set; }
         public string Name { get; private set; }
         public string Description { get; private set; }
         public TourDifficulty Difficulty { get; private set; }
         public List<string> Tags { get; private set; } = new List<string>();
         public TourStatus Status { get; private set; } = TourStatus.Draft;
-        public decimal Price { get; private set; } = 0;
         public int AuthorId { get; private set; }
         public List<TourPoint> Points { get; private set; } = new();
+        public List<Equipment> Equipment { get; private set; } = new List<Equipment>();
+        public decimal Price { get; private set; }
+        public List<TourTransportDuration> TransportDuration { get; private set; } = new List<TourTransportDuration>();
+        public DateTime? PublishedAt { get; private set; }
+        public DateTime? ArchivedAt { get; private set; }
+        public double LengthInKm { get; private set; }
 
 
-        public Tour(string name, string description, TourDifficulty difficulty, int authorId, List<string>? tags = null)
+        private Tour()
+        {
+
+        }
+
+        public Tour(long id, string name, string description, TourDifficulty difficulty, List<string> tags, TourStatus status, int authorId, List<TourPoint> points, List<Equipment> equipment, decimal price, List<TourTransportDuration> transportDuration, DateTime? publishedAt, DateTime? archivedAt, double lengthInKm)
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            Difficulty = difficulty;
+            Tags = tags;
+            Status = status;
+            AuthorId = authorId;
+            Points = points;
+            Equipment = equipment;
+            Price = price;
+            TransportDuration = transportDuration;
+            PublishedAt = publishedAt;
+            ArchivedAt = archivedAt;
+            LengthInKm = lengthInKm < 0 ? 0 : lengthInKm;
+        }
+
+        public Tour(string name, string description, TourDifficulty difficulty, int authorId, List<TourTransportDuration> transportDurations, List<string>? tags = null            )
         {
             Name = name;
             Description = description;
             Difficulty = difficulty;
             AuthorId = authorId;
+            Status = TourStatus.Draft;
+            Price = 0.0m;
+            TransportDuration = transportDurations;
             if (tags != null) Tags = tags;
 
             Validate();
@@ -46,16 +76,12 @@ namespace Explorer.Tours.Core.Domain
             Status = status;
         }
 
-        public void SetPrice(decimal price)
-        {
-            Price = price;
-        }
-
-        public void Update(string name, string description, TourDifficulty difficulty, List<string> tags)
+        public void Update(string name, string description, TourDifficulty difficulty, List<TourTransportDuration> transportDurations, List<string> tags)
         {
             Name = name;
             Description = description;
             Difficulty = difficulty;
+            TransportDuration = transportDurations;
             Tags = tags ?? new List<string>();
             Validate();
         }
@@ -65,7 +91,103 @@ namespace Explorer.Tours.Core.Domain
                 throw new ArgumentException("Name cannot be empty");
             if (string.IsNullOrWhiteSpace(Description))
                 throw new ArgumentException("Description cannot be empty");
-
         }
+
+        public void Publish()
+        {
+            if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(Description)
+                || Points.Count < 2 || TransportDuration.Count == 0 || Tags.Count == 0 || Status == TourStatus.Published)
+            {
+                throw new ArgumentException("Tour canot be published.");
+            }
+
+            Status = TourStatus.Published;
+            PublishedAt = DateTime.UtcNow;
+        }
+
+        public void Archive()
+        {
+            if (Status != TourStatus.Published)
+                throw new InvalidOperationException("Only published tours can be archived.");
+
+            Status = TourStatus.Archived;
+            ArchivedAt = DateTime.UtcNow;
+        }
+
+        public void SetPrice(decimal price)
+        {
+            Price = price;
+        }
+
+        public void AddTourPoint(TourPoint point)
+        {
+            if (point == null) throw new ArgumentException("Point not found.");
+
+            if (Points.Any(p => p.Order == point.Order))
+                throw new ArgumentException("Tour point with same order already exists.");
+
+            Points.Add(point);
+        }
+
+        public void UpdateTourPoint(long pointId, string name, string description, double latitude, double longitude, int order, string? imageFileName, string? secret)
+        {
+            var point = Points.FirstOrDefault(p => p.Id == pointId);
+            if (point == null) throw new ArgumentException("Point not found.");
+
+            point.Update(name, description, latitude, longitude, order, imageFileName, secret);
+        }
+
+        public void RemoveTourPoint(long pointId)
+        {
+            var point = Points.FirstOrDefault(p => p.Id == pointId);
+            if (point == null) throw new ArgumentException("Point not found.");
+
+            Points.Remove(point);
+        }
+
+        public void AddEquipment(Equipment equipment)
+        {
+
+            Equipment.Add(equipment);
+        }
+        public void AddEquipments(List<Equipment> newEquipment)
+        {
+            if(Status == TourStatus.Archived)
+                throw new InvalidOperationException("Cannot modify equipment of an archived tour.");
+            
+
+            var toRemove = Equipment
+                .Where(old => !newEquipment.Any(n => n.Id == old.Id))
+                .ToList();
+
+            foreach (var remove in toRemove)
+            {
+                Equipment.Remove(remove);
+            }
+
+            var toAdd = newEquipment
+                .Where(n => !Equipment.Any(old => old.Id == n.Id))
+                .ToList();
+
+            foreach (var add in toAdd)
+            {
+                Equipment.Add(add);
+            }
+        }
+
+
+        public void AddTransportDuration(TourTransportDuration duration)
+        {
+            TransportDuration.Add(duration);
+        }
+
+        public void SetLengthFromRoute(double lengthInKm)
+        {
+            if (lengthInKm < 0)
+                throw new ArgumentException("Route length cannot be negative.", nameof(lengthInKm));
+
+            LengthInKm = Math.Round(lengthInKm, 1);
+        }
+
     }
 }

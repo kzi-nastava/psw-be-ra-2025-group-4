@@ -8,10 +8,14 @@ namespace Explorer.Blog.Core.Domain.RepositoryInterfaces
 {
     public interface IBlogRepository
     {
-        BlogPost Get(int id);
+        BlogPost Get(long id);
         IEnumerable<BlogPost> GetByUser(int userId);
+
+        IEnumerable<BlogPost> GetVisible(int userId);
+
         BlogPost Create(BlogPost blog);
         BlogPost Update(BlogPost blog);
-        void Delete(int id);
+        void Delete(long id);
+        IEnumerable<BlogPost> GetAll();
     }
 }

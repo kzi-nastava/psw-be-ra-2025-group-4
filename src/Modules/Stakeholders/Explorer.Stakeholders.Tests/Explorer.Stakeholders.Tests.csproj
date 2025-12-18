@@ -54,4 +54,8 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Integration\Following\" />
+	</ItemGroup>
+
 </Project>

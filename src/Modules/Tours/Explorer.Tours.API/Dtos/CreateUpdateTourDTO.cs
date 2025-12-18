@@ -12,6 +12,7 @@ namespace Explorer.Tours.API.Dtos
         public string Description { get; set; }
         public TourDtoDifficulty Difficulty { get; set; }
         public List<string> Tags { get; set; }
+        public List<TourTransportDurationDto> TransportDuration { get; set; }
     }
 
 }

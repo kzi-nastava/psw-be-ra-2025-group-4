@@ -14,5 +14,23 @@ namespace Explorer.Stakeholders.API.Public
         void Delete(long clubId, long ownerId);
         List<ClubDto> GetAll();
         List<ClubDto> GetByOwner(long ownerId);
+
+        //svi klubovi u kojima je tourist pozvan
+        List<ClubDto> GetInvitesForMe(long touristId);
+
+        void InviteMember(long clubId, long ownerId, long touristId);
+        void InviteMemberByUsername(long clubId, long ownerId, string username);
+
+        void AcceptInvite(long clubId, long touristId);
+        void RemoveMember(long clubId, long ownerId, long touristId);
+
+        void CloseClub(long clubId, long ownerId);
+        void ActivateClub(long clubId, long ownerId);
+
+        void RequestToJoinClub(long clubId, long touristId);
+        void CancelJoinRequest(long clubId, long touristId);
+        void AcceptJoinRequest(long clubId, long ownerId, long touristId);
+        void DeclineJoinRequest(long clubId, long ownerId, long touristId);
+
     }
 }

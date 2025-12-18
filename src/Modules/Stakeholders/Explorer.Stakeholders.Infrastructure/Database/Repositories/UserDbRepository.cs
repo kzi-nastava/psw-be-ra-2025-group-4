@@ -83,9 +83,15 @@ public class UserDbRepository : IUserRepository
         return _dbContext.Users.FirstOrDefault(user => user.Id == userId);
     }
 
-
     public Person? GetPersonByUserId(long userId)
     {
         return _dbContext.People.FirstOrDefault(p => p.UserId == userId);
     }
+    public IEnumerable<User> GetAllActiveTourists()
+    {
+        return _dbSet
+            .Where(u => u.IsActive && u.Role == UserRole.Tourist)
+            .ToList();
+    }
+
 }

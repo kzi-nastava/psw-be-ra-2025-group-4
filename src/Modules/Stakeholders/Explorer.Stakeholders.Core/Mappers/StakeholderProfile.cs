@@ -8,6 +8,7 @@ public class StakeholderProfile : Profile
 {
     public StakeholderProfile()
     {
+
         CreateMap<Club, ClubDto>().ReverseMap();
         CreateMap<Person, UserAccountDto>()
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
@@ -22,5 +23,20 @@ public class StakeholderProfile : Profile
         CreateMap<UpdateUserProfileDto, UserProfile>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore());
+
+        CreateMap<ClubMessage, ClubMessageDto>();
+        CreateMap<ClubMessageCreateDto, ClubMessage>()
+               .ForMember(dest => dest.Id, opt => opt.Ignore())
+               .ForMember(dest => dest.AuthorId, opt => opt.Ignore())
+               .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Username,
+                opt => opt.MapFrom(src => src.Username))
+            .ForMember(dest => dest.Role,
+                opt => opt.MapFrom(src => src.GetPrimaryRoleName()))
+            .ForMember(dest => dest.IsActive,
+                opt => opt.MapFrom(src => src.IsActive));
+
+
     }
 }

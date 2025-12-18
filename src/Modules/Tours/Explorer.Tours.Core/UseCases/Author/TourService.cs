@@ -52,18 +52,32 @@ namespace Explorer.Tours.Core.UseCases.Author
             return dto;
         }
 
+        public TourDto GetById(int id)
+        {
+            var tour = _tourRepository.GetById(id);
+
+            var dto = _mapper.Map<TourDto>(tour);
+
+            if (dto.Points != null)
+            {
+                dto.Points = dto.Points
+                    .OrderBy(p => p.Order)
+                    .ToList();
+            }
+
+            return dto;
+        }
+
         public TourDto Create(CreateUpdateTourDto dto, int authorId)
         {
+            var durations = dto.TransportDuration.Select(_mapper.Map<TourTransportDuration>).ToList();
             var tour = new Tour(dto.Name, dto.Description,
-                (TourDifficulty)dto.Difficulty, authorId, dto.Tags);
-
-            tour.SetStatus(TourStatus.Draft);
-            tour.SetPrice(0);
+                (TourDifficulty)dto.Difficulty, authorId, durations, dto.Tags);
 
             var created = _tourRepository.Create(tour);
 
             // Vraćamo sveže učitanu turu (sa Include Points u repozitorijumu)
-            return GetByIdForAuthor(authorId, created.Id);
+            return GetByIdForAuthor(authorId, (int)created.Id);
         }
 
         public TourDto Update(int id, CreateUpdateTourDto dto, int authorId)
@@ -73,8 +87,10 @@ namespace Explorer.Tours.Core.UseCases.Author
             if (tour.AuthorId != authorId)
                 throw new ForbiddenException("Not your tour.");
 
+            var durations = dto.TransportDuration.Select(_mapper.Map<TourTransportDuration>).ToList();
+
             tour.Update(dto.Name, dto.Description,
-                (TourDifficulty)dto.Difficulty, dto.Tags);
+                (TourDifficulty)dto.Difficulty, durations, dto.Tags);
 
             _tourRepository.Update(tour);
 
@@ -93,6 +109,99 @@ namespace Explorer.Tours.Core.UseCases.Author
                 throw new ForbiddenException("Only draft tours can be deleted.");
 
             _tourRepository.Delete(id);
+        }
+
+        public void Publish(int tourId, int authorId)
+        {
+            var tour = _tourRepository.GetById(tourId);
+            if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
+            tour.Publish();
+            _tourRepository.Update(tour);
+        }
+
+        public void Archive(int tourId, int authorId)
+        {
+            var tour = _tourRepository.GetById(tourId);
+            if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
+            tour.Archive();
+            _tourRepository.Update(tour);
+        }
+
+        public void SetPrice(int tourId, int authorId, decimal price)
+        {
+            var tour = _tourRepository.GetById(tourId);
+            if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
+            tour.SetPrice(price);
+            _tourRepository.Update(tour);
+        }
+
+        public void AddEquipment(int tourId, int authorId, List<EquipmentDto> equipment)
+        {
+            var tour = _tourRepository.GetById(tourId);
+            if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
+            var equipmentMap = equipment.Select(_mapper.Map<Equipment>).ToList();
+            tour.AddEquipments(equipmentMap);
+            _tourRepository.Update(tour);
+        }
+
+        public void AddTourPoint(int tourId, int authorId, TourPointDto tourPoint)
+        {
+            var tour = _tourRepository.GetById(tourId);
+            if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
+            tour.AddTourPoint(_mapper.Map<TourPoint>(tourPoint));
+            _tourRepository.Update(tour);
+        }
+
+        public PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize)
+        {
+            var all = _tourRepository.GetPublishedAndArchived()
+                                     .OrderBy(t => t.Id)
+                                     .ToList();
+
+            var items = all.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var mapped = items.Select(t =>
+            {
+                var dto = _mapper.Map<TourDto>(t);
+                if (dto.Points != null)
+                {
+                    dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
+                }
+                return dto;
+            }).ToList();
+
+            return new PagedResult<TourDto>(mapped, all.Count);
+        }
+
+        public TourDto UpdateRouteLength(int tourId, int authorId, double lengthInKm)
+        {
+            var tour = _tourRepository.GetById(tourId) ?? throw new KeyNotFoundException($"Tour {tourId} not found.");
+
+            if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
+
+            tour.SetLengthFromRoute(lengthInKm);
+            _tourRepository.Update(tour);
+
+            return _mapper.Map<TourDto>(tour);
+        }
+
+        public PagedResult<TourDto> GetPublished(int page, int pageSize)
+        {
+            var all = _tourRepository.GetPublished()
+                                     .OrderBy(t => t.Id)
+                                     .ToList();
+
+            var items = all.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var mapped = items.Select(t =>
+            {
+                var dto = _mapper.Map<TourDto>(t);
+                if (dto.Points != null)
+                {
+                    dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
+                }
+                return dto;
+            }).ToList();
+
+            return new PagedResult<TourDto>(mapped, all.Count);
         }
     }
 }

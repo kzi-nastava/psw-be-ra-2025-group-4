@@ -12,7 +12,6 @@ public interface IUserRepository
     User Update(User user);
     public PagedResult<User> GetPaged(int page, int pageSize);
     User? GetById(long userId);
-
-
+    IEnumerable<User> GetAllActiveTourists();
     Person? GetPersonByUserId(long userId);
 }
