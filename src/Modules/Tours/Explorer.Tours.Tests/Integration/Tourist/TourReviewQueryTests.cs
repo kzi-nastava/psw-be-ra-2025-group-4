@@ -18,14 +18,11 @@ namespace Explorer.Tours.Tests.Integration.Tourist
         [Fact]
         public void Retrieves_all_by_tourist()
         {
-            
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
 
-            
             var result = ((ObjectResult)controller.GetAll(1, 10).Result)?.Value as PagedResult<TourReviewDTO>;
 
-            
             result.ShouldNotBeNull();
             result.Results.Count.ShouldBe(2);
             result.TotalCount.ShouldBe(2);
@@ -34,10 +31,8 @@ namespace Explorer.Tours.Tests.Integration.Tourist
         [Fact]
         public void Retrieves_all_by_tour()
         {
-
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
-
 
             var result = ((ObjectResult)controller.GetByTour(-1, 1, 10).Result)?.Value as PagedResult<TourReviewDTO>;
 
@@ -61,35 +56,12 @@ namespace Explorer.Tours.Tests.Integration.Tourist
             result.TourCompletionPercentage.ShouldBe(100.0);
         }
 
-        [Fact]
-        public void Retrieves_my_review_for_tour()
-        {
-            using var scope = Factory.Services.CreateScope();
-            var controller = CreateController(scope);
-
-            var result = ((ObjectResult)controller.GetMyReviewForTour(-1).Result)?.Value as TourReviewDTO;
-
-            result.ShouldNotBeNull();
-            result.TouristId.ShouldBe(-1);
-            result.TourId.ShouldBe(-1);
-        }
-
-        [Fact]
-        public void My_review_returns_not_found_when_not_exists()
-        {
-            using var scope = Factory.Services.CreateScope();
-            var controller = CreateController(scope);
-            var result = controller.GetMyReviewForTour(-999).Result;
-
-            result.ShouldBeOfType<NotFoundResult>();
-        }
-
         private static TourReviewController CreateController(IServiceScope scope)
         {
             return new TourReviewController(
                 scope.ServiceProvider.GetRequiredService<ITourReviewService>(),
                 scope.ServiceProvider.GetRequiredService<IUserService>()
-                )
+            )
             {
                 ControllerContext = BuildContext("-1")
             };

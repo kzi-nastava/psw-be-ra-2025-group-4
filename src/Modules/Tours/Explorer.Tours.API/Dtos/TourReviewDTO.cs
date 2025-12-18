@@ -16,4 +16,13 @@ namespace Explorer.Tours.API.Dtos
 
         public string TouristUsername { get; set; }
     }
+
+        public class ReviewEligibilityInfo
+        {
+            public bool CanLeaveReview { get; set; }
+            public string Reason { get; set; }
+            public double CompletionPercentage { get; set; }
+            public double DaysSinceLastActivity { get; set; }
+        }
+    
 }

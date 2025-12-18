@@ -13,5 +13,6 @@ namespace Explorer.Tours.API.Public
         PagedResult<TourReviewDTO> GetPagedByTour(int tourId, int page, int pageSize);
         TourReviewDTO GetByTouristAndTour(int touristId, int tourId);
         string GetTourAverageGrade(int tourId);
+        ReviewEligibilityInfo GetReviewEligibilityInfo(int touristId, int tourId);
     }
 }
