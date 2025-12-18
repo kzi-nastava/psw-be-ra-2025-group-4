@@ -3,9 +3,9 @@ using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
-using Explorer.Tours.Core.UseCases.Author;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace Explorer.API.Controllers.Tourist
 {
@@ -41,14 +41,12 @@ namespace Explorer.API.Controllers.Tourist
         public ActionResult<PagedResult<TourReviewDTO>> GetByTour(int tourId, [FromQuery] int page, [FromQuery] int pageSize)
         {
             var result = _tourReviewService.GetPagedByTour(tourId, page, pageSize);
-
             foreach (var tour in result.Results)
             {
                 UserDto? u = _userService.GetById(tour.TouristId);
                 if (u == null) continue;
                 tour.TouristUsername = u.Username;
             }
-
             return Ok(result);
         }
 
@@ -59,13 +57,36 @@ namespace Explorer.API.Controllers.Tourist
             return Ok(tourReview);
         }
 
-        [HttpGet("my-review/{tourId:int}")]
-        public ActionResult<TourReviewDTO> GetMyReviewForTour(int tourId)
+        [HttpGet("eligibility/{tourId:int}")]
+        public ActionResult<object> CheckEligibility(int tourId)
         {
-            var tourReview = _tourReviewService.GetByTouristAndTour(GetTouristId(), tourId);
-            if (tourReview == null)
-                return NotFound();
-            return Ok(tourReview);
+            var touristId = GetTouristId();
+
+            try
+            {
+                var existingReview = _tourReviewService.GetByTouristAndTour(touristId, tourId);
+                var eligibilityInfo = _tourReviewService.GetReviewEligibilityInfo(touristId, tourId);
+
+                return Ok(new
+                {
+                    canLeaveReview = eligibilityInfo.CanLeaveReview,
+                    reason = eligibilityInfo.Reason,
+                    completionPercentage = eligibilityInfo.CompletionPercentage,
+                    daysSinceLastActivity = eligibilityInfo.DaysSinceLastActivity,
+                    existingReview = existingReview
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    canLeaveReview = false,
+                    reason = ex.Message,
+                    completionPercentage = 0.0,
+                    daysSinceLastActivity = 0.0,
+                    existingReview = (TourReviewDTO)null
+                });
+            }
         }
 
         [HttpPost]
@@ -83,13 +104,6 @@ namespace Explorer.API.Controllers.Tourist
             dto.TouristId = GetTouristId();
             var updated = _tourReviewService.Update(dto);
             return Ok(updated);
-        }
-
-        [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
-        {
-            _tourReviewService.Delete(id);
-            return NoContent();
         }
     }
 }

@@ -31,7 +31,6 @@ namespace Explorer.Tours.Core.UseCases.Tourist
         {
             ValidateReviewEligibility(tourReviewDto.TouristId, tourReviewDto.TourId);
 
- 
             var completionPercentage = CalculateCompletionPercentage(tourReviewDto.TouristId, tourReviewDto.TourId);
 
             var tourReview = new TourReview(
@@ -39,7 +38,7 @@ namespace Explorer.Tours.Core.UseCases.Tourist
                 tourReviewDto.TouristId,
                 tourReviewDto.Rating,
                 tourReviewDto.Comment,
-                tourReviewDto.Images,
+                tourReviewDto.Images ?? new System.Collections.Generic.List<string>(),
                 DateTime.UtcNow,
                 completionPercentage
             );
@@ -57,7 +56,7 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             var tourReview = _repository.GetById(tourReviewDto.Id);
             tourReview.Rating = tourReviewDto.Rating;
             tourReview.Comment = tourReviewDto.Comment;
-            tourReview.Images = tourReviewDto.Images;
+            tourReview.Images = tourReviewDto.Images ?? new System.Collections.Generic.List<string>();
             tourReview.CreatedAt = DateTime.UtcNow;
             tourReview.TourCompletionPercentage = completionPercentage;
 
@@ -98,6 +97,81 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             return tourReview != null ? _mapper.Map<TourReviewDTO>(tourReview) : null;
         }
 
+        public string GetTourAverageGrade(int tourId)
+        {
+            var allReviews = _repository.GetByTour(tourId).ToList();
+            if (!allReviews.Any())
+                return "No reviews";
+
+            var averageRating = allReviews.Average(r => r.Rating);
+            return averageRating.ToString("0.0");
+        }
+
+        // ====== OVU METODU DODAJ NA KRAJ (NOVA METODA) ======
+        public ReviewEligibilityInfo GetReviewEligibilityInfo(int touristId, int tourId)
+        {
+            try
+            {
+                var executions = _tourExecutionRepository.GetByTouristAndTour(touristId, tourId).ToList();
+
+                if (!executions.Any())
+                {
+                    return new ReviewEligibilityInfo
+                    {
+                        CanLeaveReview = false,
+                        Reason = "Tourist has not started this tour",
+                        CompletionPercentage = 0,
+                        DaysSinceLastActivity = 0
+                    };
+                }
+
+                var lastExecution = executions.OrderByDescending(e => e.LastActivity).First();
+                var completionPercentage = CalculateCompletionPercentage(touristId, tourId);
+                var daysSinceLastActivity = (DateTime.UtcNow - lastExecution.LastActivity).TotalDays;
+
+                if (completionPercentage < 35)
+                {
+                    return new ReviewEligibilityInfo
+                    {
+                        CanLeaveReview = false,
+                        Reason = "Tourist must complete at least 35% of the tour to leave a review",
+                        CompletionPercentage = completionPercentage,
+                        DaysSinceLastActivity = daysSinceLastActivity
+                    };
+                }
+
+                if (daysSinceLastActivity > 7)
+                {
+                    return new ReviewEligibilityInfo
+                    {
+                        CanLeaveReview = false,
+                        Reason = "More than 7 days have passed since the last activity on this tour",
+                        CompletionPercentage = completionPercentage,
+                        DaysSinceLastActivity = daysSinceLastActivity
+                    };
+                }
+
+                return new ReviewEligibilityInfo
+                {
+                    CanLeaveReview = true,
+                    Reason = "You can leave a review for this tour",
+                    CompletionPercentage = completionPercentage,
+                    DaysSinceLastActivity = daysSinceLastActivity
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ReviewEligibilityInfo
+                {
+                    CanLeaveReview = false,
+                    Reason = ex.Message,
+                    CompletionPercentage = 0,
+                    DaysSinceLastActivity = 0
+                };
+            }
+        }
+        // ====== KRAJ NOVE METODE ======
+
         private double CalculateCompletionPercentage(int touristId, int tourId)
         {
             var executions = _tourExecutionRepository.GetByTouristAndTour(touristId, tourId).ToList();
@@ -137,16 +211,5 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             if (daysSinceLastActivity > 7)
                 throw new InvalidOperationException("More than 7 days have passed since the last activity on this tour");
         }
-
-        public string GetTourAverageGrade(int tourId)
-        {
-            var allReviews = _repository.GetByTour(tourId).ToList();
-            if (!allReviews.Any())
-                return "No reviews";
-
-            var averageRating = allReviews.Average(r => r.Rating);
-            return averageRating.ToString("0.0");
-        }
-
     }
 }
