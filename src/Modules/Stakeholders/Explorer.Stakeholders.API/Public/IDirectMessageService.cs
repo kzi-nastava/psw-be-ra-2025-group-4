@@ -17,5 +17,7 @@ namespace Explorer.Stakeholders.API.Public
         DirectMessageDto StartConversation(long senderId, ConversationStartDto directMessage);
         DirectMessageDto Update(DirectMessageDto directMessage);
         void Delete(long id);
+        long EnsureConversation(long firstUserId, string username);
+
     }
 }

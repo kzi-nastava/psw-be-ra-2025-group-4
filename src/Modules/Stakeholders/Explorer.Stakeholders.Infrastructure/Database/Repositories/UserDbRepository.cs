@@ -93,5 +93,18 @@ public class UserDbRepository : IUserRepository
             .Where(u => u.IsActive && u.Role == UserRole.Tourist)
             .ToList();
     }
+    public IEnumerable<User> SearchByUsername(string username)
+    {
+        return _dbContext.Users
+            .Where(u => u.Username.ToLower().Contains(username.ToLower()))
+            .Take(10)
+            .ToList();
+    }
+    public User? GetByUsername(string username)
+    {
+        return _dbContext.Users
+            .FirstOrDefault(u => u.Username == username);
+    }
+
 
 }

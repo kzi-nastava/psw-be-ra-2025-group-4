@@ -169,5 +169,30 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             message.ResourceUrl.ShouldBe("/tours/103");
         }
 
+        [Fact]
+        public void EnsureConversation_ReturnsSameUserId_WhenConversationAlreadyExists()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope, "-23");
+
+            var dto = new StartConversationDto
+            {
+                Username = "turista2@gmail.com"
+            };
+
+            var firstResult = controller.EnsureConversation(dto);
+            var firstOk = firstResult.Result as OkObjectResult;
+            firstOk.ShouldNotBeNull();
+            var firstId = (long)firstOk.Value!;
+
+            var secondResult = controller.EnsureConversation(dto);
+            var secondOk = secondResult.Result as OkObjectResult;
+            secondOk.ShouldNotBeNull();
+            var secondId = (long)secondOk.Value!;
+
+            firstId.ShouldBe(secondId);
+        }
+
+
     }
 }

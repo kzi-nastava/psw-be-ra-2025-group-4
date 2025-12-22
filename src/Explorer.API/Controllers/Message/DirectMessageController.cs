@@ -86,6 +86,12 @@ namespace Explorer.API.Controllers.Message
             }
         }
 
+        [HttpPost("start-empty")]
+        public ActionResult<long> StartEmptyConversation([FromBody] StartConversationDto dto)
+        {
+            var otherUserId = _directMessageService.EnsureConversation(GetUserId(), dto.Username);
+            return Ok(otherUserId);
+        }
 
         [HttpPost]
         public async Task<ActionResult<DirectMessageDto>> SendMessage([FromBody] DirectMessageDto directMessage)
@@ -164,5 +170,26 @@ namespace Explorer.API.Controllers.Message
             var pid = User.FindFirst("personId")?.Value;
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
+
+        [HttpGet("users/search")]
+        public ActionResult<IEnumerable<UserDto>> SearchUsers([FromQuery] string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return Ok(new List<UserDto>());
+
+            var users = _userRepository
+                .SearchByUsername(username)
+                .Where(u => u.IsActive)
+                .Select(u => new UserDto(
+                    u.Username,
+                    u.Role.ToString(),
+                    u.IsActive
+                ))
+                .ToList();
+
+
+            return Ok(users);
+        }
+
     }
 }

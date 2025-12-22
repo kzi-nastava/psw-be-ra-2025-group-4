@@ -116,5 +116,18 @@ namespace Explorer.API.Controllers.Administrator
 
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
+        [HttpPost("start-empty")]
+        public ActionResult<long> StartEmptyConversation([FromBody] StartConversationDto dto)
+        {
+            var otherUserId = _directMessageService.EnsureConversation(GetUserId(), dto.Username);
+            return Ok(otherUserId);
+        }
+        [HttpPost("ensure-conversation")]
+        public ActionResult<long> EnsureConversation([FromBody] StartConversationDto dto)
+        {
+            var otherUserId = _directMessageService.EnsureConversation(GetUserId(), dto.Username);
+            return Ok(otherUserId);
+        }
+
     }
 }
