@@ -164,5 +164,26 @@ namespace Explorer.API.Controllers.Message
             var pid = User.FindFirst("personId")?.Value;
             return int.Parse(pid ?? throw new Exception("No user id found"));
         }
+
+        [HttpGet("users/search")]
+        public ActionResult<IEnumerable<UserDto>> SearchUsers([FromQuery] string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return Ok(new List<UserDto>());
+
+            var users = _userRepository
+                .SearchByUsername(username)
+                .Where(u => u.IsActive)
+                .Select(u => new UserDto(
+                    u.Username,
+                    u.Role.ToString(),
+                    u.IsActive
+                ))
+                .ToList();
+
+
+            return Ok(users);
+        }
+
     }
 }
