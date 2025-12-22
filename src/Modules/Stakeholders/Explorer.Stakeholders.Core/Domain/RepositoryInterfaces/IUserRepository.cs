@@ -15,5 +15,6 @@ public interface IUserRepository
     IEnumerable<User> GetAllActiveTourists();
     Person? GetPersonByUserId(long userId);
     IEnumerable<User> SearchByUsername(string username);
+    User? GetByUsername(string username);
 
 }

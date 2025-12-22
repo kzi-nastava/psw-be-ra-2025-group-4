@@ -86,6 +86,12 @@ namespace Explorer.API.Controllers.Message
             }
         }
 
+        [HttpPost("start-empty")]
+        public ActionResult<long> StartEmptyConversation([FromBody] StartConversationDto dto)
+        {
+            var otherUserId = _directMessageService.EnsureConversation(GetUserId(), dto.Username);
+            return Ok(otherUserId);
+        }
 
         [HttpPost]
         public async Task<ActionResult<DirectMessageDto>> SendMessage([FromBody] DirectMessageDto directMessage)

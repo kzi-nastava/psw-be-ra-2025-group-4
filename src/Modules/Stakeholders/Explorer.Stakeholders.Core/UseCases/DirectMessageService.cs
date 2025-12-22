@@ -180,5 +180,11 @@ namespace Explorer.Stakeholders.Core.UseCases
             var items = result.Results.Select(_mapper.Map<DirectMessageDto>).ToList();
             return new PagedResult<DirectMessageDto>(items, result.TotalCount);
         }
+        public long EnsureConversation(long userId, string username)
+        {
+            var otherUser = _userRepository.GetByUsername(username);
+            return otherUser.Id;
+        }
+
     }
 }

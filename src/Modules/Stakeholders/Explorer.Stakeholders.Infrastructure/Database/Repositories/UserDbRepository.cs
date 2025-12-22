@@ -100,6 +100,11 @@ public class UserDbRepository : IUserRepository
             .Take(10)
             .ToList();
     }
+    public User? GetByUsername(string username)
+    {
+        return _dbContext.Users
+            .FirstOrDefault(u => u.Username == username);
+    }
 
 
 }
