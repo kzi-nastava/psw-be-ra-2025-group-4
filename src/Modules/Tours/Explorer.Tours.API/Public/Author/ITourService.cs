@@ -20,5 +20,8 @@ namespace Explorer.Tours.API.Public
         PagedResult<TourDto> GetPublishedAndArchived(int page, int pageSize);
         TourDto UpdateRouteLength(int tourId, int authorId, double lengthInKm);
         PagedResult<TourDto> GetPublished(int page, int pageSize);
+
+        PagedResult<PopularTourDto> GetPopular(int authorId, string scope, string? area, int page, int pageSize);
+
     }
 }

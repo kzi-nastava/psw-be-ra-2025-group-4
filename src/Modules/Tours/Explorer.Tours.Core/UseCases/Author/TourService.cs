@@ -202,6 +202,68 @@ namespace Explorer.Tours.Core.UseCases.Author
             }).ToList();
 
             return new PagedResult<TourDto>(mapped, all.Count);
+        
+                   
+        
         }
+
+        public PagedResult<PopularTourDto> GetPopular(int authorId, string scope, string? area, int page, int pageSize)
+        {
+            // "global" -> sve published+archived
+            // autor treba i svoje draft (po priči može)
+            var publishedAndArchived = _tourRepository.GetPublishedAndArchived().ToList();
+            var mine = _tourRepository.GetByAuthor(authorId).ToList();
+
+            // Visible: published/archived (svih) + draft samo ako je autorov
+            var visible = publishedAndArchived
+                .Concat(mine.Where(t => t.Status == TourStatus.Draft))
+                .GroupBy(t => t.Id)
+                .Select(g => g.First())
+                .AsQueryable();
+
+            // Filter po "oblasti" — po tagu (jer DTO ima Tags)
+            if (scope.Equals("area", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(area))
+            {
+                visible = visible.Where(t => t.Tags.Any(tag => tag.Equals(area, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            // Popularity: trenutno bazirano na AverageGrade (jer je jedino sigurno dostupno)
+            // (ako ti AverageGrade u domenu već postoji kao double/int, još bolje)
+            var scored = visible
+     .AsEnumerable() // ⬅ PRESEK: dalje ide LINQ to Objects
+     .Select(t =>
+     {
+         var dto = _mapper.Map<TourDto>(t);
+         double avg = 0;
+
+         if (!string.IsNullOrWhiteSpace(dto.AverageGrade))
+         {
+             var normalized = dto.AverageGrade.Replace(',', '.');
+             double.TryParse(normalized,
+                 System.Globalization.NumberStyles.Any,
+                 System.Globalization.CultureInfo.InvariantCulture,
+                 out avg);
+         }
+
+         return new PopularTourDto
+         {
+             TourId = t.Id,
+             Name = t.Name,
+             Status = (TourDtoStatus)t.Status,
+             AverageGrade = avg,
+             PopularityScore = avg * 10.0
+         };
+     })
+     .OrderByDescending(x => x.PopularityScore);
+
+            var total = scored.Count();
+            var items = scored.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            return new PagedResult<PopularTourDto>(items, total);
+        }
+
     }
+
+
+
 }
