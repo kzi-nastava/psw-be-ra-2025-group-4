@@ -6,6 +6,8 @@ using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using System.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace Explorer.Tours.Core.UseCases.Author
 {
@@ -203,5 +205,75 @@ namespace Explorer.Tours.Core.UseCases.Author
 
             return new PagedResult<TourDto>(mapped, all.Count);
         }
+        public PagedResult<TourDto> GetPublishedFiltered(
+            int page, int pageSize,
+            string? search,
+            int? difficulty,
+            decimal? minPrice, decimal? maxPrice,
+            List<string>? tags,
+            string? sort)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var q = _tourRepository.QueryPublished();
+
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim().ToLower();
+                q = q.Where(t => t.Name.ToLower().Contains(s));
+            }
+
+            if (difficulty.HasValue && difficulty.Value >= 0 && difficulty.Value <= 2)
+            {
+                var diff = (TourDifficulty)difficulty.Value;
+                q = q.Where(t => t.Difficulty == diff);
+            }
+
+            if (minPrice.HasValue)
+                q = q.Where(t => t.Price >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                q = q.Where(t => t.Price <= maxPrice.Value);
+
+            if (tags != null && tags.Count > 0)
+            {
+                var wanted = tags
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => x.Trim())
+                    .ToList();
+
+                if (wanted.Count > 0)
+                {
+                    q = q.Where(t => t.Tags != null && t.Tags.Any(tag => wanted.Contains(tag)));
+                }
+            }
+
+            q = (sort ?? "").Trim().ToLower() switch
+            {
+                "nameasc" => q.OrderBy(t => t.Name),
+                "namedesc" => q.OrderByDescending(t => t.Name),
+                "priceasc" => q.OrderBy(t => t.Price),
+                "pricedesc" => q.OrderByDescending(t => t.Price),
+                _ => q.OrderBy(t => t.Id)
+            };
+
+            var total = q.Count();
+
+            var items = q.Skip((page - 1) * pageSize)
+                         .Take(pageSize)
+                         .ToList();
+
+            var mapped = items.Select(t =>
+            {
+                var dto = _mapper.Map<TourDto>(t);
+                if (dto.Points != null) dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
+                return dto;
+            }).ToList();
+
+            return new PagedResult<TourDto>(mapped, total);
+        }
+
     }
 }

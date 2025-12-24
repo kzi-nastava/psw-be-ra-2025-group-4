@@ -23,6 +23,7 @@ namespace Explorer.Tours.Tests.Unit
             public void Delete(int id) => throw new System.NotImplementedException();
             public IEnumerable<Tour> GetByAuthor(int id) => throw new System.NotImplementedException();
             public IEnumerable<Tour> GetPublishedAndArchived() => throw new System.NotImplementedException();
+            public IQueryable<Tour> QueryPublished() => Published.AsQueryable();
         }
 
         [Fact]

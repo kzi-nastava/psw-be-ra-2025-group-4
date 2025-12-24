@@ -59,6 +59,10 @@ namespace Explorer.Tours.Infrastructure.Database
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Tour>()
+                .Property(t => t.Tags)
+                .HasColumnType("text[]");
+
+            modelBuilder.Entity<Tour>()
                 .Property(t => t.TransportDuration)
                 .HasColumnType("jsonb")
                 .HasConversion(
