@@ -1,6 +1,6 @@
 ﻿using System;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Tourist;
+using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,15 +36,24 @@ namespace Explorer.API.Controllers.Tourist
             return Ok(result);
         }
 
-        
+
         [HttpPost("{tourId:int}")]
         public ActionResult<ShoppingCartDto> AddToCart(int tourId)
         {
-            var result = _shoppingCartService.AddToCart(GetTouristId(), tourId);
+            var req = new AddToCartRequestDto
+            {
+                TourId = tourId,
+                TourName = $"Tour {tourId}", // privremeno
+                Price = 0,                   // privremeno
+                Status = "Published"          // privremeno
+            };
+
+            var result = _shoppingCartService.AddToCart(GetTouristId(), req);
             return Ok(result);
         }
 
-        
+
+
         [HttpDelete("{tourId:int}")]
         public ActionResult<ShoppingCartDto> RemoveFromCart(int tourId)
         {
