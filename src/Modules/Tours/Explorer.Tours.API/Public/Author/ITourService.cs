@@ -21,6 +21,8 @@ namespace Explorer.Tours.API.Public
         TourDto UpdateRouteLength(int tourId, int authorId, double lengthInKm);
         PagedResult<TourDto> GetPublished(int page, int pageSize);
         PagedResult<TourDto> GetPublishedFiltered(int page, int pageSize, string? search, int? difficulty, decimal? minPrice, decimal? maxPrice, List<string>? tags, string? sort);
+        IEnumerable<string> GetAllTags();
+
 
 
     }

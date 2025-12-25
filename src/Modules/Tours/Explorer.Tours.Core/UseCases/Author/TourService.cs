@@ -275,5 +275,11 @@ namespace Explorer.Tours.Core.UseCases.Author
             return new PagedResult<TourDto>(mapped, total);
         }
 
+
+        public IEnumerable<string> GetAllTags()
+        {
+            return _tourRepository.GetAllTags();
+        }
+
     }
 }
