@@ -43,19 +43,27 @@ public class TourController : ControllerBase
 
     [HttpGet]
     public ActionResult<PagedResult<TourDto>> GetAll(
-    [FromQuery] int page,
-    [FromQuery] int pageSize)
+     [FromQuery] int page,
+     [FromQuery] int pageSize,
+     [FromQuery] string? search,
+     [FromQuery] int? difficulty,
+     [FromQuery] decimal? minPrice,
+     [FromQuery] decimal? maxPrice,
+     [FromQuery] List<string>? tags,
+     [FromQuery] string? sort)
     {
-        var result = _tourService.GetPublished(page, pageSize);
+        var result = _tourService.GetPublishedFiltered(
+            page, pageSize,
+            search, difficulty,
+            minPrice, maxPrice,
+            tags, sort);
 
         foreach (var tour in result.Results)
-        {
-            tour.AverageGrade =
-                _tourReviewService.GetTourAverageGrade(tour.Id);
-        }
+            tour.AverageGrade = _tourReviewService.GetTourAverageGrade(tour.Id);
 
         return Ok(result);
     }
+
 
 }
 

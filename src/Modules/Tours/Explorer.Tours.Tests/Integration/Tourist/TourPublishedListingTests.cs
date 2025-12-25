@@ -23,7 +23,16 @@ public class TourPublishedListingTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
 
         // Act
-        var result = ((ObjectResult)controller.GetAll(1, 10).Result)?.Value as PagedResult<TourDto>;
+        var result = ((ObjectResult)controller.GetAll(
+            1, 10,
+            null,   // search
+            null,   // difficulty
+            null,   // minPrice
+            null,   // maxPrice
+            null,   // tags
+            null    // sort
+        ).Result)?.Value as PagedResult<TourDto>;
+
 
         // Assert
         result.ShouldNotBeNull();

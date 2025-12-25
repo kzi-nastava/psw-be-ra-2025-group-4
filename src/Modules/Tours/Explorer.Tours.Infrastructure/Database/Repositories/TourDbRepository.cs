@@ -94,4 +94,12 @@ public class TourDbRepository : ITourRepository
             .Where(t => t.Status == TourStatus.Published)
             .ToList();
     }
+    public IQueryable<Tour> QueryPublished()
+    {
+        return _dbSet
+            .Include(t => t.Points)
+            .Include(t => t.Equipment)
+            .Where(t => t.Status == TourStatus.Published);
+    }
+
 }
