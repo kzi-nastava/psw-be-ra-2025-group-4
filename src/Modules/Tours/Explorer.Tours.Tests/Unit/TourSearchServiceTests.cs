@@ -23,6 +23,8 @@ namespace Explorer.Tours.Tests.Unit
             public IEnumerable<Tour> GetByAuthor(int id) => throw new NotImplementedException();
             public IEnumerable<Tour> GetPublishedAndArchived() => throw new NotImplementedException();
             public IQueryable<Tour> QueryPublished() => Published.AsQueryable();
+            public IEnumerable<string> GetAllTags() => new List<string>();
+
         }
 
         [Fact]

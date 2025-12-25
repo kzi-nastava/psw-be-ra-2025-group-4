@@ -101,5 +101,19 @@ public class TourDbRepository : ITourRepository
             .Include(t => t.Equipment)
             .Where(t => t.Status == TourStatus.Published);
     }
+    public IEnumerable<string> GetAllTags()
+    {
+        return _dbSet
+            .AsNoTracking()
+            .Where(t => t.Tags != null && t.Tags.Count > 0)
+            .Select(t => t.Tags)
+            .AsEnumerable()              
+            .SelectMany(tags => tags)
+            .Select(tag => tag.Trim().ToLower())
+            .Distinct()
+            .OrderBy(tag => tag)
+            .ToList();
+    }
+
 
 }
