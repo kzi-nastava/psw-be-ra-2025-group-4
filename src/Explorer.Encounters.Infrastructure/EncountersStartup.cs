@@ -1,6 +1,10 @@
 ﻿using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.Encounters.API.Public.Administration;
+using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using Explorer.Encounters.Core.Mappers;
+using Explorer.Encounters.Core.UseCases.Administration;
 using Explorer.Encounters.Infrastructure.Database;
+using Explorer.Encounters.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -20,11 +24,13 @@ namespace Explorer.Encounters.Infrastructure
         private static void SetupCore(IServiceCollection services)
         {
             //TODO
+            services.AddScoped<IEncounterService, EncounterService>();
         }
 
         private static void SetupInfrastructure(IServiceCollection services)
         {
             //TODO
+            services.AddScoped<IEncounterRepository, EncounterDbRepository>();
 
             var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("encounters"));
             dataSourceBuilder.EnableDynamicJson();
