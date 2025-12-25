@@ -4,7 +4,7 @@ using Explorer.BuildingBlocks.Core.Domain;
 
 namespace Explorer.Tours.Core.Domain
 {
-    public class TourPurchaseToken : AggregateRoot
+    public class TourPurchaseToken : Entity
     {
         public int TouristId { get; private set; }
         public int TourId { get; private set; }
