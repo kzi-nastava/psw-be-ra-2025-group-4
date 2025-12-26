@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
-using Explorer.Payments.API.Dtos;
+using Explorer.Tours.API.Internal;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
+using Explorer.Payments.API.Dtos;
 
 namespace Explorer.Payments.Core.UseCases.Tourist
 {
@@ -11,10 +12,12 @@ namespace Explorer.Payments.Core.UseCases.Tourist
     {
         private readonly IShoppingCartRepository _cartRepository;
         private readonly IMapper _mapper;
+        private readonly ITourInfoService _tourInfoService;
 
-        public ShoppingCartService(IShoppingCartRepository cartRepository, IMapper mapper)
+        public ShoppingCartService(IShoppingCartRepository cartRepository, ITourInfoService tourInfoService, IMapper mapper)
         {
             _cartRepository = cartRepository;
+            _tourInfoService = tourInfoService;
             _mapper = mapper;
         }
 
@@ -35,24 +38,26 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             return _mapper.Map<ShoppingCartDto>(cart);
         }
 
-        public ShoppingCartDto AddToCart(int touristId, AddToCartRequestDto request)
+        public ShoppingCartDto AddToCart(int touristId, int tourId)
         {
-            if (request.Status == "Archived")
+            var tour = _tourInfoService.Get(tourId);
+
+            if (tour.Status == TourLifecycleStatus.Archived)
                 throw new EntityValidationException("Archived tours cannot be added to cart.");
 
-            if (request.Status != "Published")
+            if (tour.Status != TourLifecycleStatus.Published)
                 throw new EntityValidationException("Only published tours can be added to cart.");
 
             var cart = _cartRepository.GetByTouristId(touristId) ?? new ShoppingCart(touristId);
-            var previousTotal = cart.TotalPrice;
 
-            cart.AddItem(request.TourId, request.TourName, request.Price);
+            cart.AddItem(tour.TourId, tour.Name, tour.Price);
 
-            if (cart.Id == 0) cart = _cartRepository.Create(cart);
-            else if (cart.TotalPrice != previousTotal) cart = _cartRepository.Update(cart);
+            cart = cart.Id == 0 ? _cartRepository.Create(cart) : _cartRepository.Update(cart);
 
             return _mapper.Map<ShoppingCartDto>(cart);
         }
+
+
 
         public ShoppingCartDto RemoveFromCart(int touristId, int tourId)
         {
@@ -68,14 +73,12 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 };
             }
 
-            var previousTotal = cart.TotalPrice;
             cart.RemoveItem(tourId);
-
-            if (cart.TotalPrice == previousTotal)
-                return _mapper.Map<ShoppingCartDto>(cart);
 
             cart = _cartRepository.Update(cart);
             return _mapper.Map<ShoppingCartDto>(cart);
         }
+
+
     }
 }
