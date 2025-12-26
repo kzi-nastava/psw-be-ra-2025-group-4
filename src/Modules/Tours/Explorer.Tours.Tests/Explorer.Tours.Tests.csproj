@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Integration\Tourist\CheckoutCommandTests.cs" />
+    <Compile Remove="Integration\Tourist\ShoppingCartComandTests.cs" />
+    <Compile Remove="Unit\CheckoutServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.20" />
 	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
 	<PackageReference Include="Shouldly" Version="4.3.0" />

@@ -8,6 +8,7 @@ namespace Explorer.Payments.Infrastructure.Database
         public PaymentsContext(DbContextOptions<PaymentsContext> options) : base(options) { }
 
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,6 +34,18 @@ namespace Explorer.Payments.Infrastructure.Database
                     owned.Property(o => o.TourName).IsRequired();
                     owned.Property(o => o.Price).IsRequired();
                 });
+            });
+
+            modelBuilder.Entity<TourPurchaseToken>(builder =>
+            {
+                builder.ToTable("TourPurchaseTokens");
+
+                builder.HasKey(t => t.Id);
+
+                builder.Property(t => t.TouristId).IsRequired();
+                builder.Property(t => t.TourId).IsRequired();
+                builder.Property(t => t.PurchasedAt).IsRequired();
+                builder.HasIndex(t => new { t.TouristId, t.TourId }).IsUnique();
             });
 
             base.OnModelCreating(modelBuilder);

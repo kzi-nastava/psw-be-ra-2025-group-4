@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Shopping;
+using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Public.Shopping;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,9 +30,6 @@ namespace Explorer.API.Controllers.Tourist
             throw new Exception("No user id found");
         }
 
-        /// <summary>
-        /// Checkout – kreira token(e) za stavke u korpi i prazni korpu.
-        /// </summary>
         [HttpPost]
         public ActionResult<List<TourPurchaseTokenDto>> Checkout()
         {
