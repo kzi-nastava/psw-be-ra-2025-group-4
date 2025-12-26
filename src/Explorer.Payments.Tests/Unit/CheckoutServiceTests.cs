@@ -14,10 +14,18 @@ namespace Explorer.Payments.Tests.Unit
     {
         private class CartRepoStub : IShoppingCartRepository
         {
-            public ShoppingCart Cart = null!;
-            public ShoppingCart? GetByTouristId(int touristId) => Cart;
+            public ShoppingCart? Cart;
+
+            public ShoppingCart? GetByTouristId(int touristId)
+                => Cart != null && Cart.TouristId == touristId ? Cart : null;
+
             public ShoppingCart Create(ShoppingCart cart) => Cart = cart;
-            public ShoppingCart Update(ShoppingCart cart) { Cart = cart; return cart; }
+
+            public ShoppingCart Update(ShoppingCart cart)
+            {
+                Cart = cart;
+                return cart;
+            }
         }
 
         private class TokenRepoStub : ITourPurchaseTokenRepository
@@ -50,16 +58,16 @@ namespace Explorer.Payments.Tests.Unit
         public void Checkout_creates_tokens_and_clears_cart()
         {
             var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
-            cartRepo.Cart.AddItem(10, "Tour A", 20m);
+            cartRepo.Cart!.AddItem(10, "Tour A", 20m);
 
             var tokenRepo = new TokenRepoStub();
             var svc = new CheckoutService(cartRepo, tokenRepo, Mapper());
 
             var result = svc.Checkout(123);
 
-            result.Count().ShouldBe(1);
-            tokenRepo.Store.Count().ShouldBe(1);
-            cartRepo.Cart.Items.Count.ShouldBe(0);
+            result.Count.ShouldBe(1);
+            tokenRepo.Store.Count.ShouldBe(1);
+            cartRepo.Cart!.Items.Count.ShouldBe(0);
             cartRepo.Cart.TotalPrice.ShouldBe(0m);
         }
 
@@ -77,7 +85,7 @@ namespace Explorer.Payments.Tests.Unit
         public void Checkout_skips_already_existing_token()
         {
             var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
-            cartRepo.Cart.AddItem(10, "Tour A", 20m);
+            cartRepo.Cart!.AddItem(10, "Tour A", 20m);
             cartRepo.Cart.AddItem(11, "Tour B", 30m);
 
             var tokenRepo = new TokenRepoStub();
@@ -86,8 +94,8 @@ namespace Explorer.Payments.Tests.Unit
             var svc = new CheckoutService(cartRepo, tokenRepo, Mapper());
             var result = svc.Checkout(123);
 
-            result.Count().ShouldBe(1);
-            tokenRepo.Store.Count().ShouldBe(2);
+            result.Count.ShouldBe(1);
+            tokenRepo.Store.Count.ShouldBe(2);
         }
     }
 }
