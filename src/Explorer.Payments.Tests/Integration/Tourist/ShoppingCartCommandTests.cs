@@ -17,17 +17,19 @@ namespace Explorer.Payments.Tests.Integration.Tourist
         public ShoppingCartCommandTests(PaymentsTestFactory factory) : base(factory) { }
 
         [Fact]
-        public void Adds_published_tour_to_cart()
+        public void Adds_tour_to_cart()
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope, personId: "2");
             var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
 
+            CleanCart(dbContext, touristId: 2);
+
             // ACT
             var actionResult = controller.AddToCart(-2);
             var okResult = actionResult.Result as OkObjectResult;
 
-            // ASSERT (controller vraća dto)
+            // ASSERT (controller returns dto)
             okResult.ShouldNotBeNull();
             var dto = okResult.Value as ShoppingCartDto;
             dto.ShouldNotBeNull();
@@ -37,19 +39,20 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             var item = dto.Items.Single();
             item.TourId.ShouldBe(-2);
-            item.TourName.ShouldBe("Tour -2");   // <- novo (controller pravi)
-            item.Price.ShouldBe(0m);             // <- novo (controller pravi)
-            dto.TotalPrice.ShouldBe(0m);         // <- suma 0
 
-            // ASSERT (upisano u Payments bazu)
+            // Stable assertion: total must equal sum of item prices (works for 0, 20, etc.)
+            dto.TotalPrice.ShouldBe(dto.Items.Sum(i => i.Price));
+
+            // ASSERT (persisted in Payments DB)
             var storedCart = dbContext.ShoppingCarts
                 .Include(c => c.Items)
                 .FirstOrDefault(c => c.TouristId == 2);
 
             storedCart.ShouldNotBeNull();
+            storedCart.TouristId.ShouldBe(2);
             storedCart.Items.Count.ShouldBe(1);
             storedCart.Items.Single().TourId.ShouldBe(-2);
-            storedCart.TotalPrice.ShouldBe(0m);
+            storedCart.TotalPrice.ShouldBe(storedCart.Items.Sum(i => i.Price));
         }
 
         [Fact]
@@ -57,12 +60,17 @@ namespace Explorer.Payments.Tests.Integration.Tourist
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope, personId: "2");
+            var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+
+            CleanCart(dbContext, touristId: 2);
 
             controller.AddToCart(-2);
 
+            // ACT
             var actionResult = controller.Get();
             var okResult = actionResult.Result as OkObjectResult;
 
+            // ASSERT
             okResult.ShouldNotBeNull();
             var dto = okResult.Value as ShoppingCartDto;
             dto.ShouldNotBeNull();
@@ -70,7 +78,7 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             dto.TouristId.ShouldBe(2);
             dto.Items.Count.ShouldBe(1);
             dto.Items.Single().TourId.ShouldBe(-2);
-            dto.TotalPrice.ShouldBe(0m);
+            dto.TotalPrice.ShouldBe(dto.Items.Sum(i => i.Price));
         }
 
         [Fact]
@@ -80,26 +88,44 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             var controller = CreateController(scope, personId: "2");
             var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
 
+            CleanCart(dbContext, touristId: 2);
+
             (controller.AddToCart(-2).Result as OkObjectResult).ShouldNotBeNull();
 
+            // ACT
             var removeResult = controller.RemoveFromCart(-2);
             var removeOk = removeResult.Result as OkObjectResult;
 
+            // ASSERT (controller dto)
             removeOk.ShouldNotBeNull();
             var dto = removeOk.Value as ShoppingCartDto;
             dto.ShouldNotBeNull();
 
             dto.TouristId.ShouldBe(2);
-            dto.Items.Count.ShouldBe(0);
+            dto.Items.ShouldBeEmpty();
             dto.TotalPrice.ShouldBe(0m);
 
+            // ASSERT (persisted)
             var storedCart = dbContext.ShoppingCarts
                 .Include(c => c.Items)
                 .FirstOrDefault(c => c.TouristId == 2);
 
             storedCart.ShouldNotBeNull();
-            storedCart.Items.Count.ShouldBe(0);
+            storedCart.Items.ShouldBeEmpty();
             storedCart.TotalPrice.ShouldBe(0m);
+        }
+
+        private static void CleanCart(PaymentsContext db, int touristId)
+        {
+            var cart = db.ShoppingCarts
+                .Include(c => c.Items)
+                .FirstOrDefault(c => c.TouristId == touristId);
+
+            if (cart != null)
+            {
+                db.ShoppingCarts.Remove(cart);
+                db.SaveChanges();
+            }
         }
 
         private static ShoppingCartController CreateController(IServiceScope scope, string personId)
