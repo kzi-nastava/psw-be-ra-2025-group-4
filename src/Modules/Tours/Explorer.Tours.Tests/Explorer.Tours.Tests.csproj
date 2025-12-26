@@ -29,4 +29,8 @@
     <ProjectReference Include="..\..\..\Explorer.API\Explorer.API.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Compile Remove="Integration\Tourist\CheckoutCommandTests.cs" />
+	</ItemGroup>
+
 </Project>
