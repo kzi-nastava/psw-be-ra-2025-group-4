@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Explorer.Payments.API.Dtos;
 
-namespace Explorer.Payments.API.Public.Shopping
+namespace Explorer.Payments.API.Public.Tourist
 {
     public interface ICheckoutService
     {

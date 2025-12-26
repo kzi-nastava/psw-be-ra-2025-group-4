@@ -28,14 +28,14 @@ public static class PaymentsStartup
     {
         
          services.AddScoped<IShoppingCartService, ShoppingCartService>();
-        // services.AddScoped<ICheckoutService, CheckoutService>();
+         services.AddScoped<ICheckoutService, CheckoutService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
     {
         
-        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
-        // services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>(); 
+        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
         dataSourceBuilder.EnableDynamicJson();

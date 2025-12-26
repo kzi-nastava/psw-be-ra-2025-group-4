@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Explorer.Payments.API.Dtos;
-using Explorer.Payments.API.Public.Shopping;
+using Explorer.Payments.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

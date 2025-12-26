@@ -2,7 +2,7 @@
 using System.Linq;
 using AutoMapper;
 using Explorer.Payments.API.Dtos;
-using Explorer.Payments.API.Public.Shopping;
+using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 
