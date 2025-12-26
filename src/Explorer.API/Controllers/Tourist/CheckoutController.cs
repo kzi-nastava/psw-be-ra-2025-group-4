@@ -33,8 +33,15 @@ namespace Explorer.API.Controllers.Tourist
         [HttpPost]
         public ActionResult<List<TourPurchaseTokenDto>> Checkout()
         {
-            var tokens = _checkoutService.Checkout(GetTouristId());
-            return Ok(tokens);
+            try
+            {
+                var tokens = _checkoutService.Checkout(GetTouristId());
+                return Ok(tokens);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

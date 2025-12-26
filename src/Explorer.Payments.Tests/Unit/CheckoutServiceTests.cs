@@ -38,7 +38,7 @@ namespace Explorer.Payments.Tests.Unit
                 return token;
             }
 
-            public List<TourPurchaseToken> GetByTourist(int touristId)
+            public List<TourPurchaseToken> GetByTouristId(int touristId)
                 => Store.Where(t => t.TouristId == touristId).ToList();
 
             public bool Exists(int touristId, int tourId)

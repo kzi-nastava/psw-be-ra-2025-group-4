@@ -24,11 +24,11 @@ namespace Explorer.Payments.Infrastructure.Database.Repositories
             return token;
         }
 
-        public List<TourPurchaseToken> GetByTourist(int touristId)
+        public List<TourPurchaseToken> GetByTouristId(int touristId)
         {
             return _dbSet.AsNoTracking()
-                         .Where(t => t.TouristId == touristId)
-                         .ToList();
+                .Where(t => t.TouristId == touristId)
+                .ToList();
         }
 
         public bool Exists(int touristId, int tourId)
