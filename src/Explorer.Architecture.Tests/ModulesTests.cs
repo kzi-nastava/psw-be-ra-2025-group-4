@@ -99,7 +99,7 @@ public class ModulesTests : BaseArchitecturalTests
         },
         new object[]
         {
-            "Payments
+            "Payments"
         },
         new object[]
         {
