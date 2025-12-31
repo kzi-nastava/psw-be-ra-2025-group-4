@@ -64,6 +64,13 @@ public class TourController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("tags")]
+    public ActionResult<IEnumerable<string>> GetTags()
+    {
+        return Ok(_tourService.GetAllTags());
+    }
+
+
 
 }
 
