@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Collections.Generic;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Payments.Core.Domain;
 using Shouldly;
@@ -28,7 +29,6 @@ namespace Explorer.Payments.Tests.Unit
             item.TourName.ShouldBe("Test tour");
             item.Price.ShouldBe(100m);
 
-            
             cart.TotalPrice.ShouldBe(cart.Items.Sum(i => i.Price));
         }
 
@@ -93,5 +93,6 @@ namespace Explorer.Payments.Tests.Unit
             cart.Items.ShouldBeEmpty();
             cart.TotalPrice.ShouldBe(0m);
         }
+
     }
 }

@@ -24,16 +24,20 @@ public class PaymentsTestFactory : BaseTestFactory<PaymentsContext>
 
     private class FakeTourInfoService : ITourInfoService
     {
+        private static readonly HashSet<int> Unpublished = new() { -4, -5 };
+
         public TourInfoDto Get(int tourId)
         {
-            
             return new TourInfoDto
             {
                 TourId = tourId,
                 Name = $"Tour {tourId}",
                 Price = 20m,
-                Status = TourLifecycleStatus.Published
+                Status = Unpublished.Contains(tourId)
+                    ? TourLifecycleStatus.Draft
+                    : TourLifecycleStatus.Published
             };
         }
     }
+
 }
