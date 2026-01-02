@@ -4,7 +4,7 @@ using Explorer.Payments.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Explorer.API.Controllers.Tourist
+namespace Explorer.API.Controllers.Tourist.Payments
 {
     [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/shopping-cart")]

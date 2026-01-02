@@ -5,7 +5,7 @@ using Explorer.Payments.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Explorer.API.Controllers.Tourist
+namespace Explorer.API.Controllers.Tourist.Payments
 {
     [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/checkout")]
@@ -21,11 +21,11 @@ namespace Explorer.API.Controllers.Tourist
 
         private int GetTouristId()
         {
-            var id = User.FindFirst("id")?.Value;
-            if (!string.IsNullOrEmpty(id)) return int.Parse(id);
-
             var pid = User.FindFirst("personId")?.Value;
-            if (!string.IsNullOrEmpty(pid)) return int.Parse(pid);
+            if (!string.IsNullOrWhiteSpace(pid)) return int.Parse(pid);
+
+            var id = User.FindFirst("id")?.Value;
+            if (!string.IsNullOrWhiteSpace(id)) return int.Parse(id);
 
             throw new Exception("No user id found");
         }
