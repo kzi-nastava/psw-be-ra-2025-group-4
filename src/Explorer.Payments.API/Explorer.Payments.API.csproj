@@ -10,4 +10,8 @@
     <Folder Include="Internal\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks\Explorer.BuildingBlocks.Core\Explorer.BuildingBlocks.Core.csproj" />
+  </ItemGroup>
+
 </Project>

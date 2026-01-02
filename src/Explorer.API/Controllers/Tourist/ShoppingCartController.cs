@@ -20,15 +20,17 @@ namespace Explorer.API.Controllers.Tourist
 
         private int GetTouristId()
         {
-            
-            var id = User.FindFirst("id")?.Value;
-            if (id != null) return int.Parse(id);
-
             var pid = User.FindFirst("personId")?.Value;
-            return int.Parse(pid ?? throw new Exception("No user id found"));
+            if (!string.IsNullOrWhiteSpace(pid)) return int.Parse(pid);
+
+            var id = User.FindFirst("id")?.Value;
+            if (!string.IsNullOrWhiteSpace(id)) return int.Parse(id);
+
+            throw new Exception("No user id found");
         }
 
-        
+
+
         [HttpGet]
         public ActionResult<ShoppingCartDto> Get()
         {
@@ -40,15 +42,7 @@ namespace Explorer.API.Controllers.Tourist
         [HttpPost("{tourId:int}")]
         public ActionResult<ShoppingCartDto> AddToCart(int tourId)
         {
-            var req = new AddToCartRequestDto
-            {
-                TourId = tourId,
-                TourName = $"Tour {tourId}", // privremeno
-                Price = 0,                   // privremeno
-                Status = "Published"          // privremeno
-            };
-
-            var result = _shoppingCartService.AddToCart(GetTouristId(), req);
+            var result = _shoppingCartService.AddToCart(GetTouristId(), tourId);
             return Ok(result);
         }
 

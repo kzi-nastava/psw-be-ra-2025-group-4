@@ -13,6 +13,8 @@ using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Explorer.Tours.API.Internal;
+using Explorer.Tours.Core.UseCases.Internal;
 using Npgsql;
 
 namespace Explorer.Tours.Infrastructure;
@@ -52,6 +54,7 @@ public static class ToursStartup
         services.AddScoped<ITourPointSecretService, TourPointSecretService>();
 
         services.AddScoped<ITourReviewService, TourReviewService>();
+        services.AddScoped<ITourInfoService, TourInfoService>();
 
     }
 
