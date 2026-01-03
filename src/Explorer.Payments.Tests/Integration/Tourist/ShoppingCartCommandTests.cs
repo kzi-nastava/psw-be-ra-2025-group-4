@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Explorer.API.Controllers.Tourist;
+using Explorer.API.Controllers.Tourist.Payments;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Infrastructure.Database;

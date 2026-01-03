@@ -22,7 +22,6 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<TourExecution> TourExecutions { get; set; }
         public DbSet<TourReview> TourReviews { get; set; }
 
-        public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -69,10 +68,6 @@ namespace Explorer.Tours.Infrastructure.Database
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                     v => JsonSerializer.Deserialize<List<TourTransportDuration>>(v, (JsonSerializerOptions)null) ?? new List<TourTransportDuration>()
                 );
-
-            modelBuilder.Entity<TourPurchaseToken>()
-                .HasIndex(t => new { t.TouristId, t.TourId })
-                .IsUnique();
 
 
             modelBuilder.Entity<ShoppingCart>(builder =>

@@ -83,7 +83,7 @@ namespace Explorer.Payments.Tests.Integration.Tourist
         }
 
         [Fact]
-        public void Checkout_throws_when_cart_is_empty()
+        public void Checkout_returns_bad_request_when_cart_is_empty()
         {
             const string TestTourist = "10002";
             var touristId = int.Parse(TestTourist);
@@ -94,7 +94,9 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             var controller = CreateController(scope, TestTourist);
 
-            Should.Throw<InvalidOperationException>(() => controller.Checkout());
+            var result = controller.Checkout();
+
+            result.Result.ShouldBeOfType<BadRequestObjectResult>();
         }
 
         [Fact]

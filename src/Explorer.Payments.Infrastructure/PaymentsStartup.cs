@@ -3,6 +3,8 @@ using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Mappers;
 using Explorer.Payments.Core.UseCases.Tourist;
+using Explorer.Payments.Core.UseCases.Internal;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Payments.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +31,7 @@ public static class PaymentsStartup
         
          services.AddScoped<IShoppingCartService, ShoppingCartService>();
          services.AddScoped<ICheckoutService, CheckoutService>();
+         services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
