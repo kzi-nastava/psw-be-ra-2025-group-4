@@ -20,11 +20,11 @@ namespace Explorer.API.Controllers.Tourist.Payments
 
         private int GetTouristId()
         {
-            var pid = User.FindFirst("personId")?.Value;
-            if (!string.IsNullOrWhiteSpace(pid)) return int.Parse(pid);
-
             var id = User.FindFirst("id")?.Value;
             if (!string.IsNullOrWhiteSpace(id)) return int.Parse(id);
+
+            var pid = User.FindFirst("personId")?.Value;
+            if (!string.IsNullOrWhiteSpace(pid)) return int.Parse(pid);
 
             throw new Exception("No user id found");
         }

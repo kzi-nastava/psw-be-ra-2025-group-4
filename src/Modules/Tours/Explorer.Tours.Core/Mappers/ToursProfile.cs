@@ -60,12 +60,6 @@ namespace Explorer.Tours.Core.Mappers
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order));
 
 
-            
-            CreateMap<OrderItem, OrderItemDto>().ReverseMap();
-
-            CreateMap<ShoppingCart, ShoppingCartDto>()
-                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
-
             CreateMap<TourExecutionStatus, TourExecutionStatusDto>().ConvertUsing(src => (TourExecutionStatusDto)src);
             CreateMap<TourExecutionStatusDto, TourExecutionStatus>().ConvertUsing(src => (TourExecutionStatus)src);
             CreateMap<CompletedTourPoint, CompletedTourPointDto>().ReverseMap();

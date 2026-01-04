@@ -75,8 +75,6 @@ public static class ToursStartup
         // Both repositories preserved
         services.AddScoped<IHistoricalMonumentRepository, HistoricalMonumentRepository>();
         services.AddScoped<ITourPointRepository, TourPointDbRepository>();
-        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
-        services.AddScoped<IShoppingCartService, ShoppingCartService>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<ITourReviewRepository, TourReviewDbRepository>();
 
