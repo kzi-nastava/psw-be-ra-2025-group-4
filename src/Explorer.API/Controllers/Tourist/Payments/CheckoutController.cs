@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Shopping;
+using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Explorer.API.Controllers.Tourist
+namespace Explorer.API.Controllers.Tourist.Payments
 {
     [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/checkout")]
@@ -22,22 +22,26 @@ namespace Explorer.API.Controllers.Tourist
         private int GetTouristId()
         {
             var id = User.FindFirst("id")?.Value;
-            if (!string.IsNullOrEmpty(id)) return int.Parse(id);
+            if (!string.IsNullOrWhiteSpace(id)) return int.Parse(id);
 
             var pid = User.FindFirst("personId")?.Value;
-            if (!string.IsNullOrEmpty(pid)) return int.Parse(pid);
+            if (!string.IsNullOrWhiteSpace(pid)) return int.Parse(pid);
 
             throw new Exception("No user id found");
         }
 
-        /// <summary>
-        /// Checkout – kreira token(e) za stavke u korpi i prazni korpu.
-        /// </summary>
         [HttpPost]
         public ActionResult<List<TourPurchaseTokenDto>> Checkout()
         {
-            var tokens = _checkoutService.Checkout(GetTouristId());
-            return Ok(tokens);
+            try
+            {
+                var tokens = _checkoutService.Checkout(GetTouristId());
+                return Ok(tokens);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

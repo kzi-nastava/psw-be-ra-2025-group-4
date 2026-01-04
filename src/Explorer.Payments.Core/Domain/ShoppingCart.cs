@@ -4,12 +4,12 @@ using System.Linq;
 using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.Exceptions;
 
-namespace Explorer.Tours.Core.Domain
+namespace Explorer.Payments.Core.Domain
 {
-   
+
     public class ShoppingCart : AggregateRoot
     {
-        private ShoppingCart() { }  
+        private ShoppingCart() { }
 
         public int TouristId { get; private set; }
 
@@ -29,7 +29,7 @@ namespace Explorer.Tours.Core.Domain
 
         public void AddItem(int tourId, string tourName, decimal price)
         {
-            
+
             if (_items.Any(i => i.TourId == tourId)) return;
 
             _items.Add(new OrderItem(tourId, tourName, price));

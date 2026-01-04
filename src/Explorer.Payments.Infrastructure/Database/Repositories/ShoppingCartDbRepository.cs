@@ -1,15 +1,15 @@
-﻿using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+﻿using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Explorer.Tours.Infrastructure.Database.Repositories
+namespace Explorer.Payments.Infrastructure.Database.Repositories
 {
     public class ShoppingCartDbRepository : IShoppingCartRepository
     {
-        private readonly ToursContext _dbContext;
+        private readonly PaymentsContext _dbContext;
         private readonly DbSet<ShoppingCart> _dbSet;
 
-        public ShoppingCartDbRepository(ToursContext dbContext)
+        public ShoppingCartDbRepository(PaymentsContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = _dbContext.Set<ShoppingCart>();
@@ -18,7 +18,7 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
         public ShoppingCart? GetByTouristId(int touristId)
         {
             return _dbSet
-                .Include(c => c.Items)      
+                .Include(c => c.Items)
                 .FirstOrDefault(c => c.TouristId == touristId);
         }
 

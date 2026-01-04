@@ -2,7 +2,6 @@ using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.API.Public.Author;
-using Explorer.Tours.API.Public.Shopping;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
@@ -13,6 +12,8 @@ using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Explorer.Tours.API.Internal;
+using Explorer.Tours.Core.UseCases.Internal;
 using Npgsql;
 
 namespace Explorer.Tours.Infrastructure;
@@ -45,13 +46,14 @@ public static class ToursStartup
         services.AddScoped<IHistoricalMonumentService, HistoricalMonumentService>();
         services.AddScoped<ITourPointService, TourPointService>();
 
-        services.AddScoped<ICheckoutService, CheckoutService>();
+        
 
         services.AddScoped<ITourExecutionService, TourExecutionService>();
         services.AddScoped<ITourSearchService, TourSearchService>();
         services.AddScoped<ITourPointSecretService, TourPointSecretService>();
 
         services.AddScoped<ITourReviewService, TourReviewService>();
+        services.AddScoped<ITourInfoService, TourInfoService>();
 
     }
 
@@ -73,8 +75,6 @@ public static class ToursStartup
         // Both repositories preserved
         services.AddScoped<IHistoricalMonumentRepository, HistoricalMonumentRepository>();
         services.AddScoped<ITourPointRepository, TourPointDbRepository>();
-        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
-        services.AddScoped<IShoppingCartService, ShoppingCartService>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<ITourReviewRepository, TourReviewDbRepository>();
 
@@ -88,7 +88,7 @@ public static class ToursStartup
             opt.UseNpgsql(dataSource,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "tours")));
 
-        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+        
 
         
 

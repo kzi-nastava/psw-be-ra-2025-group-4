@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Explorer.Tours.API.Dtos
+namespace Explorer.Payments.API.Dtos
 {
     public class ShoppingCartDto
     {

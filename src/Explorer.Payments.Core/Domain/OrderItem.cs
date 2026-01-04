@@ -2,9 +2,8 @@
 using Explorer.BuildingBlocks.Core.Exceptions;
 using System;
 using System.Collections.Generic;
-using Explorer.BuildingBlocks.Core.Exceptions;
 
-namespace Explorer.Tours.Core.Domain
+namespace Explorer.Payments.Core.Domain
 {
     public class OrderItem : ValueObject
     {

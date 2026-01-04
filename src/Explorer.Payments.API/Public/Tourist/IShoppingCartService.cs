@@ -1,11 +1,12 @@
-﻿using Explorer.Tours.API.Dtos;
+﻿using Explorer.Payments.API.Dtos;
 
-namespace Explorer.Tours.API.Public.Tourist
+namespace Explorer.Payments.API.Public.Tourist
 {
     public interface IShoppingCartService
     {
         ShoppingCartDto GetForTourist(int touristId);
         ShoppingCartDto AddToCart(int touristId, int tourId);
+
         ShoppingCartDto RemoveFromCart(int touristId, int tourId);
     }
 }
