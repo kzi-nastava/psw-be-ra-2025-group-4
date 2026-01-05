@@ -46,6 +46,9 @@ namespace Explorer.Tours.Core.Domain
 
         public void Update(string name, decimal price, List<Tour> tours)
         {
+            if (Status == BundleStatus.Archived)
+                throw new InvalidOperationException("Cannot modify an archived bundle.");
+
             Name = name;
             Price = price;
             Tours = tours ?? new List<Tour>();
