@@ -16,17 +16,23 @@ namespace Explorer.API.Controllers
             _service = service;
         }
 
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var currentUserId = 101L;
-            return Ok(_service.GetAll(currentUserId));
-        }
-
         [HttpGet("search")]
         public IActionResult Search([FromQuery] string search)
         {
             var currentUserId = long.Parse(User.FindFirst("id")!.Value);
+          
+            return Ok(_service.Search(search, currentUserId));
+        }
+        [HttpGet]
+        public IActionResult Discover([FromQuery] string? search)
+        {
+            var currentUserId = long.Parse(User.FindFirst("id")!.Value);
+
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return Ok(_service.GetAll(currentUserId));
+            }
+
             return Ok(_service.Search(search, currentUserId));
         }
     }
