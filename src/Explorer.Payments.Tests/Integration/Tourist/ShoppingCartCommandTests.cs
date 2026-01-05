@@ -272,6 +272,64 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             }
         }
 
+        [Fact]
+        public void Clears_entire_cart_and_resets_total_price()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope, personId: "2");
+            var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+
+            CleanCart(dbContext, touristId: 2);
+
+            
+            (controller.AddToCart(-2).Result as OkObjectResult).ShouldNotBeNull();
+            (controller.AddToCart(-3).Result as OkObjectResult).ShouldNotBeNull();
+
+            
+            var clearResult = controller.ClearCart();
+            var okResult = clearResult.Result as OkObjectResult;
+
+            
+            okResult.ShouldNotBeNull();
+            var dto = okResult.Value as ShoppingCartDto;
+            dto.ShouldNotBeNull();
+
+            dto.TouristId.ShouldBe(2);
+            dto.Items.ShouldBeEmpty();
+            dto.TotalPrice.ShouldBe(0m);
+
+            
+            var storedCart = dbContext.ShoppingCarts
+                .Include(c => c.Items)
+                .FirstOrDefault(c => c.TouristId == 2);
+
+            storedCart.ShouldNotBeNull();
+            storedCart.Items.ShouldBeEmpty();
+            storedCart.TotalPrice.ShouldBe(0m);
+        }
+
+        [Fact]
+        public void Clearing_empty_cart_returns_empty_cart_without_error()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope, personId: "2");
+            var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+
+            CleanCart(dbContext, touristId: 2);
+
+            var clearResult = controller.ClearCart();
+            var okResult = clearResult.Result as OkObjectResult;
+
+            okResult.ShouldNotBeNull();
+            var dto = okResult.Value as ShoppingCartDto;
+            dto.ShouldNotBeNull();
+
+            dto.TouristId.ShouldBe(2);
+            dto.Items.ShouldBeEmpty();
+            dto.TotalPrice.ShouldBe(0m);
+        }
+
+
         private static ShoppingCartController CreateController(IServiceScope scope, string personId)
         {
             return new ShoppingCartController(

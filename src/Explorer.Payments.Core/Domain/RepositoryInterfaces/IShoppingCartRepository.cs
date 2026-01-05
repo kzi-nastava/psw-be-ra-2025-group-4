@@ -7,5 +7,6 @@ namespace Explorer.Payments.Core.Domain.RepositoryInterfaces
         ShoppingCart? GetByTouristId(int touristId);
         ShoppingCart Create(ShoppingCart cart);
         ShoppingCart Update(ShoppingCart cart);
+
     }
 }
