@@ -17,6 +17,13 @@ namespace Explorer.API.Controllers
         }
 
         [HttpGet]
+        public IActionResult GetAll()
+        {
+            var currentUserId = 101L;
+            return Ok(_service.GetAll(currentUserId));
+        }
+
+        [HttpGet("search")]
         public IActionResult Search([FromQuery] string search)
         {
             var currentUserId = long.Parse(User.FindFirst("id")!.Value);
@@ -24,11 +31,3 @@ namespace Explorer.API.Controllers
         }
     }
 }
-
-
-
-
-
-
-
-

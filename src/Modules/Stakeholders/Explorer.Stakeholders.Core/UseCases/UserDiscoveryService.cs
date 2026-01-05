@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
@@ -39,13 +36,54 @@ namespace Explorer.Stakeholders.Core.UseCases
 
             foreach (var user in users)
             {
-                var profile = _userProfileRepository.GetByUserId(user.Id);
+                UserProfile profile = null;
+
+                try
+                {
+                    profile = _userProfileRepository.GetByUserId(user.Id);
+                }
+                catch
+                {
+                }
 
                 result.Add(new UserDiscoveryDto
                 {
                     UserId = user.Id,
                     Username = user.Username,
-                    ProfileImageUrl = profile.ProfileImageUrl
+                    ProfileImageUrl = profile?.ProfileImageUrl
+                });
+            }
+
+            return result;
+        }
+
+        public List<UserDiscoveryDto> GetAll(long currentUserId)
+        {
+            var users = _userRepository.GetAllActiveNonAdmins()
+                .Where(u =>
+                    u.Id != currentUserId &&
+                    !_followRepository.Exists(currentUserId, u.Id)
+                );
+
+            var result = new List<UserDiscoveryDto>();
+
+            foreach (var user in users)
+            {
+                UserProfile profile = null;
+
+                try
+                {
+                    profile = _userProfileRepository.GetByUserId(user.Id);
+                }
+                catch
+                {
+                }
+
+                result.Add(new UserDiscoveryDto
+                {
+                    UserId = user.Id,
+                    Username = user.Username,
+                    ProfileImageUrl = profile?.ProfileImageUrl
                 });
             }
 
