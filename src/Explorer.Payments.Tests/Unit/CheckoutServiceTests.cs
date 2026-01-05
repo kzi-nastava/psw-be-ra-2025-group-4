@@ -45,6 +45,36 @@ namespace Explorer.Payments.Tests.Unit
                 => Store.Any(t => t.TouristId == touristId && t.TourId == tourId);
         }
 
+        private class WalletRepoStub : IWalletRepository
+        {
+            public Wallet? Wallet;
+
+            public Wallet? GetByTouristId(int touristId)
+                => Wallet != null && Wallet.TouristId == touristId ? Wallet : null;
+
+            public Wallet Create(Wallet wallet) => Wallet = wallet;
+
+            public Wallet Update(Wallet wallet)
+            {
+                Wallet = wallet;
+                return wallet;
+            }
+
+            public bool Exists(int touristId)
+                => Wallet != null && Wallet.TouristId == touristId;
+        }
+
+        private class PaymentRecordRepoStub : IPaymentRecordRepository
+        {
+            public readonly List<PaymentRecord> Store = new();
+
+            public PaymentRecord Create(PaymentRecord paymentRecord)
+            {
+                Store.Add(paymentRecord);
+                return paymentRecord;
+            }
+        }
+
         private static IMapper Mapper()
         {
             var cfg = new MapperConfiguration(c =>
@@ -61,7 +91,10 @@ namespace Explorer.Payments.Tests.Unit
             cartRepo.Cart!.AddItem(10, "Tour A", 20m);
 
             var tokenRepo = new TokenRepoStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, Mapper());
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            walletRepo.Wallet.AddBalance(100m);
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -76,7 +109,9 @@ namespace Explorer.Payments.Tests.Unit
         {
             var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
             var tokenRepo = new TokenRepoStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, Mapper());
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -91,11 +126,68 @@ namespace Explorer.Payments.Tests.Unit
             var tokenRepo = new TokenRepoStub();
             tokenRepo.Create(new TourPurchaseToken(123, 10));
 
-            var svc = new CheckoutService(cartRepo, tokenRepo, Mapper());
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            walletRepo.Wallet.AddBalance(100m);
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, Mapper());
             var result = svc.Checkout(123);
 
             result.Count.ShouldBe(1);
             tokenRepo.Store.Count.ShouldBe(2);
+        }
+
+        [Fact]
+        public void Checkout_throws_when_insufficient_balance()
+        {
+            var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
+            cartRepo.Cart!.AddItem(10, "Tour A", 100m);
+
+            var tokenRepo = new TokenRepoStub();
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            walletRepo.Wallet.AddBalance(50m);
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, Mapper());
+
+            Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
+        }
+
+        [Fact]
+        public void Checkout_creates_payment_record_for_each_item()
+        {
+            var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
+            cartRepo.Cart!.AddItem(10, "Tour A", 20m);
+            cartRepo.Cart.AddItem(11, "Tour B", 30m);
+
+            var tokenRepo = new TokenRepoStub();
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            walletRepo.Wallet.AddBalance(100m);
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, Mapper());
+
+            svc.Checkout(123);
+
+            paymentRecordRepo.Store.Count.ShouldBe(2);
+            paymentRecordRepo.Store[0].TourId.ShouldBe(10);
+            paymentRecordRepo.Store[0].Price.ShouldBe(20m);
+            paymentRecordRepo.Store[1].TourId.ShouldBe(11);
+            paymentRecordRepo.Store[1].Price.ShouldBe(30m);
+        }
+
+        [Fact]
+        public void Checkout_deducts_balance_from_wallet()
+        {
+            var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
+            cartRepo.Cart!.AddItem(10, "Tour A", 20m);
+
+            var tokenRepo = new TokenRepoStub();
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            walletRepo.Wallet.AddBalance(100m);
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, Mapper());
+
+            svc.Checkout(123);
+
+            walletRepo.Wallet!.Balance.ShouldBe(80m);
         }
     }
 }

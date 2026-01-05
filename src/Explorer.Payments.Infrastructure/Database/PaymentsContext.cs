@@ -9,6 +9,8 @@ namespace Explorer.Payments.Infrastructure.Database
 
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
+        public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<PaymentRecord> PaymentRecords { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +48,27 @@ namespace Explorer.Payments.Infrastructure.Database
                 builder.Property(t => t.TourId).IsRequired();
                 builder.Property(t => t.PurchasedAt).IsRequired();
                 builder.HasIndex(t => new { t.TouristId, t.TourId }).IsUnique();
+            });
+
+            modelBuilder.Entity<Wallet>(builder =>
+            {
+                builder.ToTable("Wallets");
+
+                builder.HasKey(w => w.Id);
+                builder.Property(w => w.TouristId).IsRequired();
+                builder.Property(w => w.Balance).IsRequired().HasColumnType("decimal(18,2)");
+                builder.HasIndex(w => w.TouristId).IsUnique();
+            });
+
+            modelBuilder.Entity<PaymentRecord>(builder =>
+            {
+                builder.ToTable("PaymentRecords");
+
+                builder.HasKey(p => p.Id);
+                builder.Property(p => p.TouristId).IsRequired();
+                builder.Property(p => p.TourId).IsRequired();
+                builder.Property(p => p.Price).IsRequired().HasColumnType("decimal(18,2)");
+                builder.Property(p => p.PurchaseTime).IsRequired();
             });
 
             base.OnModelCreating(modelBuilder);

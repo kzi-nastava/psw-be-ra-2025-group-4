@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Explorer.API.Hubs;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Stakeholders.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Explorer.API.Controllers.Tourist.Payments
 {
@@ -13,10 +17,17 @@ namespace Explorer.API.Controllers.Tourist.Payments
     public class CheckoutController : ControllerBase
     {
         private readonly ICheckoutService _checkoutService;
+        private readonly INotificationService _notificationService;
+        private readonly IHubContext<MessageHub> _hubContext;
 
-        public CheckoutController(ICheckoutService checkoutService)
+        public CheckoutController(
+            ICheckoutService checkoutService,
+            INotificationService notificationService,
+            IHubContext<MessageHub> hubContext)
         {
             _checkoutService = checkoutService;
+            _notificationService = notificationService;
+            _hubContext = hubContext;
         }
 
         private int GetTouristId()
@@ -31,11 +42,30 @@ namespace Explorer.API.Controllers.Tourist.Payments
         }
 
         [HttpPost]
-        public ActionResult<List<TourPurchaseTokenDto>> Checkout()
+        public async Task<ActionResult<List<TourPurchaseTokenDto>>> Checkout()
         {
             try
             {
-                var tokens = _checkoutService.Checkout(GetTouristId());
+                var touristId = GetTouristId();
+                var tokens = _checkoutService.Checkout(touristId);
+                
+                var tourCount = tokens.Count;
+                var content = tourCount == 1 
+                    ? "A new tour has been added to your collection!" 
+                    : $"{tourCount} new tours have been added to your collection!";
+                
+                var notification = _notificationService.CreateMessageNotification(
+                    userId: touristId,
+                    actorId: -1,
+                    actorUsername: "System",
+                    content: content,
+                    resourceUrl: "/tour-execution/all-tours"
+                );
+                
+                await _hubContext.Clients
+                    .Group($"user_{touristId}")
+                    .SendAsync("ReceiveNotification", notification);
+                
                 return Ok(tokens);
             }
             catch (InvalidOperationException ex)

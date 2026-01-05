@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Explorer.API.Controllers.Tourist.Payments;
+using Explorer.API.Hubs;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -40,11 +42,31 @@ namespace Explorer.Payments.Tests.Integration.Tourist
                 db.TourPurchaseTokens.RemoveRange(tokens);
                 db.SaveChanges();
             }
+
+            var wallet = db.Wallets.FirstOrDefault(w => w.TouristId == touristId);
+            if (wallet != null)
+            {
+                db.Wallets.Remove(wallet);
+                db.SaveChanges();
+            }
+
+            var paymentRecords = db.PaymentRecords
+                .Where(p => p.TouristId == touristId)
+                .ToList();
+
+            if (paymentRecords.Any())
+            {
+                db.PaymentRecords.RemoveRange(paymentRecords);
+                db.SaveChanges();
+            }
         }
 
         private static CheckoutController CreateController(IServiceScope scope, string personId)
         {
-            return new CheckoutController(scope.ServiceProvider.GetRequiredService<ICheckoutService>())
+            return new CheckoutController(
+                scope.ServiceProvider.GetRequiredService<ICheckoutService>(),
+                scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.API.Public.INotificationService>(),
+                scope.ServiceProvider.GetRequiredService<IHubContext<MessageHub>>())
             {
                 ControllerContext = BuildContext(personId)
             };
@@ -60,15 +82,18 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
             CleanState(db, touristId);
 
+            var wallet = new Wallet(touristId);
+            wallet.AddBalance(100m);
+            db.Wallets.Add(wallet);
             
             var cart = new ShoppingCart(touristId);
             cart.AddItem(1, "HappyPath Tour", 20m);
             db.ShoppingCarts.Add(cart);
             db.SaveChanges();
 
-            
             var controller = CreateController(scope, TestTourist);
-            var ok = controller.Checkout().Result as OkObjectResult;
+            var result = controller.Checkout().Result;
+            var ok = result.Result as OkObjectResult;
             ok.ShouldNotBeNull("Checkout should return 200 OK.");
 
             
@@ -94,8 +119,7 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             var controller = CreateController(scope, TestTourist);
 
-            var result = controller.Checkout();
-
+            var result = controller.Checkout().Result;
             result.Result.ShouldBeOfType<BadRequestObjectResult>();
         }
 
@@ -109,6 +133,9 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
             CleanState(db, touristId);
 
+            var wallet = new Wallet(touristId);
+            wallet.AddBalance(100m);
+            db.Wallets.Add(wallet);
             
             var cart = new ShoppingCart(touristId);
             cart.AddItem(1, "T1", 10m);
@@ -116,9 +143,9 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             db.ShoppingCarts.Add(cart);
             db.SaveChanges();
 
-            
             var controller = CreateController(scope, TestTourist);
-            var ok = controller.Checkout().Result as OkObjectResult;
+            var result = controller.Checkout().Result;
+            var ok = result.Result as OkObjectResult;
             ok.ShouldNotBeNull("Checkout should return 200 OK.");
 
          
@@ -141,11 +168,13 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
             CleanState(db, touristId);
 
+            var wallet = new Wallet(touristId);
+            wallet.AddBalance(100m);
+            db.Wallets.Add(wallet);
             
             db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, 1));
             db.SaveChanges();
 
-          
             var cart = new ShoppingCart(touristId);
             cart.AddItem(1, "Once", 20m);
             db.ShoppingCarts.Add(cart);
@@ -153,9 +182,9 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             var before = db.TourPurchaseTokens.Count(x => x.TouristId == touristId && x.TourId == 1);
 
-           
             var controller = CreateController(scope, TestTourist);
-            var ok = controller.Checkout().Result as OkObjectResult;
+            var result = controller.Checkout().Result;
+            var ok = result.Result as OkObjectResult;
             ok.ShouldNotBeNull("Checkout should return 200 OK.");
 
            

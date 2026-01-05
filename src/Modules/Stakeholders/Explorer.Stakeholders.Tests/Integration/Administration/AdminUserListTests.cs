@@ -39,6 +39,8 @@ public class AdminUserListTests : BaseStakeholdersIntegrationTest
 
     private static AdministrationController CreateController(IServiceScope scope)
     {
-        return new AdministrationController(scope.ServiceProvider.GetRequiredService<IUserAccountService>());
+        return new AdministrationController(
+            scope.ServiceProvider.GetRequiredService<IUserAccountService>(),
+            scope.ServiceProvider.GetRequiredService<Explorer.Payments.API.Public.Tourist.IWalletService>());
     }
 }
