@@ -8,5 +8,7 @@ namespace Explorer.Payments.API.Public.Tourist
         ShoppingCartDto AddToCart(int touristId, int tourId);
 
         ShoppingCartDto RemoveFromCart(int touristId, int tourId);
+        ShoppingCartDto ClearCart(int touristId);
+
     }
 }

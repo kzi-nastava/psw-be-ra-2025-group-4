@@ -55,6 +55,14 @@ namespace Explorer.API.Controllers.Tourist.Payments
             return Ok(result);
         }
 
+        [HttpDelete]
+        public ActionResult<ShoppingCartDto> ClearCart()
+        {
+            var result = _shoppingCartService.ClearCart(GetTouristId());
+            return Ok(result);
+        }
+
+
 
 
     }

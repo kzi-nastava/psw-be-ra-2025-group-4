@@ -79,6 +79,27 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             return _mapper.Map<ShoppingCartDto>(cart);
         }
 
+        public ShoppingCartDto ClearCart(int touristId)
+        {
+            var cart = _cartRepository.GetByTouristId(touristId);
+
+            if (cart == null)
+            {
+                return new ShoppingCartDto
+                {
+                    TouristId = touristId,
+                    Items = new(),
+                    TotalPrice = 0
+                };
+            }
+
+            cart.Clear();
+
+            cart = _cartRepository.Update(cart);
+            return _mapper.Map<ShoppingCartDto>(cart);
+        }
+
+
 
     }
 }
