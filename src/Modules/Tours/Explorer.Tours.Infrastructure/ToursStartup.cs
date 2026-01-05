@@ -52,6 +52,7 @@ public static class ToursStartup
         services.AddScoped<ITourPointSecretService, TourPointSecretService>();
 
         services.AddScoped<ITourReviewService, TourReviewService>();
+        services.AddScoped<IMysteryTourOfferService, MysteryTourService>();
 
     }
 
@@ -77,6 +78,7 @@ public static class ToursStartup
         services.AddScoped<IShoppingCartService, ShoppingCartService>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<ITourReviewRepository, TourReviewDbRepository>();
+        services.AddScoped<IMysteryTourOfferRepository, MysteryTourOfferDbRepository>();
 
 
 

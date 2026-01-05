@@ -24,6 +24,8 @@ namespace Explorer.Tours.Infrastructure.Database
 
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
+        public DbSet<MysteryTourOffer> MysteryTourOffers { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -115,6 +117,19 @@ namespace Explorer.Tours.Infrastructure.Database
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                         v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null) ?? new List<string>()
                         );
+
+            modelBuilder.Entity<MysteryTourOffer>(b =>
+            {
+                b.ToTable("MysteryTourOffers");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.TouristId).IsRequired();
+                b.Property(x => x.TourId).IsRequired();
+                b.Property(x => x.DiscountPercent).IsRequired();
+                b.Property(x => x.CreatedAt).IsRequired();
+                b.Property(x => x.ExpiresAt).IsRequired();
+                b.Property(x => x.Redeemed).IsRequired();
+                b.HasIndex(x => x.TouristId);
+            });
 
 
             base.OnModelCreating(modelBuilder);

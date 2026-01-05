@@ -14,6 +14,7 @@ namespace Explorer.Tours.Core.UseCases.Tourist
         private readonly IShoppingCartRepository _cartRepository;
         private readonly ITourRepository _tourRepository;
         private readonly IMapper _mapper;
+        private static readonly Random _rng = new Random();
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepository,
@@ -119,6 +120,30 @@ namespace Explorer.Tours.Core.UseCases.Tourist
 
             return _mapper.Map<ShoppingCartDto>(cart);
         }
+
+        public ShoppingCartDto AddToCartWithPrice(int touristId, int tourId, decimal finalPrice)
+        {
+            var tour = _tourRepository.GetById(tourId);
+            if (tour == null) throw new NotFoundException($"Tour {tourId} not found.");
+
+            if (tour.Status == TourStatus.Archived)
+                throw new EntityValidationException("Archived tours cannot be added to cart.");
+
+            if (tour.Status != TourStatus.Published)
+                throw new EntityValidationException("Only published tours can be added to cart.");
+
+            var cart = _cartRepository.GetByTouristId(touristId) ?? new ShoppingCart(touristId);
+
+            var previousTotal = cart.TotalPrice;
+
+            cart.AddItem((int)tour.Id, tour.Name, finalPrice);
+
+            if (cart.Id == 0) cart = _cartRepository.Create(cart);
+            else if (cart.TotalPrice != previousTotal) cart = _cartRepository.Update(cart);
+
+            return _mapper.Map<ShoppingCartDto>(cart);
+        }
+
 
     }
 }
