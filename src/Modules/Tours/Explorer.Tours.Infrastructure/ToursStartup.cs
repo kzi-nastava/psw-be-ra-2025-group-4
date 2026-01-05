@@ -4,6 +4,7 @@ using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.API.Public.Author;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
 using Explorer.Tours.Core.UseCases.Author;
@@ -33,6 +34,7 @@ public static class ToursStartup
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IFacilityService, FacilityService>();
         services.AddScoped<ITourService, TourService>();
+        services.AddScoped<IBundleService, BundleService>();
 
         services.AddScoped<IQuizService, QuizService>();
         services.AddScoped<IQuizSubmissionService, QuizSubmissionService>();
@@ -63,6 +65,7 @@ public static class ToursStartup
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
 
         services.AddScoped<ITourRepository, TourDbRepository>();
+        services.AddScoped<IBundleRepository, BundleDbRepository>();
 
         services.AddScoped<IQuizRepository, QuizDbRepository>();
         services.AddScoped<IQuizAnswerRepository, QuizAnswerDbRepository>();
