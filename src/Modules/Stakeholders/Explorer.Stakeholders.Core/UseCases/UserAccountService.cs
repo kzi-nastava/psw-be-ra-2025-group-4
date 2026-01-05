@@ -88,6 +88,8 @@ namespace Explorer.Stakeholders.Core.UseCases
                     account.Role = user.GetPrimaryRoleName();
                     account.IsActive = user.IsActive;
                     account.Id = user.Id;
+                    account.Balance = null;
+                    
                     finalItems.Add(account);
                 }
 

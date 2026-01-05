@@ -1,5 +1,6 @@
 ﻿using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Payments.API.Public.Administration;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Explorer.API.Controllers;
@@ -9,16 +10,31 @@ namespace Explorer.API.Controllers;
 public class AuthenticationController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
+    private readonly IWalletAdministrationService _walletAdministrationService;
 
-    public AuthenticationController(IAuthenticationService authenticationService)
+    public AuthenticationController(
+        IAuthenticationService authenticationService,
+        IWalletAdministrationService walletAdministrationService)
     {
         _authenticationService = authenticationService;
+        _walletAdministrationService = walletAdministrationService;
     }
 
     [HttpPost]
     public ActionResult<AuthenticationTokensDto> RegisterTourist([FromBody] AccountRegistrationDto account)
     {
-        return Ok(_authenticationService.RegisterTourist(account));
+        var result = _authenticationService.RegisterTourist(account);
+        
+        try
+        {
+            var touristId = int.Parse(result.Id.ToString());
+            _walletAdministrationService.AddBalance(touristId, 0);
+        }
+        catch
+        {
+        }
+        
+        return Ok(result);
     }
 
     [HttpPost("login")]

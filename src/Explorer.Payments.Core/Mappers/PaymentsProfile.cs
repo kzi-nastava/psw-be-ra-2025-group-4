@@ -16,5 +16,7 @@ public class PaymentsProfile : Profile
             .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
 
         CreateMap<TourPurchaseToken, TourPurchaseTokenDto>().ReverseMap();
+        
+        CreateMap<Wallet, WalletDto>().ReverseMap();
     }
 }
