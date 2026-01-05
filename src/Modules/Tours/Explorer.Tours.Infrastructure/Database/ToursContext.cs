@@ -20,6 +20,7 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<TourPoint> TourPoints { get; set; }
         public DbSet<TourExecution> TourExecutions { get; set; }
         public DbSet<TourReview> TourReviews { get; set; }
+        public DbSet<Bundle> Bundles { get; set; }
 
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
 
@@ -83,6 +84,22 @@ namespace Explorer.Tours.Infrastructure.Database
                         v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null) ?? new List<string>()
                         );
 
+            modelBuilder.Entity<Bundle>()
+                .HasMany(b => b.Tours)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "BundleTour",
+                    j => j
+                        .HasOne<Tour>()
+                        .WithMany()
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<Bundle>()
+                        .WithMany()
+                        .HasForeignKey("BundleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                );
 
             base.OnModelCreating(modelBuilder);
 
