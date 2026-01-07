@@ -58,7 +58,7 @@ namespace Explorer.API.Controllers.Author
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); /
+            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); 
             _couponService.Delete(id, authorId);
             return NoContent();
         }
