@@ -26,14 +26,12 @@ namespace Explorer.Payments.Core.UseCases
 
         public CouponResponseDto Create(CouponCreateDto couponDto, int authorId)
         {
-            // Generisanje jedinstvenog koda
             string code;
             do
             {
                 code = Coupon.GenerateCode();
             } while (_couponRepository.CodeExists(code));
 
-            // ✅ NEMA validacije ture ovde - to radi controller
 
             var coupon = new Coupon(
                 code,
@@ -54,7 +52,6 @@ namespace Explorer.Payments.Core.UseCases
             if (coupon.AuthorId != authorId)
                 throw new UnauthorizedAccessException("You can only update your own coupons.");
 
-            // ✅ NEMA validacije ture ovde - to radi controller
 
             coupon.Update(
                 couponDto.DiscountPercentage,
@@ -91,7 +88,6 @@ namespace Explorer.Payments.Core.UseCases
             return coupons.Select(MapToResponseDto).ToList();
         }
 
-        // ✅ NOVA verzija - prima dictionary sa tour podacima
         public CouponValidationResultDto ValidateCoupon(CouponValidationDto validationDto, Dictionary<int, PaymentTourInfoDto> tourInfos)
         {
             try
@@ -107,7 +103,6 @@ namespace Explorer.Payments.Core.UseCases
                     };
                 }
 
-                // Pronalaženje tura od autora kupona u korpi
                 var authorTours = tourInfos
                     .Where(kv => validationDto.TourIds.Contains(kv.Key) && kv.Value.AuthorId == coupon.AuthorId)
                     .ToList();
@@ -121,11 +116,9 @@ namespace Explorer.Payments.Core.UseCases
                     };
                 }
 
-                // Određivanje na koju turu se odnosi kupon
                 KeyValuePair<int, PaymentTourInfoDto> applicableTour;
                 if (coupon.TourId.HasValue)
                 {
-                    // Kupon za specifičnu turu
                     applicableTour = authorTours.FirstOrDefault(t => t.Key == coupon.TourId.Value);
                     if (applicableTour.Key == 0)
                     {
@@ -138,7 +131,6 @@ namespace Explorer.Payments.Core.UseCases
                 }
                 else
                 {
-                    // Kupon važi za sve ture autora - primenjuje se na najskuplju
                     applicableTour = authorTours.OrderByDescending(t => t.Value.Price).First();
                 }
 
@@ -163,7 +155,6 @@ namespace Explorer.Payments.Core.UseCases
             }
         }
 
-        // ✅ NOVA verzija - prima tour info
         public CouponResponseDto ApplyCoupon(string code, int touristId, List<OrderItemDto> cartItemDtos, Dictionary<int, int> tourAuthors)
         {
             var coupon = _couponRepository.GetByCode(code);
@@ -171,7 +162,6 @@ namespace Explorer.Payments.Core.UseCases
             if (!coupon.IsValid())
                 throw new InvalidOperationException(coupon.IsUsed ? "Coupon has already been used." : "Coupon has expired.");
 
-            // Provera da li korpa sadrži ture od autora kupona
             var authorTourIds = cartItemDtos
                 .Where(item => tourAuthors.ContainsKey(item.TourId) && tourAuthors[item.TourId] == coupon.AuthorId)
                 .Select(item => item.TourId)
@@ -180,7 +170,6 @@ namespace Explorer.Payments.Core.UseCases
             if (!authorTourIds.Any())
                 throw new InvalidOperationException("This coupon is not applicable to any tours in your cart.");
 
-            // Provera da li je kupon za specifičnu turu
             if (coupon.TourId.HasValue && !authorTourIds.Contains(coupon.TourId.Value))
                 throw new InvalidOperationException("This coupon is not applicable to any tours in your cart.");
 
@@ -196,7 +185,7 @@ namespace Explorer.Payments.Core.UseCases
 
             if (coupon.TourId.HasValue)
             {
-                dto.TourName = $"Tour #{coupon.TourId}"; // ✅ Samo ID, bez pozivanja servisa
+                dto.TourName = $"Tour #{coupon.TourId}";
             }
             else
             {

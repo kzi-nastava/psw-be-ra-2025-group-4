@@ -10,7 +10,7 @@ namespace Explorer.Payments.Core.Domain
         public int DiscountPercentage { get; private set; }
         public DateTime? ExpirationDate { get; private set; }
         public int AuthorId { get; private set; }
-        public int? TourId { get; private set; } // null = važi za sve ture autora
+        public int? TourId { get; private set; } 
         public bool IsUsed { get; private set; }
         public int? UsedByTouristId { get; private set; }
         public DateTime? UsedAt { get; private set; }

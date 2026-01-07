@@ -25,7 +25,7 @@ namespace Explorer.API.Controllers.Author
         [HttpPost]
         public ActionResult<CouponResponseDto> Create([FromBody] CouponCreateDto couponDto)
         {
-            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); // ✅ Promenjeno
+            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); 
 
             if (couponDto.TourId.HasValue)
             {
@@ -41,7 +41,7 @@ namespace Explorer.API.Controllers.Author
         [HttpPut("{id}")]
         public ActionResult<CouponResponseDto> Update(int id, [FromBody] CouponUpdateDto couponDto)
         {
-            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); // ✅ Promenjeno
+            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); 
 
             if (couponDto.TourId.HasValue)
             {
@@ -58,7 +58,7 @@ namespace Explorer.API.Controllers.Author
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); // ✅ Promenjeno
+            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); /
             _couponService.Delete(id, authorId);
             return NoContent();
         }
@@ -73,7 +73,7 @@ namespace Explorer.API.Controllers.Author
         [HttpGet("my-coupons")]
         public ActionResult<List<CouponResponseDto>> GetMyCoupons()
         {
-            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); // ✅ Promenjeno
+            var authorId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); 
             var result = _couponService.GetByAuthor(authorId);
             return Ok(result);
         }

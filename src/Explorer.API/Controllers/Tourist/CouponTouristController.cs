@@ -25,7 +25,7 @@ namespace Explorer.API.Controllers.Tourist
         [HttpPost("validate")]
         public ActionResult<CouponValidationResultDto> ValidateCoupon([FromBody] CouponValidationDto validationDto)
         {
-            var touristId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); // ✅ Promenjeno
+            var touristId = int.Parse(User.Claims.First(c => c.Type == "personId").Value); 
             validationDto.TouristId = touristId;
 
             var tourInfos = new Dictionary<int, PaymentTourInfoDto>();

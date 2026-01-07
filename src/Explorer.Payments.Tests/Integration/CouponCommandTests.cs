@@ -96,15 +96,13 @@ namespace Explorer.Payments.Tests.Integration
             var service = scope.ServiceProvider.GetRequiredService<ICouponService>();
             var tourService = scope.ServiceProvider.GetRequiredService<ITourService>();
 
-            // ✅ Proveri da tura -3 postoji i ima AuthorId = -12
             try
             {
                 var tour = tourService.GetById(-3);
-                tour.AuthorId.ShouldBe(-12); // Potvrdi da je tura drugog autora
+                tour.AuthorId.ShouldBe(-12); 
             }
             catch
             {
-                // Ako tura ne postoji, preskoči test
                 return;
             }
 
@@ -113,8 +111,6 @@ namespace Explorer.Payments.Tests.Integration
                 DiscountPercentage = 20,
                 TourId = -3
             };
-
-            // ✅ Sad očekuj UnauthorizedAccessException
             Should.Throw<UnauthorizedAccessException>(
                 () => service.Create(dto, -11)
             );
