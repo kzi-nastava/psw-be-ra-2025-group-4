@@ -11,6 +11,7 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<PaymentRecord> PaymentRecords { get; set; }
+        public DbSet<Coupon> Coupons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -19,19 +20,15 @@ namespace Explorer.Payments.Infrastructure.Database
             modelBuilder.Entity<ShoppingCart>(builder =>
             {
                 builder.ToTable("ShoppingCarts");
-
                 builder.HasKey(c => c.Id);
                 builder.Property(c => c.TouristId).IsRequired();
                 builder.Property(c => c.TotalPrice).IsRequired();
-
                 builder.OwnsMany(c => c.Items, owned =>
                 {
-                    owned.ToTable("OrderItem"); // ili "OrderItems"
+                    owned.ToTable("OrderItem");
                     owned.WithOwner().HasForeignKey("ShoppingCartId");
-
                     owned.Property<int>("Id");
                     owned.HasKey("Id");
-
                     owned.Property(o => o.TourId).IsRequired();
                     owned.Property(o => o.TourName).IsRequired();
                     owned.Property(o => o.Price).IsRequired();
@@ -41,9 +38,7 @@ namespace Explorer.Payments.Infrastructure.Database
             modelBuilder.Entity<TourPurchaseToken>(builder =>
             {
                 builder.ToTable("TourPurchaseTokens");
-
                 builder.HasKey(t => t.Id);
-
                 builder.Property(t => t.TouristId).IsRequired();
                 builder.Property(t => t.TourId).IsRequired();
                 builder.Property(t => t.PurchasedAt).IsRequired();
@@ -53,7 +48,6 @@ namespace Explorer.Payments.Infrastructure.Database
             modelBuilder.Entity<Wallet>(builder =>
             {
                 builder.ToTable("Wallets");
-
                 builder.HasKey(w => w.Id);
                 builder.Property(w => w.TouristId).IsRequired();
                 builder.Property(w => w.Balance).IsRequired().HasColumnType("decimal(18,2)");
@@ -63,12 +57,29 @@ namespace Explorer.Payments.Infrastructure.Database
             modelBuilder.Entity<PaymentRecord>(builder =>
             {
                 builder.ToTable("PaymentRecords");
-
                 builder.HasKey(p => p.Id);
                 builder.Property(p => p.TouristId).IsRequired();
                 builder.Property(p => p.TourId).IsRequired();
                 builder.Property(p => p.Price).IsRequired().HasColumnType("decimal(18,2)");
                 builder.Property(p => p.PurchaseTime).IsRequired();
+            });
+
+            modelBuilder.Entity<Coupon>(builder =>
+            {
+                builder.ToTable("Coupons");
+                builder.HasKey(c => c.Id);
+                builder.Property(c => c.Code).IsRequired().HasMaxLength(8);
+                builder.Property(c => c.DiscountPercentage).IsRequired();
+                builder.Property(c => c.AuthorId).IsRequired();
+                builder.Property(c => c.TourId).IsRequired(false); 
+                builder.Property(c => c.ExpirationDate).IsRequired(false); 
+                builder.Property(c => c.IsUsed).IsRequired();
+                builder.Property(c => c.UsedByTouristId).IsRequired(false); 
+                builder.Property(c => c.UsedAt).IsRequired(false); 
+
+                builder.HasIndex(c => c.Code).IsUnique();
+
+                builder.HasIndex(c => c.AuthorId);
             });
 
             base.OnModelCreating(modelBuilder);
