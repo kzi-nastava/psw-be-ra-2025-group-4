@@ -154,7 +154,7 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
           
             (controller.AddToCart(-2).Result as OkObjectResult).ShouldNotBeNull();
-            var secondAdd = controller.AddToCart(-3);
+            var secondAdd = controller.AddToCart(-4);
             var ok = secondAdd.Result as OkObjectResult;
 
            
@@ -165,7 +165,7 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             dto.TouristId.ShouldBe(2);
             dto.Items.Count.ShouldBe(2);
             dto.Items.Any(i => i.TourId == -2).ShouldBeTrue();
-            dto.Items.Any(i => i.TourId == -3).ShouldBeTrue();
+            dto.Items.Any(i => i.TourId == -4).ShouldBeTrue();
             dto.TotalPrice.ShouldBe(dto.Items.Sum(i => i.Price));
 
             
@@ -237,7 +237,8 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             CleanCart(dbContext, touristId: 2);
 
-            const int unpublishedTourId = -4;
+            // In Tours test data: -1 is not published (draft), while -4 is published.
+            const int unpublishedTourId = -1;
 
      
             var ex = Should.Throw<Explorer.BuildingBlocks.Core.Exceptions.EntityValidationException>(() =>
@@ -283,7 +284,7 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             
             (controller.AddToCart(-2).Result as OkObjectResult).ShouldNotBeNull();
-            (controller.AddToCart(-3).Result as OkObjectResult).ShouldNotBeNull();
+            (controller.AddToCart(-4).Result as OkObjectResult).ShouldNotBeNull();
 
             
             var clearResult = controller.ClearCart();

@@ -11,6 +11,7 @@ namespace Explorer.Tours.API.Internal
         public int TourId { get; set; }
         public string Name { get; set; } = "";
         public decimal Price { get; set; }
+        public int AuthorId { get; set; }
         public TourLifecycleStatus Status { get; set; }
     }
 

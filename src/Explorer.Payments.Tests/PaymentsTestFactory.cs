@@ -1,10 +1,9 @@
-﻿using Explorer.BuildingBlocks.Tests;
+﻿using System.Collections.Generic;
+using Explorer.BuildingBlocks.Tests;
 using Explorer.Payments.Infrastructure.Database;
+using Explorer.Tours.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Explorer.Tours.API.Internal;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-
 
 namespace Explorer.Payments.Tests;
 
@@ -14,30 +13,12 @@ public class PaymentsTestFactory : BaseTestFactory<PaymentsContext>
     {
         var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<PaymentsContext>));
         services.Remove(descriptor!);
-
         services.AddDbContext<PaymentsContext>(SetupTestContext());
-        services.RemoveAll<ITourInfoService>();
-        services.AddSingleton<ITourInfoService, FakeTourInfoService>();
+
+        var toursDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ToursContext>));
+        if (toursDescriptor != null) services.Remove(toursDescriptor);
+        services.AddDbContext<ToursContext>(SetupTestContext());
 
         return services;
     }
-
-    private class FakeTourInfoService : ITourInfoService
-    {
-        private static readonly HashSet<int> Unpublished = new() { -4, -5 };
-
-        public TourInfoDto Get(int tourId)
-        {
-            return new TourInfoDto
-            {
-                TourId = tourId,
-                Name = $"Tour {tourId}",
-                Price = 20m,
-                Status = Unpublished.Contains(tourId)
-                    ? TourLifecycleStatus.Draft
-                    : TourLifecycleStatus.Published
-            };
-        }
-    }
-
 }
