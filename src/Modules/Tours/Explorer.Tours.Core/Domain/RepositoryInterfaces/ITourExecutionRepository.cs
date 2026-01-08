@@ -10,5 +10,7 @@ public interface ITourExecutionRepository
     IEnumerable<TourExecution> GetByTourist(long touristId);
 
     IEnumerable<TourExecution> GetByTouristAndTour(int touristId, int tourId);
+
+    Dictionary<int, ExecutionStats> GetStatsForTours(IEnumerable<int> tourIds);
 }
 
