@@ -16,5 +16,6 @@ public interface IUserRepository
     Person? GetPersonByUserId(long userId);
     IEnumerable<User> SearchByUsername(string username);
     User? GetByUsername(string username);
+    IEnumerable<User> GetAllActiveNonAdmins();
 
 }

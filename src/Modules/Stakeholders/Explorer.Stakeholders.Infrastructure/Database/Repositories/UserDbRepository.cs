@@ -105,6 +105,15 @@ public class UserDbRepository : IUserRepository
         return _dbContext.Users
             .FirstOrDefault(u => u.Username == username);
     }
+    public IEnumerable<User> GetAllActiveNonAdmins()
+    {
+        return _dbContext.Users
+            .Where(u =>
+                u.IsActive &&
+                u.Role != UserRole.Administrator
+            )
+            .ToList();
+    }
 
 
 }

@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Explorer.Tours.API.Dtos;
+using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Public.Tourist;
 
 namespace Explorer.Tours.Core.UseCases.Tourist
 {
