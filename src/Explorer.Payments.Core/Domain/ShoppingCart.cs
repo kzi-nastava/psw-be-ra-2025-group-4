@@ -59,5 +59,13 @@ namespace Explorer.Payments.Core.Domain
         {
             TotalPrice = _items.Sum(i => i.Price);
         }
+
+        public void AddItemWithPriceOverride(int tourId, string tourName, decimal finalPrice)
+        {
+            if (_items.Any(i => i.TourId == tourId)) return;
+
+            _items.Add(new OrderItem(tourId, tourName, finalPrice));
+            RecalculateTotal();
+        }
     }
 }

@@ -9,6 +9,6 @@ namespace Explorer.Payments.API.Public.Tourist
 
         ShoppingCartDto RemoveFromCart(int touristId, int tourId);
         ShoppingCartDto ClearCart(int touristId);
-
+        ShoppingCartDto AddToCartWithPrice(int touristId, int tourId, decimal finalPrice);
     }
 }

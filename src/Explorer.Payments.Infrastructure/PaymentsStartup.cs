@@ -39,6 +39,7 @@ public static class PaymentsStartup
          services.AddScoped<IWalletService, WalletService>();
          services.AddScoped<IWalletAdministrationService, WalletAdministrationService>();
         services.AddScoped<ICouponService, CouponService>();
+        services.AddScoped<ICartPricingService, ShoppingCartService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
