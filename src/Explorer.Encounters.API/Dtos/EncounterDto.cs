@@ -29,5 +29,7 @@ namespace Explorer.Encounters.API.Dtos
         public int ExperiencePoints { get; set; }
         public EncounterStatus Status { get; set; }
         public EncounterType Type { get; set; }
+        public long? TourPointId { get; set; }
+        public bool? IsRequiredForPointCompletion { get; set; }
     }
 }

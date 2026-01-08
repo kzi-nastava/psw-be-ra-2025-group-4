@@ -14,5 +14,8 @@ namespace Explorer.Encounters.API.Dtos
         public LocationDto Location { get; set; }
         public int ExperiencePoints { get; set; }
         public EncounterType Type { get; set; }
+        public long? TourPointId { get; set; }
+        public bool? IsRequiredForPointCompletion { get; set; }
+
     }
 }

@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <Folder Include="Internal\" />
+    <Folder Include="Public\Administration\" />
+    <Folder Include="Public\Author\" />
   </ItemGroup>
 
 </Project>
