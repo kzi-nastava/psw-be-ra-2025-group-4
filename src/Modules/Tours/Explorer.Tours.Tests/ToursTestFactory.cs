@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Explorer.Tours.Tests;
 using Explorer.Payments.Infrastructure.Database;
+using Explorer.Stakeholders.Infrastructure.Database;
+
 public class ToursTestFactory : BaseTestFactory<ToursContext>
 {
     protected override IServiceCollection ReplaceNeededDbContexts(IServiceCollection services)
@@ -16,6 +18,10 @@ public class ToursTestFactory : BaseTestFactory<ToursContext>
         var paymentsDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<PaymentsContext>));
         if (paymentsDescriptor != null) services.Remove(paymentsDescriptor);
         services.AddDbContext<PaymentsContext>(SetupTestContext());
+
+        descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<StakeholdersContext>));
+        services.Remove(descriptor!);
+        services.AddDbContext<StakeholdersContext>(SetupTestContext());
 
         return services;
     }
