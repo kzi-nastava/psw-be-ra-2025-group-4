@@ -15,9 +15,10 @@ namespace Explorer.API.Controllers.Author
         private readonly IEncounterService _encounterService;
         private readonly ITourService _tourService;
 
-        public EncounterController(IEncounterService encounterService)
+        public EncounterController(IEncounterService encounterService, ITourService tourService)
         {
             _encounterService = encounterService;
+            _tourService = tourService;
         }
 
         [HttpGet]
