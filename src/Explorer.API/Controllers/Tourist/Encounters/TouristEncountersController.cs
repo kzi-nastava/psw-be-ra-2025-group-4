@@ -1,4 +1,5 @@
 ﻿using Explorer.Encounters.API.Dtos;
+using Explorer.Encounters.API.Public;
 using Explorer.Encounters.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
