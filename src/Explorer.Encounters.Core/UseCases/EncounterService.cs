@@ -3,6 +3,7 @@ using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public.Administration;
+
 using Explorer.Encounters.Core.Domain;
 using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using System;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Explorer.Encounters.Core.UseCases.Administration
+namespace Explorer.Encounters.Core.UseCases
 {
     public class EncounterService : IEncounterService
     {
@@ -49,12 +50,51 @@ namespace Explorer.Encounters.Core.UseCases.Administration
                 .Select(_mapper.Map<EncounterDto>);
         }
 
-        public EncounterDto Update(EncounterUpdateDto dto)
+        public EncounterDto Update(EncounterUpdateDto dto, int encounterId)
         {
-            var encounter = _encounterRepository.GetById(dto.Id);
+            var encounter = _encounterRepository.GetById(encounterId);
             encounter.Update(dto.Name, dto.Description, _mapper.Map<Location>(dto.Location), dto.ExperiencePoints, (Domain.EncounterType)dto.Type);
 
             return _mapper.Map<EncounterDto>(_encounterRepository.Update(encounter));
+        }
+
+        public void AddEncounterToTourPoint(long encounterId, long tourPointId, bool isRequiredForPointCompletion)
+        {
+            var encounter = _encounterRepository.GetById(encounterId);
+            if (encounter == null)
+            {
+                throw new NotFoundException($"Encounter with id {encounterId} not found.");
+            }
+            encounter.SetTourPoint(tourPointId, isRequiredForPointCompletion);
+            _encounterRepository.Update(encounter);
+        }
+
+        public List<EncounterDto> GetByTourPointIds(IEnumerable<int> tourPointIds)
+        {
+            var encounters = _encounterRepository.GetByTourPointIds(tourPointIds);
+            return encounters.Select(_mapper.Map<EncounterDto>).ToList();
+        }
+
+        public void Publish(int id)
+        {
+            var encounter = _encounterRepository.GetById(id);
+            if (encounter == null)
+            {
+                throw new NotFoundException($"Encounter with id {id} not found.");
+            }   
+            encounter.Activate();
+            _encounterRepository.Update(encounter);
+        }
+
+        public void Archive(int id)
+        {
+            var encounter = _encounterRepository.GetById(id);
+            if (encounter == null)
+            {
+                throw new NotFoundException($"Encounter with id {id} not found.");
+            }
+            encounter.Archive();
+            _encounterRepository.Update(encounter);
         }
     }
 }

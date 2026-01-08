@@ -10,4 +10,10 @@
     <ProjectReference Include="..\Explorer.Encounters.API\Explorer.Encounters.API.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UseCases\Administration\" />
+    <Folder Include="UseCases\Author\" />
+    <Folder Include="UseCases\Tourist\" />
+  </ItemGroup>
+
 </Project>
