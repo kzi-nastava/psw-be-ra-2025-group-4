@@ -78,7 +78,7 @@ namespace Explorer.Encounters.Tests.Integration.Administration
                 }
             };
 
-            var actionResult = controller.Update(update);
+            var actionResult = controller.Update(update, (int)update.Id);
 
             var objectResult = actionResult.Result as ObjectResult;
             objectResult.ShouldNotBeNull();
