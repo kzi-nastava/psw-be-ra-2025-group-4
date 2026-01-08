@@ -5,10 +5,11 @@ using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Internal;
 
 namespace Explorer.Payments.Core.UseCases.Tourist
 {
-    public class ShoppingCartService : IShoppingCartService
+    public class ShoppingCartService : IShoppingCartService, ICartPricingService
     {
         private readonly IShoppingCartRepository _cartRepository;
         private readonly IMapper _mapper;

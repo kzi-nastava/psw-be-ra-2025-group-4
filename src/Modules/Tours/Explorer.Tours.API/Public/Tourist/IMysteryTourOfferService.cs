@@ -11,6 +11,6 @@ namespace Explorer.Tours.API.Public.Tourist
     public interface IMysteryTourOfferService
     {
         MysteryTourOfferDto GetOrCreate(int touristId);
-        ShoppingCartDto Redeem(Guid offerId, int touristId);
+        RedeemResultDto Redeem(Guid offerId, int touristId);
     }
 }

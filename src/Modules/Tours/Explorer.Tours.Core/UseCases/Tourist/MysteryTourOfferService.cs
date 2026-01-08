@@ -11,6 +11,7 @@ using AutoMapper;
 using Explorer.Tours.API.Dtos;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.API.Internal;
 
 namespace Explorer.Tours.Core.UseCases.Tourist
 {
@@ -18,7 +19,7 @@ namespace Explorer.Tours.Core.UseCases.Tourist
     {
         private readonly ITourRepository _tourRepository;
         private readonly IMysteryTourOfferRepository _offerRepository;
-        private readonly IShoppingCartService _cartService;
+        private readonly ICartPricingService _cartPricing;
         private readonly IMapper _mapper;
 
         private static readonly Random _rng = new();
@@ -26,12 +27,12 @@ namespace Explorer.Tours.Core.UseCases.Tourist
         public MysteryTourService(
             ITourRepository tourRepository,
             IMysteryTourOfferRepository offerRepository,
-            IShoppingCartService cartService,
+            ICartPricingService cartPricing,
             IMapper mapper)
         {
             _tourRepository = tourRepository;
             _offerRepository = offerRepository;
-            _cartService = cartService;
+            _cartPricing = cartPricing;
             _mapper = mapper;
         }
 
@@ -54,7 +55,7 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             return Enrich(created);
         }
 
-        public ShoppingCartDto Redeem(Guid offerId, int touristId)
+        public RedeemResultDto Redeem(Guid offerId, int touristId)
         {
             var offer = _offerRepository.GetActiveForTourist(touristId)
                 ?? throw new NotFoundException("Offer not found.");
@@ -62,25 +63,23 @@ namespace Explorer.Tours.Core.UseCases.Tourist
             if (offer.Id != offerId)
                 throw new InvalidOperationException("Invalid offer.");
 
-            try
-            {
-                offer.Redeem(); 
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException(ex.Message);
-            }
+            offer.Redeem();
 
-            var tour = _tourRepository.GetById(offer.TourId);
-            if (tour == null) throw new NotFoundException("Tour not found.");
+            var tour = _tourRepository.GetById(offer.TourId)
+                ?? throw new NotFoundException("Tour not found.");
 
             var finalPrice = Math.Round(tour.Price * (100 - offer.DiscountPercent) / 100m, 2);
 
-            var cart = _cartService.AddToCartWithPrice(touristId, (int)tour.Id, finalPrice);
-
+            var cart = _cartPricing.AddToCartWithPrice(touristId, (int)tour.Id, finalPrice);
             _offerRepository.Update(offer);
-            return cart;
+
+            return new RedeemResultDto
+            {
+                TouristId = cart.TouristId,          
+                TotalPrice = cart.TotalPrice      
+            };
         }
+
 
         private MysteryTourOfferDto Enrich(MysteryTourOffer offer)
         {
