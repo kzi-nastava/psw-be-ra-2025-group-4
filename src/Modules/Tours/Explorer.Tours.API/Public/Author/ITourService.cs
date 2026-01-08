@@ -26,7 +26,9 @@ namespace Explorer.Tours.API.Public
         PagedResult<PopularTourDto> GetPopular(int authorId, int page, int pageSize, double? lat, double? lon, double? radiusKm);
 
 
+        PagedResult<AuthorTourDashboardItemDto> GetDashboard(int authorId, int page, int pageSize);
 
+        AuthorTourDashboardDetailsDto GetDashboardDetails(int authorId, int tourId, int days = 30);
 
 
 

@@ -15,12 +15,14 @@ namespace Explorer.Tours.Core.UseCases.Author
     {
         private readonly ITourRepository _tourRepository;
         private readonly ITourReviewRepository _tourReviewRepository;
+        private readonly ITourExecutionRepository _tourExecutionRepository;
         private readonly IMapper _mapper;
 
-        public TourService(ITourRepository tourRepository, ITourReviewRepository tourReviewRepository, IMapper mapper)
+        public TourService(ITourRepository tourRepository, ITourReviewRepository tourReviewRepository, ITourExecutionRepository tourExecutionRepository, IMapper mapper)
         {
             _tourRepository = tourRepository;
             _tourReviewRepository = tourReviewRepository;
+            _tourExecutionRepository = tourExecutionRepository;
             _mapper = mapper;
         }
 
@@ -376,6 +378,136 @@ namespace Explorer.Tours.Core.UseCases.Author
 
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
             return R * c;
+        }
+
+
+        public PagedResult<AuthorTourDashboardItemDto> GetDashboard(int authorId, int page, int pageSize)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var publishedArchived = _tourRepository.GetPublishedAndArchived().ToList();
+            var myDrafts = _tourRepository.GetByAuthor(authorId)
+                .Where(t => t.Status == TourStatus.Draft)
+                .ToList();
+
+            var visibleTours = publishedArchived
+                .Concat(myDrafts)
+                .GroupBy(t => t.Id)
+                .Select(g => g.First())
+                .OrderBy(t => t.Id)
+                .ToList();
+
+            var ids = visibleTours.Select(t => (int)t.Id).ToList();
+
+            var reviewStats = _tourReviewRepository.GetStatsForTours(ids);
+            var execStats = _tourExecutionRepository.GetStatsForTours(ids);
+
+            var projected = visibleTours.Select(t =>
+            {
+                reviewStats.TryGetValue((int)t.Id, out var rs);
+                execStats.TryGetValue((int)t.Id, out var es);
+
+                return new AuthorTourDashboardItemDto
+                {
+                    TourId = (int)t.Id,
+                    Name = t.Name,
+                    Status = (TourDtoStatus)t.Status,
+                    Price = t.Price,
+                    LengthInKm = t.LengthInKm,
+                    PublishedAt = t.PublishedAt,
+                    ArchivedAt = t.ArchivedAt,
+
+                    Popularity = Math.Round(rs?.AvgRating ?? 0.0, 3),
+                    RatingsCount = rs?.Count ?? 0,
+
+                    Starts = es?.Starts ?? 0,
+                    Completed = es?.Completed ?? 0,
+                    Abandoned = es?.Abandoned ?? 0,
+                    Active = es?.Active ?? 0
+                };
+            })
+            .OrderByDescending(x => x.Popularity)
+            .ThenByDescending(x => x.RatingsCount)
+            .ThenBy(x => x.TourId)
+            .ToList();
+
+            var total = projected.Count;
+            var items = projected.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            return new PagedResult<AuthorTourDashboardItemDto>(items, total);
+        }
+
+        public AuthorTourDashboardDetailsDto GetDashboardDetails(int authorId, int tourId, int days = 30)
+        {
+            if (days <= 0) days = 30;
+
+            var tour = _tourRepository.GetById(tourId)
+                ?? throw new KeyNotFoundException($"Tour {tourId} not found.");
+
+            if (tour.AuthorId != authorId)
+                throw new ForbiddenException("Not your tour.");
+
+            var tourDto = _mapper.Map<TourDto>(tour);
+            if (tourDto.Points != null)
+                tourDto.Points = tourDto.Points.OrderBy(p => p.Order).ToList();
+
+            // review aggregate
+            var reviewStats = _tourReviewRepository.GetStatsForTours(new[] { tourId });
+            reviewStats.TryGetValue(tourId, out var rs);
+
+            // execution aggregate
+            var execStats = _tourExecutionRepository.GetStatsForTours(new[] { tourId });
+            execStats.TryGetValue(tourId, out var es);
+
+            // time range for trends
+            var to = DateTime.UtcNow;
+            var from = to.Date.AddDays(-days + 1);
+
+            // execution trends (zahteva repo metode koje dodajemo u nastavku)
+            var startsTrend = _tourExecutionRepository.GetDailyStarts(tourId, from, to);
+            var completedTrend = _tourExecutionRepository.GetDailyCompleted(tourId, from, to);
+            var abandonedTrend = _tourExecutionRepository.GetDailyAbandoned(tourId, from, to);
+
+            // latest reviews
+            var latestReviews = _tourReviewRepository.GetLatestForTour(tourId, take: 5);
+
+            return new AuthorTourDashboardDetailsDto
+            {
+                Tour = tourDto,
+
+                Popularity = Math.Round(rs?.AvgRating ?? 0.0, 3),
+                RatingsCount = rs?.Count ?? 0,
+
+                Starts = es?.Starts ?? 0,
+                Completed = es?.Completed ?? 0,
+                Abandoned = es?.Abandoned ?? 0,
+                Active = es?.Active ?? 0,
+
+                StartsTrend = FillDaysWithZeros(from, to, startsTrend),
+                CompletedTrend = FillDaysWithZeros(from, to, completedTrend),
+                AbandonedTrend = FillDaysWithZeros(from, to, abandonedTrend),
+
+                LatestReviews = latestReviews.Select(_mapper.Map<TourReviewDTO>).ToList()
+            };
+        }
+
+        private static List<TrendPointDto> FillDaysWithZeros(
+    DateTime from, DateTime to,
+    List<(DateTime Date, int Count)> data)
+        {
+            var dict = data.ToDictionary(x => x.Date.Date, x => x.Count);
+
+            var result = new List<TrendPointDto>();
+            for (var d = from.Date; d <= to.Date; d = d.AddDays(1))
+            {
+                result.Add(new TrendPointDto
+                {
+                    Date = d,
+                    Count = dict.TryGetValue(d, out var c) ? c : 0
+                });
+            }
+            return result;
         }
     }
 }

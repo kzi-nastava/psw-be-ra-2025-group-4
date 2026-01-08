@@ -118,4 +118,21 @@ public class TourController : ControllerBase
         return Ok(_tourService.GetPopular(GetAuthorId(), page, pageSize, lat, lon, radiusKm));
     }
 
+
+    [HttpGet("dashboard")]
+    public ActionResult<PagedResult<AuthorTourDashboardItemDto>> GetDashboard(
+       [FromQuery] int page = 1,
+       [FromQuery] int pageSize = 10)
+    {
+        return Ok(_tourService.GetDashboard(GetAuthorId(), page, pageSize));
+    }
+
+    [HttpGet("{id:int}/dashboard")]
+    public ActionResult<AuthorTourDashboardDetailsDto> GetDashboardDetails(
+        int id,
+        [FromQuery] int days = 30)
+    {
+        return Ok(_tourService.GetDashboardDetails(GetAuthorId(), id, days));
+    }
+
 }
