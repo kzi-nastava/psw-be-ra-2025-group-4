@@ -3,6 +3,7 @@ using Explorer.API.Controllers.Tourist.Encounters;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public.Administration;
+using Explorer.Encounters.API.Public.Tourist;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -37,7 +38,8 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
         private static TouristEncountersController CreateController(IServiceScope scope)
         {
             return new TouristEncountersController(
-                scope.ServiceProvider.GetRequiredService<IEncounterService>())
+                scope.ServiceProvider.GetRequiredService<IEncounterService>(),
+                scope.ServiceProvider.GetRequiredService<ITouristEncounterService>())
             {
                 ControllerContext = BuildContext("-21")
             };
