@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using AutoMapper;
 using Explorer.BuildingBlocks.Core.UseCases;
@@ -104,7 +105,7 @@ namespace Explorer.Tours.Core.UseCases.Tourist
                 return "No reviews";
 
             var averageRating = allReviews.Average(r => r.Rating);
-            return averageRating.ToString("0.0");
+            return averageRating.ToString("0.0", CultureInfo.InvariantCulture);
         }
 
         public ReviewEligibilityInfo GetReviewEligibilityInfo(int touristId, int tourId)
