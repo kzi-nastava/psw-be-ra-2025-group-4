@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Payments.API.Public.Tourist;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
@@ -15,16 +16,36 @@ namespace Explorer.API.Controllers.Administrator.Administration
     public class AdministrationController : ControllerBase
     {
         private readonly IUserAccountService _userAccountService;
+        private readonly IWalletService _walletService;
 
-        public AdministrationController(IUserAccountService userAccountService)
+        public AdministrationController(IUserAccountService userAccountService, IWalletService walletService)
         {
             _userAccountService = userAccountService;
+            _walletService = walletService;
         }
 
         [HttpGet]
         public ActionResult<PagedResult<UserAccountDto>> GetPaged([FromQuery] int page, [FromQuery] int pageSize)
         {
-            return Ok(_userAccountService.GetPaged(page, pageSize));
+            var result = _userAccountService.GetPaged(page, pageSize);
+            
+            foreach (var account in result.Results)
+            {
+                if (account.Role == "tourist")
+                {
+                    try
+                    {
+                        var wallet = _walletService.GetWallet((int)account.Id);
+                        account.Balance = wallet.Balance;
+                    }
+                    catch
+                    {
+                        account.Balance = 0;
+                    }
+                }
+            }
+            
+            return Ok(result);
         }
 
         [HttpPost]

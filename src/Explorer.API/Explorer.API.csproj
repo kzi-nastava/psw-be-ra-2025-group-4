@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BuildingBlocks\Explorer.BuildingBlocks.Core\Explorer.BuildingBlocks.Core.csproj" />
     <ProjectReference Include="..\BuildingBlocks\Explorer.BuildingBlocks.Infrastructure\Explorer.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\Explorer.Payments.API\Explorer.Payments.API.csproj" />
     <ProjectReference Include="..\Explorer.Encounters.API\Explorer.Encounters.API.csproj" />
     <ProjectReference Include="..\Explorer.Encounters.Infrastructure\Explorer.Encounters.Infrastructure.csproj" />
     <ProjectReference Include="..\Explorer.Payments.Infrastructure\Explorer.Payments.Infrastructure.csproj" />

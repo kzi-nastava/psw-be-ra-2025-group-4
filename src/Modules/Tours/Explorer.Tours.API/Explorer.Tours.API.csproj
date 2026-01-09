@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<ProjectReference Include="..\..\..\Explorer.Payments.API\Explorer.Payments.API.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Explorer.BuildingBlocks.Core\Explorer.BuildingBlocks.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Internal\" />
   </ItemGroup>
 
 </Project>
