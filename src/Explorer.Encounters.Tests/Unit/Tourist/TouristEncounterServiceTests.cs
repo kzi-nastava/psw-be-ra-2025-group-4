@@ -126,6 +126,7 @@ public class TouristEncounterServiceTests
         {
             throw new NotImplementedException();
         }
+
     }
 
     private class InMemoryTouristLocationService : ITouristLocationService

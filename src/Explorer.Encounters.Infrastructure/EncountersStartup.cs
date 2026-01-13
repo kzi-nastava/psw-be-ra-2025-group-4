@@ -1,12 +1,10 @@
 ﻿using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Encounters.API.Public.Administration;
+using Explorer.Encounters.API.Public.Tourist;
 using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using Explorer.Encounters.Core.Mappers;
 using Explorer.Encounters.Core.UseCases;
-<<<<<<< Updated upstream
-=======
 using Explorer.Encounters.Core.UseCases.Tourist;
->>>>>>> Stashed changes
 using Explorer.Encounters.Infrastructure.Database;
 using Explorer.Encounters.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +27,7 @@ namespace Explorer.Encounters.Infrastructure
         {
             //TODO
             services.AddScoped<IEncounterService, EncounterService>();
+            services.AddScoped<ITouristEncounterService, TouristEncounterService>();
         }
 
         private static void SetupInfrastructure(IServiceCollection services)

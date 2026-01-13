@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Microsoft.EntityFrameworkCore;
+using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Infrastructure.Database;
 
 namespace Explorer.Tours.Tests.Integration.Tourist;
 
@@ -24,7 +26,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
         CleanupCompletedPoints(db, -1, -2);
-        EnsurePurchaseToken(db, -1, -2);
+        EnsurePurchaseToken(scope, -1, -2);
         var execution = CreateExecution(scope, -2);
 
         var tourPoint = db.TourPoints
@@ -58,7 +60,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
         CleanupCompletedPoints(db, -1, -2);
-        EnsurePurchaseToken(db, -1, -2);
+        EnsurePurchaseToken(scope, -1, -2);
         var execution = CreateExecution(scope, -2);
 
         var tourPoint = db.TourPoints
@@ -85,7 +87,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
         CleanupCompletedPoints(db, -1, -2);
-        EnsurePurchaseToken(db, -1, -2);
+        EnsurePurchaseToken(scope, -1, -2);
         var execution = CreateExecution(scope, -2);
 
         var tourPoint = db.TourPoints
@@ -128,7 +130,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
         var service = scope.ServiceProvider.GetRequiredService<Explorer.Tours.API.Public.Tourist.ITourExecutionService>();
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
         
-        EnsurePurchaseToken(db, -1, tourId);
+        EnsurePurchaseToken(scope, -1, tourId);
         
         var existingExecutions = db.TourExecutions
             .Where(te => te.TouristId == -1 && te.TourId == tourId && te.Status == TourExecutionStatus.Active)
@@ -152,15 +154,18 @@ public class TourPointSecretTests : BaseToursIntegrationTest
         return result;
     }
 
-    private static void EnsurePurchaseToken(ToursContext db, int touristId, int tourId)
+    private static void EnsurePurchaseToken(IServiceScope scope, int touristId, int tourId)
     {
-        var existingToken = db.TourPurchaseTokens
+        var paymentsDb = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+        paymentsDb.Database.EnsureCreated();
+
+        var existingToken = paymentsDb.TourPurchaseTokens
             .FirstOrDefault(t => t.TouristId == touristId && t.TourId == tourId);
-        
+
         if (existingToken == null)
         {
-            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, tourId));
-            db.SaveChanges();
+            paymentsDb.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, tourId));
+            paymentsDb.SaveChanges();
         }
     }
 

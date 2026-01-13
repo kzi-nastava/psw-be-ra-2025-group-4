@@ -9,6 +9,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Explorer.Encounters.API\Explorer.Encounters.API.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Modules\Stakeholders\Explorer.Stakeholders.Core\Explorer.Stakeholders.Core.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="UseCases\Administration\" />

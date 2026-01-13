@@ -23,6 +23,12 @@ namespace Explorer.Tours.API.Public
         PagedResult<TourDto> GetPublishedFiltered(int page, int pageSize, string? search, int? difficulty, decimal? minPrice, decimal? maxPrice, List<string>? tags, string? sort);
         IEnumerable<string> GetAllTags();
 
+        PagedResult<PopularTourDto> GetPopular(int authorId, int page, int pageSize, double? lat, double? lon, double? radiusKm);
+
+
+
+
+
 
 
     }
