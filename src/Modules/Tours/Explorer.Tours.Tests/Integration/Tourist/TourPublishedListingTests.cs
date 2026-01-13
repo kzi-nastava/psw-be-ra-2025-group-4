@@ -18,24 +18,23 @@ public class TourPublishedListingTests : BaseToursIntegrationTest
     [Fact]
     public void Retrieves_all_published()
     {
-        // Arrange
+
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        // Act
+
         var result = ((ObjectResult)controller.GetAll(
             1, 10,
-            null,   // search
-            null,   // difficulty
-            null,   // minPrice
-            null,   // maxPrice
-            null,   // tags
-            null,   // sort
-            null    // onSale
+            null,   
+            null,   
+            null,   
+            null,  
+            null,   
+            null,   
+            null    
         ).Result)?.Value as PagedResult<TourDto>;
 
 
-        // Assert
         result.ShouldNotBeNull();
         result.Results.Count.ShouldBe(2);
         result.TotalCount.ShouldBe(2);

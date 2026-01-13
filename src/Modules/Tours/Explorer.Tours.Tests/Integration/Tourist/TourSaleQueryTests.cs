@@ -19,57 +19,46 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
 {
     public TourSaleQueryTests(ToursTestFactory factory) : base(factory) { }
 
-    // ========== AUTHOR QUERY TESTS ==========
 
     [Fact]
     public void Author_retrieves_own_sales()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateAuthorSaleController(scope);
 
-        // Act
         var actionResult = controller.GetAll();
         var result = ((ObjectResult)actionResult.Result)?.Value as List<SaleDto>;
 
-        // Assert
         result.ShouldNotBeNull();
         result.Count.ShouldBeGreaterThan(0);
-        result.ShouldAllBe(s => s.AuthorId == -11); // Author ID from test data
+        result.ShouldAllBe(s => s.AuthorId == -11); 
     }
 
     [Fact]
     public void Author_gets_sale_by_id()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateAuthorSaleController(scope);
 
-        // Act
         var actionResult = controller.GetById(100);
         var result = ((ObjectResult)actionResult.Result)?.Value as SaleDto;
 
-        // Assert
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(100);
-        result.AuthorId.ShouldBe(-11); // Author ID from test data
+        result.AuthorId.ShouldBe(-11); 
         result.IsActive.ShouldBeTrue();
     }
-
-    // ========== TOURIST FILTERING TESTS ==========
 
     [Fact]
     public void Retrieves_only_tours_on_sale()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act
         var actionResult = controller.GetAll(1, 10, null, null, null, null, null, null, true);
         var result = ((ObjectResult)actionResult.Result)?.Value as PagedResult<TourDto>;
 
-        // Assert
         result.ShouldNotBeNull();
         result.Results.Count.ShouldBeGreaterThan(0);
         result.Results.ShouldAllBe(t => t.IsOnSale == true);
@@ -80,15 +69,12 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
     [Fact]
     public void Calculates_discounted_prices_correctly()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act
         var actionResult = controller.GetAll(1, 10, null, null, null, null, null, null, true);
         var result = ((ObjectResult)actionResult.Result)?.Value as PagedResult<TourDto>;
 
-        // Assert
         result.ShouldNotBeNull();
 
         foreach (var tour in result.Results)
@@ -106,17 +92,13 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
     [Fact]
     public void Sorts_by_discount_descending()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act - Get all tours on sale, sorted by discount descending
         var actionResult = controller.GetAll(1, 10, null, null, null, null, null, "discountdesc", true);
         var result = ((ObjectResult)actionResult.Result)?.Value as PagedResult<TourDto>;
 
-        // Assert
         result.ShouldNotBeNull();
-        // We should have at least 2 tours on sale (-2 with 30% and -4 with 15%)
         if (result.Results.Count > 1)
         {
             for (int i = 0; i < result.Results.Count - 1; i++)
@@ -128,7 +110,6 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
         }
         else
         {
-            // If only one result, it should still be on sale
             result.Results.Count.ShouldBeGreaterThan(0);
             result.Results[0].IsOnSale.ShouldBeTrue();
         }
@@ -137,17 +118,13 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
     [Fact]
     public void Sorts_by_discount_ascending()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act - Get all tours on sale, sorted by discount ascending
         var actionResult = controller.GetAll(1, 10, null, null, null, null, null, "discountasc", true);
         var result = ((ObjectResult)actionResult.Result)?.Value as PagedResult<TourDto>;
 
-        // Assert
         result.ShouldNotBeNull();
-        // We should have at least 2 tours on sale (-2 with 30% and -4 with 15%)
         if (result.Results.Count > 1)
         {
             for (int i = 0; i < result.Results.Count - 1; i++)
@@ -159,7 +136,6 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
         }
         else
         {
-            // If only one result, it should still be on sale
             result.Results.Count.ShouldBeGreaterThan(0);
             result.Results[0].IsOnSale.ShouldBeTrue();
         }
@@ -168,15 +144,12 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
     [Fact]
     public void GetById_returns_tour_with_discount_if_on_sale()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act - Use tour -2 which is published and on sale
         var actionResult = controller.GetById(-2);
         var result = ((ObjectResult)actionResult.Result)?.Value as TourDto;
 
-        // Assert
         result.ShouldNotBeNull();
         result.IsOnSale.ShouldBeTrue();
         result.DiscountedPrice.ShouldNotBeNull();
@@ -187,15 +160,12 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
     [Fact]
     public void GetById_returns_tour_without_discount_if_not_on_sale()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act - Use tour -3 which is archived and not on sale
         var actionResult = controller.GetById(-3);
         var result = ((ObjectResult)actionResult.Result)?.Value as TourDto;
 
-        // Assert
         result.ShouldNotBeNull();
         result.IsOnSale.ShouldBeFalse();
         result.DiscountedPrice.ShouldBeNull();
@@ -205,15 +175,12 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
     [Fact]
     public void Combines_sale_filter_with_price_range()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act
         var actionResult = controller.GetAll(1, 10, null, null, 0m, 500m, null, null, true);
         var result = ((ObjectResult)actionResult.Result)?.Value as PagedResult<TourDto>;
 
-        // Assert
         result.ShouldNotBeNull();
         result.Results.ShouldAllBe(t => t.IsOnSale);
         result.Results.ShouldAllBe(t => t.OriginalPrice >= 0m && t.OriginalPrice <= 500m);
@@ -222,15 +189,12 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
     [Fact]
     public void Combines_sale_filter_with_difficulty()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act
         var actionResult = controller.GetAll(1, 10, null, 0, null, null, null, null, true);
         var result = ((ObjectResult)actionResult.Result)?.Value as PagedResult<TourDto>;
 
-        // Assert
         result.ShouldNotBeNull();
         if (result.Results.Any())
         {
@@ -242,21 +206,17 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
     [Fact]
     public void Multiple_sales_for_same_tour_uses_highest_discount()
     {
-        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateTouristController(scope);
 
-        // Act - Use tour -2 which has multiple sales (20% and 30%), should use 30%
         var actionResult = controller.GetById(-2);
         var result = ((ObjectResult)actionResult.Result)?.Value as TourDto;
 
-        // Assert
         result.ShouldNotBeNull();
         result.IsOnSale.ShouldBeTrue();
-        result.SaleDiscountPercent.ShouldBe(30); // Highest discount from sales
+        result.SaleDiscountPercent.ShouldBe(30);
     }
 
-    // ========== HELPER METHODS ==========
 
     private static SaleController CreateAuthorSaleController(IServiceScope scope)
     {
@@ -264,7 +224,7 @@ public class TourSaleQueryTests : BaseToursIntegrationTest
             scope.ServiceProvider.GetRequiredService<ITourSaleService>()
         )
         {
-            ControllerContext = BuildContext("-11") // Author ID from test data
+            ControllerContext = BuildContext("-11")
         };
     }
 

@@ -41,7 +41,6 @@ namespace Explorer.Tours.Core.UseCases.Author
 
         public SaleDto Create(SaleCreateDto dto, int authorId)
         {
-            // Validacija da su sve ture autora
             if (dto.TourIds == null || dto.TourIds.Count == 0)
                 throw new ArgumentException("Sale must contain at least one tour.");
 
@@ -64,7 +63,6 @@ namespace Explorer.Tours.Core.UseCases.Author
             if (sale.AuthorId != authorId)
                 throw new ForbiddenException("Not your sale.");
 
-            // Validacija da su sve ture autora
             if (dto.TourIds == null || dto.TourIds.Count == 0)
                 throw new ArgumentException("Sale must contain at least one tour.");
 
