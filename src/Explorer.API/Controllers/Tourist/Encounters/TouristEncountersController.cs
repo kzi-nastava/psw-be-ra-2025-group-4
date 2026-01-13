@@ -1,4 +1,5 @@
 ﻿using Explorer.Encounters.API.Dtos;
+using Explorer.Encounters.API.Public;
 using Explorer.Encounters.API.Public.Administration;
 using Explorer.Encounters.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;

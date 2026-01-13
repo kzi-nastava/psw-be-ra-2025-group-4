@@ -116,6 +116,17 @@ public class TouristEncounterServiceTests
 
             _store[encounter.Id] = encounter;
         }
+
+        public List<Encounter> GetByTourPointIds(IEnumerable<int> tourPointIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ExistsByTourPoint(long tourPointId)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 
     private class InMemoryTouristLocationService : ITouristLocationService

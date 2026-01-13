@@ -79,5 +79,19 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
             }
             return encounter;
         }
+
+        public bool ExistsByTourPoint(long tourPointId)
+        {
+            return _dbSet
+                .Any(e => e.TourPointId == tourPointId);
+        }
+
+        public List<Encounter> GetByTourPointIds(IEnumerable<int> tourPointIds)
+        {
+            return _dbSet
+                .Where(e => e.TourPointId.HasValue &&
+                            tourPointIds.Contains((int)e.TourPointId.Value))
+                .ToList();
+        }
     }
 }

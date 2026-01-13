@@ -13,4 +13,10 @@
     <ProjectReference Include="..\Modules\Stakeholders\Explorer.Stakeholders.Core\Explorer.Stakeholders.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UseCases\Administration\" />
+    <Folder Include="UseCases\Author\" />
+    <Folder Include="UseCases\Tourist\" />
+  </ItemGroup>
+
 </Project>

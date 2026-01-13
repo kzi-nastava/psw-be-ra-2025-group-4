@@ -3,7 +3,7 @@ using Explorer.Encounters.API.Public.Administration;
 using Explorer.Encounters.API.Public.Tourist;
 using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using Explorer.Encounters.Core.Mappers;
-using Explorer.Encounters.Core.UseCases.Administration;
+using Explorer.Encounters.Core.UseCases;
 using Explorer.Encounters.Core.UseCases.Tourist;
 using Explorer.Encounters.Infrastructure.Database;
 using Explorer.Encounters.Infrastructure.Database.Repositories;

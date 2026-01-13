@@ -29,6 +29,10 @@ namespace Explorer.Encounters.Core.Domain
         public int ExperiencePoints { get; private set; }
         public EncounterStatus Status { get; private set; }
         public EncounterType Type { get; private set; }
+
+        public long? TourPointId { get; private set; }
+        public bool IsRequiredForPointCompletion { get; private set; }
+
         public List<long> TouristsStarted { get; private set; } = new(); // lista id-jeva turista koji su započeli encounter
         public List<long> TouristsCompleted { get; private set; } = new(); // lista id-jeva turista koji su završili encounter
 
@@ -90,6 +94,12 @@ namespace Explorer.Encounters.Core.Domain
                 throw new InvalidOperationException("Encounter is already archived.");
             
             Status = EncounterStatus.Archived;
+        }
+
+        public void SetTourPoint(long tourPointId, bool isRequiredForPointCompletion)
+        {
+            TourPointId = tourPointId;
+            IsRequiredForPointCompletion = isRequiredForPointCompletion;
         }
 
         private void Validate()

@@ -1,5 +1,6 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Encounters.API.Dtos;
+using Explorer.Encounters.API.Public;
 using Explorer.Encounters.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,10 +35,10 @@ namespace Explorer.API.Controllers.Administrator.Administration
             return CreatedAtAction(nameof(GetPaged), new { id = created.Id }, created);
         }
 
-        [HttpPut]
-        public ActionResult<EncounterDto> Update([FromBody] EncounterUpdateDto dto)
+        [HttpPut("{id:int}")]
+        public ActionResult<EncounterDto> Update([FromBody] EncounterUpdateDto dto, int id)
         {
-            var updated = _encounterService.Update(dto);
+            var updated = _encounterService.Update(dto, id);
             return Ok(updated);
         }
 
