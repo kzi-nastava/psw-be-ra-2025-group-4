@@ -29,9 +29,10 @@ namespace Explorer.Payments.Infrastructure.Database
                     owned.WithOwner().HasForeignKey("ShoppingCartId");
                     owned.Property<int>("Id");
                     owned.HasKey("Id");
-                    owned.Property(o => o.TourId).IsRequired();
-                    owned.Property(o => o.TourName).IsRequired();
-                    owned.Property(o => o.Price).IsRequired();
+                    owned.Property<int>("TourId").IsRequired();
+                    owned.Property<int?>("BundleId").IsRequired(false);
+                    owned.Property<string>("TourName").IsRequired();
+                    owned.Property<decimal>("Price").IsRequired();
                 });
             });
 
