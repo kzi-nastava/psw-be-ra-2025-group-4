@@ -33,6 +33,9 @@ namespace Explorer.Encounters.Core.Domain
         public long? TourPointId { get; private set; }
         public bool IsRequiredForPointCompletion { get; private set; }
 
+        public List<long> TouristsStarted { get; private set; } = new(); // lista id-jeva turista koji su započeli encounter
+        public List<long> TouristsCompleted { get; private set; } = new(); // lista id-jeva turista koji su završili encounter
+
         private Encounter()
         {
 
@@ -48,6 +51,20 @@ namespace Explorer.Encounters.Core.Domain
             Type = type;
 
             Validate();
+        }
+        public void StartEncounter(long touristId)
+        {
+            if (TouristsStarted.Contains(touristId))
+                throw new InvalidOperationException("Tourist has already started this encounter.");
+            TouristsStarted.Add(touristId);
+        }
+        public void CompleteEncounter(long touristId)
+        {
+            if (!TouristsStarted.Contains(touristId))
+                throw new InvalidOperationException("Tourist has not started this encounter.");
+            if (TouristsCompleted.Contains(touristId))
+                throw new InvalidOperationException("Tourist has already completed this encounter.");
+            TouristsCompleted.Add(touristId);
         }
 
         public void Update(string name, string description, Location location, int experiencePoints, EncounterType type)

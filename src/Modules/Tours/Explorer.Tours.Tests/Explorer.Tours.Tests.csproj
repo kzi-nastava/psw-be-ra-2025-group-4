@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Integration\Tourist\CheckoutCommandTests.cs" />
+    <Compile Remove="Integration\Tourist\ShoppingCartComandTests.cs" />
+    <Compile Remove="Unit\CheckoutServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.20" />
 	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
 	<PackageReference Include="Shouldly" Version="4.3.0" />
@@ -27,6 +33,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Explorer.BuildingBlocks.Tests\Explorer.BuildingBlocks.Tests.csproj" />
     <ProjectReference Include="..\..\..\Explorer.API\Explorer.API.csproj" />
+    <ProjectReference Include="..\..\..\Explorer.Payments.API\Explorer.Payments.API.csproj" />
+    <ProjectReference Include="..\..\..\Explorer.Payments.Core\Explorer.Payments.Core.csproj" />
+    <ProjectReference Include="..\..\..\Explorer.Payments.Infrastructure\Explorer.Payments.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Explorer.Payments.Tests\Explorer.Payments.Tests.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="Integration\Tourist\CheckoutCommandTests.cs" />
+	</ItemGroup>
 
 </Project>

@@ -63,3 +63,25 @@ VALUES
     '2024-01-16 14:20:00+00',
     0.0
 );
+
+-- Tour 4 (Published for bundle tests)
+INSERT INTO tours."Tours" (
+    "Id", "Name", "Description", "Difficulty",
+    "AuthorId", "Price", "Status", "Tags",
+    "TransportDuration", "PublishedAt", "ArchivedAt", "LengthInKm"
+)
+VALUES
+(
+    -4,
+    'Test Tura 4',
+    'Opis 4',
+    1,
+    -11,
+    25.00,
+    1,
+    ARRAY['test', 'published'],
+    '[]',
+    '2024-01-16 14:20:00+00',
+    NULL,
+    0.0
+);

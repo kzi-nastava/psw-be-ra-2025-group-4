@@ -1,5 +1,5 @@
 ﻿DELETE FROM tours."TourReviews";
-DELETE FROM tours."TourPurchaseTokens";
+DELETE FROM payments."TourPurchaseTokens";
 DELETE FROM tours."TourExecutions";
 DELETE FROM tours."TourProblems";
 DELETE FROM tours."TouristEquipment";
@@ -12,4 +12,4 @@ DELETE FROM tours."Tours";
 DELETE FROM tours."Equipment";
 DELETE FROM tours."Facility";
 DELETE FROM tours."HistoricalMonuments";
-DELETE FROM tours."ShoppingCarts";
+DELETE FROM payments."ShoppingCarts";
