@@ -59,7 +59,8 @@ namespace Explorer.Payments.Infrastructure.Database
                 builder.ToTable("PaymentRecords");
                 builder.HasKey(p => p.Id);
                 builder.Property(p => p.TouristId).IsRequired();
-                builder.Property(p => p.TourId).IsRequired();
+                builder.Property(p => p.TourId).IsRequired(false);
+                builder.Property(p => p.BundleId).IsRequired(false);
                 builder.Property(p => p.Price).IsRequired().HasColumnType("decimal(18,2)");
                 builder.Property(p => p.PurchaseTime).IsRequired();
             });

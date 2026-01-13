@@ -1,4 +1,5 @@
 using Explorer.BuildingBlocks.Core.UseCases;
+using System.Collections.Generic;
 
 namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
 {
@@ -10,6 +11,7 @@ namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
         Bundle Update(Bundle bundle);
         void Delete(int id);
         IEnumerable<Bundle> GetByAuthor(int authorId);
+        IEnumerable<Bundle> GetAll();
     }
 }
 

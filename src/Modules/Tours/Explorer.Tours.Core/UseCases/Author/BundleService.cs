@@ -49,6 +49,9 @@ namespace Explorer.Tours.Core.UseCases.Author
             if (dto.TourIds == null || dto.TourIds.Count == 0)
                 throw new ArgumentException("Bundle must contain at least one tour.");
 
+            if (dto.TourIds.Count < 2)
+                throw new ArgumentException("Bundle must contain at least 2 published tours.");
+
             var tours = new List<Tour>();
             foreach (var tourId in dto.TourIds)
             {
@@ -84,6 +87,11 @@ namespace Explorer.Tours.Core.UseCases.Author
                 if (tour.Status != TourStatus.Published)
                     throw new ArgumentException($"Tour {tourId} must be published to be added to a bundle.");
                 tours.Add(tour);
+            }
+
+            if (bundle.Status == BundleStatus.Published && tours.Count < 2)
+            {
+                throw new ArgumentException("Published bundle must contain at least 2 published tours.");
             }
 
             bundle.Update(dto.Name, dto.Price, tours);

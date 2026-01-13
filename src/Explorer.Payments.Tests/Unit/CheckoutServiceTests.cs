@@ -73,6 +73,11 @@ namespace Explorer.Payments.Tests.Unit
                 Store.Add(paymentRecord);
                 return paymentRecord;
             }
+
+            public bool ExistsForBundle(int touristId, int bundleId)
+            {
+                return Store.Any(pr => pr.TouristId == touristId && pr.BundleId == bundleId);
+            }
         }
 
         private static IMapper Mapper()
