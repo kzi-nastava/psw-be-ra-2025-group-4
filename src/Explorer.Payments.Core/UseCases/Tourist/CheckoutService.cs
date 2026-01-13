@@ -5,6 +5,7 @@ using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.API.Internal;
 
 namespace Explorer.Payments.Core.UseCases.Tourist
 {
@@ -14,6 +15,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private readonly ITourPurchaseTokenRepository _tokenRepository;
         private readonly IWalletRepository _walletRepository;
         private readonly IPaymentRecordRepository _paymentRecordRepository;
+        private readonly ITourInfoService _tourInfoService;
         private readonly IMapper _mapper;
 
         public CheckoutService(
@@ -21,12 +23,14 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             ITourPurchaseTokenRepository tokenRepository,
             IWalletRepository walletRepository,
             IPaymentRecordRepository paymentRecordRepository,
+            ITourInfoService tourInfoService,
             IMapper mapper)
         {
             _cartRepository = cartRepository;
             _tokenRepository = tokenRepository;
             _walletRepository = walletRepository;
             _paymentRecordRepository = paymentRecordRepository;
+            _tourInfoService = tourInfoService;
             _mapper = mapper;
         }
 
@@ -46,13 +50,18 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             }
 
             decimal totalPrice = 0;
-            var itemsToPurchase = new List<OrderItem>();
+            var itemsToPurchase = new List<(int TourId, string TourName, decimal Price)>();
             
             foreach (var item in cart.Items)
             {
                 if (_tokenRepository.Exists(touristId, item.TourId)) continue;
-                totalPrice += item.Price;
-                itemsToPurchase.Add(item);
+                
+                // Get current price (with sale discount if applicable) at checkout time
+                var tourInfo = _tourInfoService.Get(item.TourId);
+                decimal currentPrice = tourInfo.Price; // This already includes sale discount if active
+                
+                totalPrice += currentPrice;
+                itemsToPurchase.Add((item.TourId, item.TourName, currentPrice));
             }
 
             if (itemsToPurchase.Count == 0)

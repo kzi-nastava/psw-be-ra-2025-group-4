@@ -30,7 +30,8 @@ public class TourPublishedListingTests : BaseToursIntegrationTest
             null,   // minPrice
             null,   // maxPrice
             null,   // tags
-            null    // sort
+            null,   // sort
+            null    // onSale
         ).Result)?.Value as PagedResult<TourDto>;
 
 

@@ -32,6 +32,12 @@ namespace Explorer.Tours.API.Dtos
         public double LengthInKm { get; set; }
         public List<EquipmentDto> Equipment { get; set; }
         public string AverageGrade { get; set; }
+        
+        // Sale properties
+        public decimal OriginalPrice { get; set; }
+        public decimal? DiscountedPrice { get; set; }
+        public bool IsOnSale { get; set; }
+        public int? SaleDiscountPercent { get; set; }
 
     }
 }
