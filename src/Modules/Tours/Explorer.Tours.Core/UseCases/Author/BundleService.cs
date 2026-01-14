@@ -49,9 +49,6 @@ namespace Explorer.Tours.Core.UseCases.Author
             if (dto.TourIds == null || dto.TourIds.Count == 0)
                 throw new ArgumentException("Bundle must contain at least one tour.");
 
-            if (dto.TourIds.Count < 2)
-                throw new ArgumentException("Bundle must contain at least 2 published tours.");
-
             var tours = new List<Tour>();
             foreach (var tourId in dto.TourIds)
             {

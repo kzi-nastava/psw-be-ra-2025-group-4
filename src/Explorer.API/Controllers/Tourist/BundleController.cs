@@ -60,8 +60,15 @@ namespace Explorer.API.Controllers.Tourist
         [HttpGet("{id:int}")]
         public ActionResult<BundleDto> GetById(int id)
         {
-            var bundle = _bundleService.GetById(id);
-            return Ok(bundle);
+            try
+            {
+                var bundle = _bundleService.GetById(id);
+                return Ok(bundle);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("purchased/{bundleId:int}")]

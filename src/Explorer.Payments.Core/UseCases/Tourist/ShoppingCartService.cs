@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Internal;
-using Explorer.Tours.API.Public.Tourist;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
@@ -16,9 +15,9 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private readonly IMapper _mapper;
         private static readonly Random _rng = new Random();
         private readonly ITourInfoService _tourInfoService;
-        private readonly ITouristBundleService _bundleService;
+        private readonly IBundleInfoService _bundleService;
 
-        public ShoppingCartService(IShoppingCartRepository cartRepository, ITourInfoService tourInfoService, ITouristBundleService bundleService, IMapper mapper)
+        public ShoppingCartService(IShoppingCartRepository cartRepository, ITourInfoService tourInfoService, IBundleInfoService bundleService, IMapper mapper)
         {
             _cartRepository = cartRepository;
             _tourInfoService = tourInfoService;
@@ -131,9 +130,9 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 
         public ShoppingCartDto AddBundleToCart(int touristId, int bundleId)
         {
-            var bundle = _bundleService.GetById(bundleId);
+            var bundle = _bundleService.Get(bundleId);
 
-            if (bundle.Status != Explorer.Tours.API.Dtos.BundleDtoStatus.Published)
+            if (bundle.Status != BundleLifecycleStatus.Published)
                 throw new EntityValidationException("Only published bundles can be added to cart.");
 
             var cart = _cartRepository.GetByTouristId(touristId) ?? new ShoppingCart(touristId);

@@ -8,6 +8,8 @@ DELETE FROM tours."QuizAnswers";
 DELETE FROM tours."Options";
 DELETE FROM tours."Questions";
 DELETE FROM tours."Quizzes";
+DELETE FROM tours."BundleTour";
+DELETE FROM tours."Bundles";
 DELETE FROM tours."Tours";
 DELETE FROM tours."Equipment";
 DELETE FROM tours."Facility";
