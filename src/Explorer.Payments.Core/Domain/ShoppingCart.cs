@@ -67,5 +67,15 @@ namespace Explorer.Payments.Core.Domain
             _items.Add(new OrderItem(tourId, tourName, finalPrice));
             RecalculateTotal();
         }
+
+        public void UpdateItemPrice(int tourId, decimal newPrice)
+        {
+            var item = _items.FirstOrDefault(i => i.TourId == tourId);
+            if (item == null) return;
+
+            _items.Remove(item);
+            _items.Add(new OrderItem(tourId, item.TourName, newPrice));
+            RecalculateTotal();
+        }
     }
 }
