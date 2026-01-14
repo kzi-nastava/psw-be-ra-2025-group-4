@@ -50,13 +50,14 @@ public class TourController : ControllerBase
      [FromQuery] decimal? minPrice,
      [FromQuery] decimal? maxPrice,
      [FromQuery] List<string>? tags,
-     [FromQuery] string? sort)
+     [FromQuery] string? sort,
+     [FromQuery] bool? onSale)
     {
         var result = _tourService.GetPublishedFiltered(
             page, pageSize,
             search, difficulty,
             minPrice, maxPrice,
-            tags, sort);
+            tags, sort, onSale);
 
         foreach (var tour in result.Results)
             tour.AverageGrade = _tourReviewService.GetTourAverageGrade(tour.Id);

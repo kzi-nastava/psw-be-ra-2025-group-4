@@ -24,6 +24,7 @@ namespace Explorer.Tours.Infrastructure.Database
 
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
         public DbSet<MysteryTourOffer> MysteryTourOffers { get; set; }
+        public DbSet<Sale> Sales { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,6 +100,19 @@ namespace Explorer.Tours.Infrastructure.Database
                 b.HasIndex(x => x.TouristId);
             });
 
+            modelBuilder.Entity<Sale>(b =>
+            {
+                b.ToTable("Sales");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.AuthorId).IsRequired();
+                b.Property(x => x.TourIds)
+                    .HasColumnType("integer[]");
+                b.Property(x => x.StartDate).IsRequired();
+                b.Property(x => x.EndDate).IsRequired();
+                b.Property(x => x.DiscountPercent).IsRequired();
+                b.Property(x => x.IsActive).IsRequired();
+                b.HasIndex(x => x.AuthorId);
+            });
             modelBuilder.Entity<Bundle>()
                 .HasMany(b => b.Tours)
                 .WithMany()

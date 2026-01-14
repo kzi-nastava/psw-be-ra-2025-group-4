@@ -39,6 +39,30 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 };
             }
 
+            bool needsUpdate = false;
+
+            foreach (var item in cart.Items.ToList())
+            {
+                try
+                {
+                    var tourInfo = _tourInfoService.Get(item.TourId);
+
+                    if (tourInfo.Price != item.Price)
+                    {
+                        cart.UpdateItemPrice(item.TourId, tourInfo.Price);
+                        needsUpdate = true;
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+            if (needsUpdate)
+            {
+                cart = _cartRepository.Update(cart);
+            }
+
             return _mapper.Map<ShoppingCartDto>(cart);
         }
 

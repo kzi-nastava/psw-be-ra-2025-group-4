@@ -15,12 +15,14 @@ namespace Explorer.Tours.Core.UseCases.Author
     {
         private readonly ITourRepository _tourRepository;
         private readonly ITourReviewRepository _tourReviewRepository;
+        private readonly ISaleRepository _saleRepository;
         private readonly IMapper _mapper;
 
-        public TourService(ITourRepository tourRepository, ITourReviewRepository tourReviewRepository, IMapper mapper)
+        public TourService(ITourRepository tourRepository, ITourReviewRepository tourReviewRepository, ISaleRepository saleRepository, IMapper mapper)
         {
             _tourRepository = tourRepository;
             _tourReviewRepository = tourReviewRepository;
+            _saleRepository = saleRepository;
             _mapper = mapper;
         }
 
@@ -65,6 +67,18 @@ namespace Explorer.Tours.Core.UseCases.Author
                 dto.Points = dto.Points
                     .OrderBy(p => p.Order)
                     .ToList();
+            }
+
+            // Enrich with sale information
+            var activeSales = _saleRepository.GetActiveSalesForTour(id);
+            if (activeSales.Any())
+            {
+                dto = EnrichTourDtoWithSale(tour, activeSales);
+            }
+            else
+            {
+                dto.OriginalPrice = dto.Price;
+                dto.IsOnSale = false;
             }
 
             return dto;
@@ -205,13 +219,15 @@ namespace Explorer.Tours.Core.UseCases.Author
         }
 
         public PagedResult<TourDto> GetPublishedFiltered(
-            int page, int pageSize,
-            string? search,
-            int? difficulty,
-            decimal? minPrice, decimal? maxPrice,
-            List<string>? tags,
-            string? sort)
+        int page, int pageSize,
+        string? search,
+        int? difficulty,
+        decimal? minPrice, decimal? maxPrice,
+        List<string>? tags,
+        string? sort,
+        bool? onSale = null)
         {
+
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
@@ -248,29 +264,69 @@ namespace Explorer.Tours.Core.UseCases.Author
                 }
             }
 
-            q = (sort ?? "").Trim().ToLower() switch
+            var activeSales = _saleRepository.GetActiveSales();
+            var toursOnSale = activeSales
+                .SelectMany(s => s.TourIds)
+                .Distinct()
+                .ToHashSet();
+
+
+            if (onSale.HasValue && onSale.Value)
             {
-                "nameasc" => q.OrderBy(t => t.Name),
-                "namedesc" => q.OrderByDescending(t => t.Name),
-                "priceasc" => q.OrderBy(t => t.Price),
-                "pricedesc" => q.OrderByDescending(t => t.Price),
-                _ => q.OrderBy(t => t.Id)
-            };
+                q = q.Where(t => toursOnSale.Contains((int)t.Id));
 
-            var total = q.Count();
+            }
 
-            var items = q.Skip((page - 1) * pageSize)
-                         .Take(pageSize)
-                         .ToList();
-
-            var mapped = items.Select(t =>
+            var sortLower = (sort ?? "").Trim().ToLower();
+            if (sortLower == "discountdesc" || sortLower == "discountasc")
             {
-                var dto = _mapper.Map<TourDto>(t);
-                if (dto.Points != null) dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
-                return dto;
-            }).ToList();
+                var itemsList = q.ToList();
 
-            return new PagedResult<TourDto>(mapped, total);
+                var tourSaleMap = activeSales
+                    .SelectMany(s => s.TourIds.Select(tourId => new { TourId = tourId, Discount = s.DiscountPercent }))
+                    .GroupBy(x => x.TourId)
+                    .ToDictionary(g => g.Key, g => g.Max(x => x.Discount)); 
+                if (sortLower == "discountdesc")
+                {
+                    itemsList = itemsList
+                        .OrderByDescending(t => tourSaleMap.ContainsKey((int)t.Id) ? tourSaleMap[(int)t.Id] : 0)
+                        .ThenBy(t => t.Id)
+                        .ToList();
+                }
+                else 
+                {
+                    itemsList = itemsList
+                        .OrderBy(t => tourSaleMap.ContainsKey((int)t.Id) ? tourSaleMap[(int)t.Id] : int.MaxValue)
+                        .ThenBy(t => t.Id)
+                        .ToList();
+                }
+
+                var total = itemsList.Count;
+                var pagedItems = itemsList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                var mapped = pagedItems.Select(t => EnrichTourDtoWithSale(t, activeSales)).ToList();
+                return new PagedResult<TourDto>(mapped, total);
+            }
+            else
+            {
+                q = sortLower switch
+                {
+                    "nameasc" => q.OrderBy(t => t.Name),
+                    "namedesc" => q.OrderByDescending(t => t.Name),
+                    "priceasc" => q.OrderBy(t => t.Price),
+                    "pricedesc" => q.OrderByDescending(t => t.Price),
+                    _ => q.OrderBy(t => t.Id)
+                };
+
+                var total = q.Count();
+
+                var items = q.Skip((page - 1) * pageSize)
+                             .Take(pageSize)
+                             .ToList();
+
+                var mapped = items.Select(t => EnrichTourDtoWithSale(t, activeSales)).ToList();
+
+                return new PagedResult<TourDto>(mapped, total);
+            }
         }
 
         public IEnumerable<string> GetAllTags()
@@ -376,6 +432,33 @@ namespace Explorer.Tours.Core.UseCases.Author
 
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
             return R * c;
+        }
+
+        private TourDto EnrichTourDtoWithSale(Tour tour, List<Sale> activeSales)
+        {
+            var dto = _mapper.Map<TourDto>(tour);
+            if (dto.Points != null) dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
+
+            var tourSales = activeSales.Where(s => s.IsTourInSale((int)tour.Id)).ToList();
+            
+            if (tourSales.Any())
+            {
+                // Take the sale with highest discount
+                var bestSale = tourSales.OrderByDescending(s => s.DiscountPercent).First();
+                dto.OriginalPrice = tour.Price;
+                dto.DiscountedPrice = bestSale.CalculateDiscountedPrice(tour.Price);
+                dto.IsOnSale = true;
+                dto.SaleDiscountPercent = bestSale.DiscountPercent;
+            }
+            else
+            {
+                dto.OriginalPrice = tour.Price;
+                dto.DiscountedPrice = null;
+                dto.IsOnSale = false;
+                dto.SaleDiscountPercent = null;
+            }
+
+            return dto;
         }
     }
 }

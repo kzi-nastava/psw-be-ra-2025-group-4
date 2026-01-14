@@ -35,6 +35,7 @@ public static class ToursStartup
         services.AddScoped<IFacilityService, FacilityService>();
         services.AddScoped<ITourService, TourService>();
         services.AddScoped<IBundleService, BundleService>();
+        services.AddScoped<ITourSaleService, TourSaleService>();
         services.AddScoped<ITouristBundleService, TouristBundleService>();
 
         services.AddScoped<IQuizService, QuizService>();
@@ -69,6 +70,7 @@ public static class ToursStartup
 
         services.AddScoped<ITourRepository, TourDbRepository>();
         services.AddScoped<IBundleRepository, BundleDbRepository>();
+        services.AddScoped<ISaleRepository, SaleDbRepository>();
 
         services.AddScoped<IQuizRepository, QuizDbRepository>();
         services.AddScoped<IQuizAnswerRepository, QuizAnswerDbRepository>();
