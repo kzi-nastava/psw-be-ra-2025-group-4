@@ -133,9 +133,8 @@ namespace Explorer.Payments.Tests.Unit
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -153,9 +152,8 @@ namespace Explorer.Payments.Tests.Unit
             var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -176,9 +174,9 @@ namespace Explorer.Payments.Tests.Unit
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
             tourInfoService.SetTourPrice(11, 30m);
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+
             var result = svc.Checkout(123);
 
             result.Count.ShouldBe(1);
@@ -197,9 +195,8 @@ namespace Explorer.Payments.Tests.Unit
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 100m);
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -218,9 +215,8 @@ namespace Explorer.Payments.Tests.Unit
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
             tourInfoService.SetTourPrice(11, 30m);
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
 
             svc.Checkout(123);
 
@@ -243,9 +239,8 @@ namespace Explorer.Payments.Tests.Unit
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
 
             svc.Checkout(123);
 

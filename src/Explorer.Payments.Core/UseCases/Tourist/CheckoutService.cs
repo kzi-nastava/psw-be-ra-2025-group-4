@@ -52,23 +52,10 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 wallet = _walletRepository.Create(wallet);
             }
 
-            decimal totalPrice = 0;
-            var itemsToPurchase = new List<(int TourId, string TourName, decimal Price)>();
-            
-            foreach (var item in cart.Items)
-            {
-                if (_tokenRepository.Exists(touristId, item.TourId)) continue;
-                
-                // Get current price (with sale discount if applicable) at checkout time
-                var tourInfo = _tourInfoService.Get(item.TourId);
-                decimal currentPrice = tourInfo.Price; // This already includes sale discount if active
-                
-                totalPrice += currentPrice;
-                itemsToPurchase.Add((item.TourId, item.TourName, currentPrice));
             decimal tourTotalPrice = 0;
-            var tourItemsToPurchase = new List<OrderItem>();
+            var tourItemsToPurchase = new List<(OrderItem Item, decimal CurrentPrice)>();
             var bundleItemsToPurchase = new List<OrderItem>();
-            
+
             foreach (var item in cart.Items)
             {
                 if (item.BundleId.HasValue)
@@ -79,8 +66,12 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 else
                 {
                     if (_tokenRepository.Exists(touristId, item.TourId)) continue;
-                    tourTotalPrice += item.Price;
-                    tourItemsToPurchase.Add(item);
+
+                    var tourInfo = _tourInfoService.Get(item.TourId);
+                    decimal currentPrice = tourInfo.Price;
+
+                    tourTotalPrice += currentPrice;
+                    tourItemsToPurchase.Add((item, currentPrice));
                 }
             }
 
@@ -106,10 +97,10 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             }
 
             var createdTokens = new List<TourPurchaseTokenDto>();
-            
-            foreach (var item in tourItemsToPurchase)
+
+            foreach (var (item, currentPrice) in tourItemsToPurchase)
             {
-                var paymentRecord = new PaymentRecord(touristId, item.TourId, item.Price);
+                var paymentRecord = new PaymentRecord(touristId, item.TourId, currentPrice);
                 _paymentRecordRepository.Create(paymentRecord);
 
                 var token = new TourPurchaseToken(touristId, item.TourId);

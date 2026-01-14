@@ -75,6 +75,7 @@ namespace Explorer.Payments.Core.Domain
 
             _items.Remove(item);
             _items.Add(new OrderItem(tourId, item.TourName, newPrice));
+        }
         public void AddBundleItem(int bundleId, string bundleName, decimal price)
         {
             if (_items.Any(i => i.BundleId == bundleId)) return;
