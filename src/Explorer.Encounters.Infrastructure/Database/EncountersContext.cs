@@ -25,5 +25,9 @@ public class EncountersContext : DbContext
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => JsonSerializer.Deserialize<Location>(v, (JsonSerializerOptions?)null)!
             );
+
+        modelBuilder.Entity<Encounter>()
+            .Property(e => e.TourPointId)
+            .IsRequired(false);
     }
 }
