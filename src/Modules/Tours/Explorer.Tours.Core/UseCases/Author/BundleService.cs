@@ -86,6 +86,11 @@ namespace Explorer.Tours.Core.UseCases.Author
                 tours.Add(tour);
             }
 
+            if (bundle.Status == BundleStatus.Published && tours.Count < 2)
+            {
+                throw new ArgumentException("Published bundle must contain at least 2 published tours.");
+            }
+
             bundle.Update(dto.Name, dto.Price, tours);
             var updated = _bundleRepository.Update(bundle);
             return MapToDto(updated);

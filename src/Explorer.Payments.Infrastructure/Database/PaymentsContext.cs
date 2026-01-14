@@ -29,9 +29,10 @@ namespace Explorer.Payments.Infrastructure.Database
                     owned.WithOwner().HasForeignKey("ShoppingCartId");
                     owned.Property<int>("Id");
                     owned.HasKey("Id");
-                    owned.Property(o => o.TourId).IsRequired();
-                    owned.Property(o => o.TourName).IsRequired();
-                    owned.Property(o => o.Price).IsRequired();
+                    owned.Property<int>("TourId").IsRequired();
+                    owned.Property<int?>("BundleId").IsRequired(false);
+                    owned.Property<string>("TourName").IsRequired();
+                    owned.Property<decimal>("Price").IsRequired();
                 });
             });
 
@@ -59,7 +60,8 @@ namespace Explorer.Payments.Infrastructure.Database
                 builder.ToTable("PaymentRecords");
                 builder.HasKey(p => p.Id);
                 builder.Property(p => p.TouristId).IsRequired();
-                builder.Property(p => p.TourId).IsRequired();
+                builder.Property(p => p.TourId).IsRequired(false);
+                builder.Property(p => p.BundleId).IsRequired(false);
                 builder.Property(p => p.Price).IsRequired().HasColumnType("decimal(18,2)");
                 builder.Property(p => p.PurchaseTime).IsRequired();
             });

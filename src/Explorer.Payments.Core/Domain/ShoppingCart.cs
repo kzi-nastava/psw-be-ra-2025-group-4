@@ -75,6 +75,23 @@ namespace Explorer.Payments.Core.Domain
 
             _items.Remove(item);
             _items.Add(new OrderItem(tourId, item.TourName, newPrice));
+        public void AddBundleItem(int bundleId, string bundleName, decimal price)
+        {
+            if (_items.Any(i => i.BundleId == bundleId)) return;
+
+            _items.Add(new OrderItem(bundleId, bundleName, price, isBundle: true));
+            RecalculateTotal();
+        }
+
+        public void RemoveBundleItem(int bundleId)
+        {
+            var item = _items.FirstOrDefault(i => i.BundleId == bundleId);
+            if (item == null)
+            {
+                throw new KeyNotFoundException($"Bundle with ID {bundleId} not found in cart.");
+            }
+
+            _items.Remove(item);
             RecalculateTotal();
         }
     }

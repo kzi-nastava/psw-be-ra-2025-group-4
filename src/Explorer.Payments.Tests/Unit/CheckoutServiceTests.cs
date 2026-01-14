@@ -2,6 +2,7 @@
 using System.Linq;
 using AutoMapper;
 using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.UseCases.Tourist;
@@ -74,6 +75,19 @@ namespace Explorer.Payments.Tests.Unit
                 Store.Add(paymentRecord);
                 return paymentRecord;
             }
+
+            public bool ExistsForBundle(int touristId, int bundleId)
+            {
+                return Store.Any(pr => pr.TouristId == touristId && pr.BundleId == bundleId);
+            }
+        }
+
+        private class BundlePurchaseServiceStub : IBundlePurchaseService
+        {
+            public List<TourPurchaseTokenDto> PurchaseBundle(int touristId, int bundleId)
+            {
+                return new List<TourPurchaseTokenDto>();
+            }
         }
 
         private class TourInfoServiceStub : ITourInfoService
@@ -120,6 +134,8 @@ namespace Explorer.Payments.Tests.Unit
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
             var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -138,6 +154,8 @@ namespace Explorer.Payments.Tests.Unit
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -159,6 +177,8 @@ namespace Explorer.Payments.Tests.Unit
             tourInfoService.SetTourPrice(10, 20m);
             tourInfoService.SetTourPrice(11, 30m);
             var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
             var result = svc.Checkout(123);
 
             result.Count.ShouldBe(1);
@@ -178,6 +198,8 @@ namespace Explorer.Payments.Tests.Unit
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 100m);
             var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -197,6 +219,8 @@ namespace Explorer.Payments.Tests.Unit
             tourInfoService.SetTourPrice(10, 20m);
             tourInfoService.SetTourPrice(11, 30m);
             var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
 
             svc.Checkout(123);
 
@@ -220,6 +244,8 @@ namespace Explorer.Payments.Tests.Unit
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
             var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, Mapper());
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, bundlePurchaseService, Mapper());
 
             svc.Checkout(123);
 
