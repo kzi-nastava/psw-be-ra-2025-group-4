@@ -99,6 +99,23 @@ namespace Explorer.Tours.Infrastructure.Database
                 b.HasIndex(x => x.TouristId);
             });
 
+            modelBuilder.Entity<Bundle>()
+                .HasMany(b => b.Tours)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "BundleTour",
+                    j => j
+                        .HasOne<Tour>()
+                        .WithMany()
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<Bundle>()
+                        .WithMany()
+                        .HasForeignKey("BundleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                );
+
             base.OnModelCreating(modelBuilder);
 
         }

@@ -40,6 +40,7 @@ public static class PaymentsStartup
          services.AddScoped<IWalletAdministrationService, WalletAdministrationService>();
         services.AddScoped<ICouponService, CouponService>();
         services.AddScoped<ICartPricingService, ShoppingCartService>();
+        services.AddScoped<IBundlePurchaseService, BundlePurchaseService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
