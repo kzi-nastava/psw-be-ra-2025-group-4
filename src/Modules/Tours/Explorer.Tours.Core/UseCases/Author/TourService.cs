@@ -219,14 +219,15 @@ namespace Explorer.Tours.Core.UseCases.Author
         }
 
         public PagedResult<TourDto> GetPublishedFiltered(
-            int page, int pageSize,
-            string? search,
-            int? difficulty,
-            decimal? minPrice, decimal? maxPrice,
-            List<string>? tags,
-            string? sort,
-            bool? onSale = null)
+        int page, int pageSize,
+        string? search,
+        int? difficulty,
+        decimal? minPrice, decimal? maxPrice,
+        List<string>? tags,
+        string? sort,
+        bool? onSale = null)
         {
+
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
@@ -263,30 +264,28 @@ namespace Explorer.Tours.Core.UseCases.Author
                 }
             }
 
-            // Get active sales for filtering and enrichment
             var activeSales = _saleRepository.GetActiveSales();
             var toursOnSale = activeSales
                 .SelectMany(s => s.TourIds)
                 .Distinct()
-                .ToList();
+                .ToHashSet();
 
-            // Filter by onSale
+
             if (onSale.HasValue && onSale.Value)
             {
                 q = q.Where(t => toursOnSale.Contains((int)t.Id));
+
             }
 
-            // Apply sorting
             var sortLower = (sort ?? "").Trim().ToLower();
             if (sortLower == "discountdesc" || sortLower == "discountasc")
             {
-                // For discount sorting, we need to materialize and sort in memory
                 var itemsList = q.ToList();
+
                 var tourSaleMap = activeSales
                     .SelectMany(s => s.TourIds.Select(tourId => new { TourId = tourId, Discount = s.DiscountPercent }))
                     .GroupBy(x => x.TourId)
-                    .ToDictionary(g => g.Key, g => g.Max(x => x.Discount)); // Take max discount if multiple sales
-
+                    .ToDictionary(g => g.Key, g => g.Max(x => x.Discount)); 
                 if (sortLower == "discountdesc")
                 {
                     itemsList = itemsList
@@ -294,7 +293,7 @@ namespace Explorer.Tours.Core.UseCases.Author
                         .ThenBy(t => t.Id)
                         .ToList();
                 }
-                else
+                else 
                 {
                     itemsList = itemsList
                         .OrderBy(t => tourSaleMap.ContainsKey((int)t.Id) ? tourSaleMap[(int)t.Id] : int.MaxValue)
