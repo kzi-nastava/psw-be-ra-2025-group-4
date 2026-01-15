@@ -35,6 +35,13 @@ namespace Explorer.API.Controllers.Administrator.Administration
             return CreatedAtAction(nameof(GetPaged), new { id = created.Id }, created);
         }
 
+        [HttpPost("hidden")]
+        public ActionResult<HiddenLocationEncounterDto> CreateHidden([FromBody] HiddenLocationEncounterDto dto)
+        {
+            var result = _encounterService.CreateHiddenLocation(dto);
+            return Ok(result);
+        }
+
         [HttpPut("{id:int}")]
         public ActionResult<EncounterDto> Update([FromBody] EncounterUpdateDto dto, int id)
         {

@@ -55,6 +55,25 @@ namespace Explorer.API.Controllers.Author
 
             return CreatedAtAction(nameof(GetPaged), new { id = created.Id }, created);
         }
+        [HttpPost("hidden")]
+        public ActionResult<HiddenLocationEncounterDto> CreateHidden([FromBody] HiddenLocationEncounterDto dto)
+        {
+            var result = _encounterService.CreateHiddenLocation(dto);
+            if (dto.TourPointId != null)
+                _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion);
+
+            return Ok(result);
+        }
+        [HttpPut("hidden/{id:int}")]
+        public ActionResult<HiddenLocationEncounterDto> UpdateHidden([FromBody] HiddenLocationEncounterDto dto, int id)
+        {
+            var result = _encounterService.UpdateHiddenLocation(dto, id);
+
+            if (dto.TourPointId != null)
+                _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion);
+
+            return Ok(result);
+        }
 
         [HttpPut("{id:int}")]
         public ActionResult<EncounterDto> Update([FromBody] EncounterUpdateDto dto, int id)

@@ -2,6 +2,7 @@
 using Explorer.Encounters.API.Public;
 using Explorer.Encounters.API.Public.Administration;
 using Explorer.Encounters.API.Public.Tourist;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,13 +39,46 @@ namespace Explorer.API.Controllers.Tourist.Encounters
             return Ok(_encounterService.GetActive());
         }
 
-        [HttpPost("{encounterId}/activate")]
-        public IActionResult StartEncounter(long encounterId)
+        [HttpGet("by-tourpoint/{tourPointId:int}")]
+        public ActionResult<List<EncounterViewDto>> GetByTourPoint(
+            [FromRoute] int tourPointId,
+            [FromQuery] double latitude,
+            [FromQuery] double longitude)
         {
             var touristId = GetTouristId();
-            var encounter = _touristEncounterService.StartEncounter(touristId, encounterId);
-            return Ok(encounter);
+
+            var location = new LocationDto
+            {
+                Latitude = latitude,
+                Longitude = longitude
+            };
+
+            var result = _touristEncounterService.GetByTourPoint(touristId, tourPointId, location);
+            return Ok(result);
         }
 
+        [HttpPost("{id:long}/activate")]
+        public ActionResult Activate([FromRoute] long id)
+        {
+            var touristId = GetTouristId();
+            _touristEncounterService.StartEncounter(touristId, id);
+            return Ok();
+        }
+
+        [HttpPost("{id:long}/location")]
+        public ActionResult UpdateLocation([FromRoute] long id, [FromBody] LocationDto location)
+        {
+            var touristId = GetTouristId();
+
+            _touristEncounterService.UpdateLocation(touristId, id, location);
+            return Ok();
+        }
+        [HttpPost("{id:long}/complete")]
+        public ActionResult Complete([FromRoute] long id)
+        {
+            var touristId = GetTouristId();
+            _touristEncounterService.CompleteEncounter(touristId, id);
+            return Ok();
+        }
     }
 }
