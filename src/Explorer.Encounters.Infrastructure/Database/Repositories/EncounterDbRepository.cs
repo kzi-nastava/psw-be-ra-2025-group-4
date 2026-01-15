@@ -62,7 +62,14 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
         public IEnumerable<Encounter> GetActive()
         {
             return _dbSet
-                .Where(e => e.Status == EncounterStatus.Active)
+                .Where(e => e.Status == EncounterStatus.Active && e.ApprovalStatus == EncounterApprovalStatus.APPROVED)
+                .ToList();
+        }
+
+        public IEnumerable<Encounter> GetPending()
+        {
+            return _dbSet
+                .Where(e => e.ApprovalStatus == EncounterApprovalStatus.PENDING)
                 .ToList();
         }
 
@@ -90,7 +97,8 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
         {
             return _dbSet
                 .Where(e => e.TourPointId.HasValue &&
-                            tourPointIds.Contains((int)e.TourPointId.Value))
+                            tourPointIds.Contains((int)e.TourPointId.Value)
+                            && e.ApprovalStatus == EncounterApprovalStatus.APPROVED)
                 .ToList();
         }
     }
