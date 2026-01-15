@@ -31,14 +31,14 @@ namespace Explorer.API.Controllers.Administrator.Administration
         [HttpPost]
         public ActionResult<EncounterDto> Create([FromBody] EncounterDto dto)
         {
-            var created = _encounterService.Create(dto);
+            var created = _encounterService.Create(dto, false);
             return CreatedAtAction(nameof(GetPaged), new { id = created.Id }, created);
         }
 
         [HttpPost("hidden")]
         public ActionResult<HiddenLocationEncounterDto> CreateHidden([FromBody] HiddenLocationEncounterDto dto)
         {
-            var result = _encounterService.CreateHiddenLocation(dto);
+            var result = _encounterService.CreateHiddenLocation(dto, false);
             return Ok(result);
         }
 
@@ -53,6 +53,21 @@ namespace Explorer.API.Controllers.Administrator.Administration
         public IActionResult Delete(long id)
         {
             _encounterService.Delete(id);
+            return NoContent();
+        }
+
+        [HttpPut("approve/{id:long}")]
+        public IActionResult Approve(long id)
+        {
+            _encounterService.Approve(id);
+            return NoContent();
+        }
+
+
+        [HttpPut("decline/{id:long}")]
+        public IActionResult Decline(long id)
+        {
+            _encounterService.Decline(id);
             return NoContent();
         }
     }

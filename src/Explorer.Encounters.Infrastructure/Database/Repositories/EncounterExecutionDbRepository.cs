@@ -1,5 +1,6 @@
 ﻿using Explorer.Encounters.Core.Domain;
 using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Encounters.Infrastructure.Database.Repositories
 {
@@ -35,6 +36,30 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
             _context.Update(execution);
             _context.SaveChanges();
             return execution;
+        }
+
+        public void ResolveEncounterForParticipants(long encounterId, IEnumerable<long> touristIdsInRange)
+        {
+            var touristIds = touristIdsInRange.ToList();
+
+            var existingExecutions = _context.Set<EncounterExecution>()
+                .Where(e => e.EncounterId == encounterId && touristIds.Contains(e.TouristId))
+                .ToDictionary(e => e.TouristId, e => e);
+
+            foreach (var touristId in touristIds)
+            {
+                if (existingExecutions.ContainsKey(touristId))
+                {
+                    continue;
+                }
+
+                var execution = new EncounterExecution(touristId, encounterId);
+
+                execution.Complete();
+
+                _context.Add(execution);
+            }
+            _context.SaveChanges();
         }
     }
 }

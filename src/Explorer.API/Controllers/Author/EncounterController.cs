@@ -49,16 +49,39 @@ namespace Explorer.API.Controllers.Author
         [HttpPost]
         public ActionResult<EncounterDto> Create([FromBody] EncounterDto dto)
         {
-            var created = _encounterService.Create(dto);
+            var created = _encounterService.Create(dto, false);
             if (dto.TourPointId != null)
                 _encounterService.AddEncounterToTourPoint(created.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion ?? false);
 
             return CreatedAtAction(nameof(GetPaged), new { id = created.Id }, created);
         }
+
+        [HttpPost("social")]
+        public ActionResult<SocialEncounterDto> CreateSocial([FromBody] SocialEncounterDto dto)
+        {
+            var result = _encounterService.CreateSocial(dto, false);
+            if (dto.TourPointId != null)
+                _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion?? false);
+
+            return Ok(result);
+        }
+
+        [HttpPut("social/{id:int}")]
+        public ActionResult<SocialEncounterDto> UpdateSocial([FromBody] SocialEncounterDto dto, int id)
+        {
+            var result = _encounterService.UpdateSocial(dto, id);
+
+            if (dto.TourPointId != null)
+                _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion ?? false);
+
+            return Ok(result);
+        }
+
+
         [HttpPost("hidden")]
         public ActionResult<HiddenLocationEncounterDto> CreateHidden([FromBody] HiddenLocationEncounterDto dto)
         {
-            var result = _encounterService.CreateHiddenLocation(dto);
+            var result = _encounterService.CreateHiddenLocation(dto, false);
             if (dto.TourPointId != null)
                 _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion);
 

@@ -20,13 +20,15 @@ namespace Explorer.Encounters.Core.Domain
             int experiencePoints,
             string imageUrl,
             Location photoPoint,
-            double activationRadiusMeters
+            double activationRadiusMeters,
+            EncounterApprovalStatus approvalStatus
         ) : base(
             name,
             description,
             location,
             experiencePoints,
-            EncounterType.Location
+            EncounterType.Location,
+            approvalStatus
         )
         {
             ImageUrl = imageUrl;
