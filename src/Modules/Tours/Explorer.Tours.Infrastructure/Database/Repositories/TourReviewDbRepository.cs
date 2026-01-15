@@ -67,5 +67,58 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
         {
             return _dbSet.FirstOrDefault(tr => tr.TouristId == touristId && tr.TourId == tourId);
         }
+
+        public Dictionary<int, ReviewStats> GetStatsForTours(IEnumerable<int> tourIds)
+        {
+            var ids = (tourIds ?? Enumerable.Empty<int>()).Distinct().ToList();
+            if (!ids.Any()) return new Dictionary<int, ReviewStats>();
+
+            var data = _dbSet.AsNoTracking()
+                .Where(x => ids.Contains(x.TourId))
+                .GroupBy(x => x.TourId)
+                .Select(g => new
+                {
+                    TourId = g.Key,
+                    Count = g.Count(),
+                    Avg = g.Average(x => (double)x.Rating)
+                })
+                .ToList();
+
+            return data.ToDictionary(
+                x => x.TourId,
+                x => new ReviewStats
+                {
+                    Count = x.Count,
+                    AvgRating = x.Count == 0 ? 0.0 : x.Avg
+                });
+        }
+
+        public List<TourReview> GetLatestForTour(int tourId, int take)
+        {
+            if (take <= 0) take = 5;
+
+            return _dbSet.AsNoTracking()
+                .Where(x => x.TourId == tourId)
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(take)
+                .ToList();
+        }
+
+        public List<(DateTime Date, double Avg, int Count)> GetDailyReviewStats(int tourId, DateTime from, DateTime to)
+        {
+            return _dbSet.AsNoTracking()
+                .Where(x => x.TourId == tourId && x.CreatedAt >= from && x.CreatedAt <= to)
+                .GroupBy(x => x.CreatedAt.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Count = g.Count(),
+                    Avg = g.Average(x => (double)x.Rating)
+                })
+                .OrderBy(x => x.Date)
+                .ToList()
+                .Select(x => (x.Date, x.Avg, x.Count))
+                .ToList();
+        }
     }
 }

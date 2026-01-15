@@ -67,5 +67,81 @@ public class TourExecutionDbRepository : ITourExecutionRepository
             .OrderByDescending(te => te.LastActivity)
             .ToList();
     }
+
+
+    public Dictionary<int, ExecutionStats> GetStatsForTours(IEnumerable<int> tourIds)
+    {
+        var ids = (tourIds ?? Enumerable.Empty<int>()).Distinct().ToList();
+        if (!ids.Any()) return new Dictionary<int, ExecutionStats>();
+
+        var data = _dbSet
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.TourId))
+            .GroupBy(x => x.TourId)
+            .Select(g => new
+            {
+                TourId = g.Key,
+                Starts = g.Count(),
+                Completed = g.Count(x => x.Status == TourExecutionStatus.Completed),
+                Abandoned = g.Count(x => x.Status == TourExecutionStatus.Abandoned),
+                Active = g.Count(x => x.Status == TourExecutionStatus.Active)
+            })
+            .ToList();
+
+        return data.ToDictionary(
+            x => x.TourId,
+            x => new ExecutionStats
+            {
+                Starts = x.Starts,
+                Completed = x.Completed,
+                Abandoned = x.Abandoned,
+                Active = x.Active
+            });
+    }
+
+    public List<(DateTime Date, int Count)> GetDailyStarts(int tourId, DateTime from, DateTime to)
+    {
+        return _dbSet.AsNoTracking()
+            .Where(x => x.TourId == tourId && x.StartTime >= from && x.StartTime <= to)
+            .GroupBy(x => x.StartTime.Date)
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .OrderBy(x => x.Date)
+            .ToList()
+            .Select(x => (x.Date, x.Count))
+            .ToList();
+    }
+
+    public List<(DateTime Date, int Count)> GetDailyCompleted(int tourId, DateTime from, DateTime to)
+    {
+        return _dbSet.AsNoTracking()
+            .Where(x => x.TourId == tourId
+                && x.Status == TourExecutionStatus.Completed
+                && x.EndTime.HasValue
+                && x.EndTime.Value >= from && x.EndTime.Value <= to)
+            .GroupBy(x => x.EndTime!.Value.Date)
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .OrderBy(x => x.Date)
+            .ToList()
+            .Select(x => (x.Date, x.Count))
+            .ToList();
+    }
+
+    public List<(DateTime Date, int Count)> GetDailyAbandoned(int tourId, DateTime from, DateTime to)
+    {
+        return _dbSet.AsNoTracking()
+            .Where(x => x.TourId == tourId
+                && x.Status == TourExecutionStatus.Abandoned
+                && x.EndTime.HasValue
+                && x.EndTime.Value >= from && x.EndTime.Value <= to)
+            .GroupBy(x => x.EndTime!.Value.Date)
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .OrderBy(x => x.Date)
+            .ToList()
+            .Select(x => (x.Date, x.Count))
+            .ToList();
+    }
+
+
+
 }
 
