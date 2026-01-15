@@ -46,12 +46,24 @@ namespace Explorer.API.Controllers.Tourist.Payments
             return Ok(result);
         }
 
-
+        [HttpPost("bundle/{bundleId:int}")]
+        public ActionResult<ShoppingCartDto> AddBundleToCart(int bundleId)
+        {
+            var result = _shoppingCartService.AddBundleToCart(GetTouristId(), bundleId);
+            return Ok(result);
+        }
 
         [HttpDelete("{tourId:int}")]
         public ActionResult<ShoppingCartDto> RemoveFromCart(int tourId)
         {
             var result = _shoppingCartService.RemoveFromCart(GetTouristId(), tourId);
+            return Ok(result);
+        }
+
+        [HttpDelete("bundle/{bundleId:int}")]
+        public ActionResult<ShoppingCartDto> RemoveBundleFromCart(int bundleId)
+        {
+            var result = _shoppingCartService.RemoveBundleFromCart(GetTouristId(), bundleId);
             return Ok(result);
         }
 

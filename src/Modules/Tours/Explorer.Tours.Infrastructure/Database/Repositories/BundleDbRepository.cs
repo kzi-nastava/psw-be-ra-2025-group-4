@@ -75,5 +75,12 @@ public class BundleDbRepository : IBundleRepository
             .Where(b => b.AuthorId == authorId)
             .ToList();
     }
+
+    public IEnumerable<Bundle> GetAll()
+    {
+        return _dbSet
+            .Include(b => b.Tours)
+            .ToList();
+    }
 }
 

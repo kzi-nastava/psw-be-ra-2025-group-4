@@ -7,6 +7,8 @@ using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Infrastructure.Database;
+using Explorer.Tours.Core.Domain;
+using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +23,7 @@ namespace Explorer.Payments.Tests.Integration.Tourist
     {
         public CheckoutCommandTests(PaymentsTestFactory factory) : base(factory) { }
 
-        private static void CleanState(PaymentsContext db, int touristId)
+        private static void CleanState(PaymentsContext db, ToursContext toursDb, int touristId)
         {
             var cart = db.ShoppingCarts
                 .Include(c => c.Items)
@@ -59,6 +61,37 @@ namespace Explorer.Payments.Tests.Integration.Tourist
                 db.PaymentRecords.RemoveRange(paymentRecords);
                 db.SaveChanges();
             }
+
+            // Clean tours used in tests
+            var testTours = toursDb.Tours.Where(t => t.Id == 1 || t.Id == 2).ToList();
+            if (testTours.Any())
+            {
+                toursDb.Tours.RemoveRange(testTours);
+                toursDb.SaveChanges();
+            }
+        }
+
+        private static void EnsureTestToursExist(ToursContext toursDb)
+        {
+            if (!toursDb.Tours.Any(t => t.Id == 1))
+            {
+                var tour1 = new Tour(1, "Test Tour 1", "Description 1", TourDifficulty.Easy, 
+                    new List<string> { "test" }, TourStatus.Published, -11, 
+                    new List<TourPoint>(), new List<Equipment>(), 20m, 
+                    new List<TourTransportDuration>(), DateTime.UtcNow, null, 0.0);
+                toursDb.Tours.Add(tour1);
+                toursDb.SaveChanges();
+            }
+
+            if (!toursDb.Tours.Any(t => t.Id == 2))
+            {
+                var tour2 = new Tour(2, "Test Tour 2", "Description 2", TourDifficulty.Medium, 
+                    new List<string> { "test" }, TourStatus.Published, -11, 
+                    new List<TourPoint>(), new List<Equipment>(), 30m, 
+                    new List<TourTransportDuration>(), DateTime.UtcNow, null, 0.0);
+                toursDb.Tours.Add(tour2);
+                toursDb.SaveChanges();
+            }
         }
 
         private static CheckoutController CreateController(IServiceScope scope, string personId)
@@ -80,7 +113,9 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             using var scope = Factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-            CleanState(db, touristId);
+            var toursDb = scope.ServiceProvider.GetRequiredService<ToursContext>();
+            CleanState(db, toursDb, touristId);
+            EnsureTestToursExist(toursDb);
 
             var wallet = new Wallet(touristId);
             wallet.AddBalance(100m);
@@ -115,7 +150,8 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             using var scope = Factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-            CleanState(db, touristId);
+            var toursDb = scope.ServiceProvider.GetRequiredService<ToursContext>();
+            CleanState(db, toursDb, touristId);
 
             var controller = CreateController(scope, TestTourist);
 
@@ -131,7 +167,9 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             using var scope = Factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-            CleanState(db, touristId);
+            var toursDb = scope.ServiceProvider.GetRequiredService<ToursContext>();
+            CleanState(db, toursDb, touristId);
+            EnsureTestToursExist(toursDb);
 
             var wallet = new Wallet(touristId);
             wallet.AddBalance(100m);
@@ -166,7 +204,9 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             using var scope = Factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-            CleanState(db, touristId);
+            var toursDb = scope.ServiceProvider.GetRequiredService<ToursContext>();
+            CleanState(db, toursDb, touristId);
+            EnsureTestToursExist(toursDb);
 
             var wallet = new Wallet(touristId);
             wallet.AddBalance(100m);
