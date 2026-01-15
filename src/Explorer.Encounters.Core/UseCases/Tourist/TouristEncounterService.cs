@@ -1,4 +1,5 @@
-﻿using Explorer.BuildingBlocks.Core.Exceptions;
+﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public.Tourist;
 using Explorer.Encounters.Core.Domain;
@@ -20,19 +21,22 @@ namespace Explorer.Encounters.Core.UseCases
         private readonly IEncounterExecutionRepository _encounterExecutionRepository;
         private readonly ISocialEncounterParticipantRepository _participantRepository;
         private readonly IEncounterParticipantRepository _encounterParticipantRepository;
+        private readonly IMapper _mapper;
 
         public TouristEncounterService(
             IEncounterRepository encounterRepository,
             IHiddenLocationEncounterRepository hiddenLocationEncounterRepository,
             IEncounterExecutionRepository encounterExecutionRepository,
             ISocialEncounterParticipantRepository socialEncounterParticipantRepository,
-            IEncounterParticipantRepository encounterParticipantRepository)
+            IEncounterParticipantRepository encounterParticipantRepository,
+            IMapper mapper)
         {
             _encounterRepository = encounterRepository;
             _hiddenLocationEncounterRepository = hiddenLocationEncounterRepository;
             _encounterExecutionRepository = encounterExecutionRepository;
             _participantRepository = socialEncounterParticipantRepository;
             _encounterParticipantRepository = encounterParticipantRepository;
+            _mapper = mapper;
         }
 
         public List<EncounterViewDto> GetByTourPoint(long touristId, int tourPointId, LocationDto touristLocation)
@@ -83,6 +87,16 @@ namespace Explorer.Encounters.Core.UseCases
                         dto.ImageUrl = hidden.ImageUrl;
                         dto.PhotoPoint = new LocationDto { Longitude = hidden.PhotoPoint.Longitude, Latitude = hidden.PhotoPoint.Latitude };
                         dto.ActivationRadiusMeters = hidden.ActivationRadiusMeters;
+                    }
+                }
+
+                if (e.Type == DomainEncounterType.Social)
+                {
+                    var social = e as SocialEncounter;
+                    if (social != null)
+                    {
+                        dto.MinimumParticipants = social.MinimumParticipants;
+                        dto.ActivationRadiusMeters = social.ActivationRadiusMeters;
                     }
                 }
 
@@ -254,6 +268,13 @@ namespace Explorer.Encounters.Core.UseCases
             execution.Complete();
             UpdateParticipance((int)touristId, encounter.ExperiencePoints);
             _encounterExecutionRepository.Update(execution);
+        }
+
+        public IEnumerable<EncounterViewDto> GetByTourist(long touristId)
+        {
+            return _encounterRepository.GetByTourist(touristId)
+                .Select(_mapper.Map<EncounterViewDto>)
+                .ToList();
         }
 
         private static Location ToDomainLocation(LocationDto dto)

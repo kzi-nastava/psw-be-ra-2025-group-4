@@ -19,5 +19,6 @@ namespace Explorer.Encounters.API.Dtos
         public string? ImageUrl { get; set; }
         public LocationDto? PhotoPoint { get; set; }
         public double? ActivationRadiusMeters { get; set; }
+        public int? MinimumParticipants { get; set; }
     }
 }

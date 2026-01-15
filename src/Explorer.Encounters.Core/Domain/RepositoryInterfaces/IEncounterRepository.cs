@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Encounters.API.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,7 @@ namespace Explorer.Encounters.Core.Domain.RepositoryInterfaces
         Encounter Update(Encounter encounter);
         void Delete(long id);
         bool ExistsByTourPoint(long tourPointId);
+        IEnumerable<Encounter> GetPendingEncounters();
+        IEnumerable<Encounter> GetByTourist(long touristId);
     }
 }

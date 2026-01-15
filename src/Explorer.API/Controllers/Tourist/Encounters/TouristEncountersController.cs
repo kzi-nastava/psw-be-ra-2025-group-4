@@ -42,6 +42,14 @@ namespace Explorer.API.Controllers.Tourist.Encounters
             return Ok(_encounterService.GetActive());
         }
 
+        [HttpGet("my")]
+        public ActionResult<IEnumerable<EncounterViewDto>> GetMyEncounters()
+        {
+            var touristId = GetTouristId();
+            var result = _touristEncounterService.GetByTourist(touristId);
+            return Ok(result);
+        }
+
         [HttpGet("by-tourpoint/{tourPointId:int}")]
         public ActionResult<List<EncounterViewDto>> GetByTourPoint(
             [FromRoute] int tourPointId,

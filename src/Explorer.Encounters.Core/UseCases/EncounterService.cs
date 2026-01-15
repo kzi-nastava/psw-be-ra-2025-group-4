@@ -184,5 +184,12 @@ namespace Explorer.Encounters.Core.UseCases
             encounter.Decline();
             _encounterRepository.Update(encounter);
         }
+
+        public IEnumerable<EncounterViewDto> GetPendingApproval()
+        {
+            return _encounterRepository.GetPendingEncounters()
+                .Select(_mapper.Map<EncounterViewDto>)
+                .ToList();
+        }
     }
 }

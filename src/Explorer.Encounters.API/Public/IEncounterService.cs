@@ -29,5 +29,6 @@ namespace Explorer.Encounters.API.Public.Administration
         void AddEncounterToTourPoint(long encounterId, long tourPointId, bool isRequiredForPointCompletion);
         void Approve(long id);
         void Decline(long id);
+        IEnumerable<EncounterViewDto> GetPendingApproval();
     }
 }
