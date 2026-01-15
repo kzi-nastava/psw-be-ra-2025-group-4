@@ -19,7 +19,8 @@ namespace Explorer.Encounters.Tests.Unit
                 "Test description",
                 new Location(19.8335, 45.2671), // longitude, latitude
                 100,
-                EncounterType.Social
+                EncounterType.Social,
+                EncounterApprovalStatus.APPROVED
             );
 
             encounter.Name.ShouldBe("Test Encounter");
@@ -35,7 +36,7 @@ namespace Explorer.Encounters.Tests.Unit
         public void Creating_encounter_fails_for_empty_name(string name)
         {
             Should.Throw<ArgumentException>(() =>
-                new Encounter(name, "desc", new Location(19.8335, 45.2671), 10, EncounterType.Misc)
+                new Encounter(name, "desc", new Location(19.8335, 45.2671), 10, EncounterType.Misc, EncounterApprovalStatus.APPROVED)
             );
         }
 
@@ -45,7 +46,7 @@ namespace Explorer.Encounters.Tests.Unit
         public void Creating_encounter_fails_for_empty_description(string description)
         {
             Should.Throw<ArgumentException>(() =>
-                new Encounter("Name", description, new Location(19.8335, 45.2671), 10, EncounterType.Location)
+                new Encounter("Name", description, new Location(19.8335, 45.2671), 10, EncounterType.Location, EncounterApprovalStatus.APPROVED)
             );
         }
 
@@ -53,7 +54,7 @@ namespace Explorer.Encounters.Tests.Unit
         public void Creating_encounter_fails_for_negative_experience()
         {
             Should.Throw<ArgumentOutOfRangeException>(() =>
-                new Encounter("Name", "Desc", new Location(19.8335, 45.2671), -5, EncounterType.Location)
+                new Encounter("Name", "Desc", new Location(19.8335, 45.2671), -5, EncounterType.Location, EncounterApprovalStatus.APPROVED)
             );
         }
 
@@ -65,7 +66,8 @@ namespace Explorer.Encounters.Tests.Unit
                 "Desc",
                 new Location(19.8335, 45.2671),
                 100,
-                EncounterType.Social
+                EncounterType.Social,
+                EncounterApprovalStatus.APPROVED
             );
 
             encounter.Update(
@@ -90,7 +92,8 @@ namespace Explorer.Encounters.Tests.Unit
                 "Desc",
                 new Location(19.8335, 45.2671),
                 100,
-                EncounterType.Social
+                EncounterType.Social,
+                EncounterApprovalStatus.APPROVED
             );
 
             encounter.Activate();
@@ -106,7 +109,8 @@ namespace Explorer.Encounters.Tests.Unit
                 "Desc",
                 new Location(19.8335, 45.2671),
                 100,
-                EncounterType.Social
+                EncounterType.Social,
+                EncounterApprovalStatus.APPROVED
             );
 
             encounter.Activate();
@@ -122,7 +126,8 @@ namespace Explorer.Encounters.Tests.Unit
                 "Desc",
                 new Location(19.8335, 45.2671),
                 100,
-                EncounterType.Social
+                EncounterType.Social,
+                EncounterApprovalStatus.APPROVED
             );
 
             encounter.Archive();
@@ -138,12 +143,78 @@ namespace Explorer.Encounters.Tests.Unit
                 "Desc",
                 new Location(19.8335, 45.2671),
                 100,
-                EncounterType.Social
+                EncounterType.Social,
+                EncounterApprovalStatus.APPROVED
             );
 
             encounter.Archive();
 
             Should.Throw<InvalidOperationException>(() => encounter.Archive());
         }
+
+        [Fact]
+        public void Approves_encounter_successfully()
+        {
+            var encounter = new Encounter(
+                "Name",
+                "Desc",
+                new Location(19.8335, 45.2671),
+                100,
+                EncounterType.Social,
+                EncounterApprovalStatus.PENDING
+            );
+
+            encounter.Approve();
+
+            encounter.ApprovalStatus.ShouldBe(EncounterApprovalStatus.APPROVED);
+        }
+
+        [Fact]
+        public void Approving_already_approved_encounter_throws()
+        {
+            var encounter = new Encounter(
+                "Name",
+                "Desc",
+                new Location(19.8335, 45.2671),
+                100,
+                EncounterType.Social,
+                EncounterApprovalStatus.APPROVED
+            );
+
+            Should.Throw<InvalidOperationException>(() => encounter.Approve());
+        }
+
+        [Fact]
+        public void Declines_encounter_successfully()
+        {
+            var encounter = new Encounter(
+                "Name",
+                "Desc",
+                new Location(19.8335, 45.2671),
+                100,
+                EncounterType.Social,
+                EncounterApprovalStatus.PENDING
+            );
+
+            encounter.Decline();
+
+            encounter.ApprovalStatus.ShouldBe(EncounterApprovalStatus.DECLINED);
+        }
+
+        [Fact]
+        public void Declining_already_declined_encounter_throws()
+        {
+            var encounter = new Encounter(
+                "Name",
+                "Desc",
+                new Location(19.8335, 45.2671),
+                100,
+                EncounterType.Social,
+                EncounterApprovalStatus.DECLINED
+            );
+
+            Should.Throw<InvalidOperationException>(() => encounter.Decline());
+        }
+
     }
 }
