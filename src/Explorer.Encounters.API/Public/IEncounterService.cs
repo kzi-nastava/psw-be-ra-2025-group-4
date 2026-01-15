@@ -16,6 +16,9 @@ namespace Explorer.Encounters.API.Public.Administration
         public List<EncounterDto> GetByTourPointIds(IEnumerable<int> tourPointIds);
         IEnumerable<EncounterDto> GetActive();
         EncounterDto Create(EncounterDto dto);
+        HiddenLocationEncounterDto CreateHiddenLocation(HiddenLocationEncounterDto dto);
+        HiddenLocationEncounterDto UpdateHiddenLocation(HiddenLocationEncounterDto dto, int encounterId);
+
         EncounterDto Update(EncounterUpdateDto dto, int encounterId);
         void Publish(int id);
         void Archive(int id);
