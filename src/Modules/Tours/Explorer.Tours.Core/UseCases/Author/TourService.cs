@@ -16,13 +16,20 @@ namespace Explorer.Tours.Core.UseCases.Author
         private readonly ITourRepository _tourRepository;
         private readonly ITourReviewRepository _tourReviewRepository;
         private readonly ITourExecutionRepository _tourExecutionRepository;
+        private readonly ISaleRepository _saleRepository;
         private readonly IMapper _mapper;
 
-        public TourService(ITourRepository tourRepository, ITourReviewRepository tourReviewRepository, ITourExecutionRepository tourExecutionRepository, IMapper mapper)
+        public TourService(
+            ITourRepository tourRepository,
+            ITourReviewRepository tourReviewRepository,
+            ITourExecutionRepository tourExecutionRepository,
+            ISaleRepository saleRepository,
+            IMapper mapper)
         {
             _tourRepository = tourRepository;
             _tourReviewRepository = tourReviewRepository;
             _tourExecutionRepository = tourExecutionRepository;
+            _saleRepository = saleRepository;
             _mapper = mapper;
         }
 
@@ -67,6 +74,18 @@ namespace Explorer.Tours.Core.UseCases.Author
                 dto.Points = dto.Points
                     .OrderBy(p => p.Order)
                     .ToList();
+            }
+
+            // Enrich with sale information (development)
+            var activeSales = _saleRepository.GetActiveSalesForTour(id);
+            if (activeSales.Any())
+            {
+                dto = EnrichTourDtoWithSale(tour, activeSales);
+            }
+            else
+            {
+                dto.OriginalPrice = dto.Price;
+                dto.IsOnSale = false;
             }
 
             return dto;
@@ -212,7 +231,8 @@ namespace Explorer.Tours.Core.UseCases.Author
             int? difficulty,
             decimal? minPrice, decimal? maxPrice,
             List<string>? tags,
-            string? sort)
+            string? sort,
+            bool? onSale = null)
         {
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
@@ -250,29 +270,68 @@ namespace Explorer.Tours.Core.UseCases.Author
                 }
             }
 
-            q = (sort ?? "").Trim().ToLower() switch
+            var activeSales = _saleRepository.GetActiveSales();
+            var toursOnSale = activeSales
+                .SelectMany(s => s.TourIds)
+                .Distinct()
+                .ToHashSet();
+
+            if (onSale.HasValue && onSale.Value)
             {
-                "nameasc" => q.OrderBy(t => t.Name),
-                "namedesc" => q.OrderByDescending(t => t.Name),
-                "priceasc" => q.OrderBy(t => t.Price),
-                "pricedesc" => q.OrderByDescending(t => t.Price),
-                _ => q.OrderBy(t => t.Id)
-            };
+                q = q.Where(t => toursOnSale.Contains((int)t.Id));
+            }
 
-            var total = q.Count();
-
-            var items = q.Skip((page - 1) * pageSize)
-                         .Take(pageSize)
-                         .ToList();
-
-            var mapped = items.Select(t =>
+            var sortLower = (sort ?? "").Trim().ToLower();
+            if (sortLower == "discountdesc" || sortLower == "discountasc")
             {
-                var dto = _mapper.Map<TourDto>(t);
-                if (dto.Points != null) dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
-                return dto;
-            }).ToList();
+                var itemsList = q.ToList();
 
-            return new PagedResult<TourDto>(mapped, total);
+                var tourSaleMap = activeSales
+                    .SelectMany(s => s.TourIds.Select(tourId => new { TourId = tourId, Discount = s.DiscountPercent }))
+                    .GroupBy(x => x.TourId)
+                    .ToDictionary(g => g.Key, g => g.Max(x => x.Discount));
+
+                if (sortLower == "discountdesc")
+                {
+                    itemsList = itemsList
+                        .OrderByDescending(t => tourSaleMap.ContainsKey((int)t.Id) ? tourSaleMap[(int)t.Id] : 0)
+                        .ThenBy(t => t.Id)
+                        .ToList();
+                }
+                else
+                {
+                    itemsList = itemsList
+                        .OrderBy(t => tourSaleMap.ContainsKey((int)t.Id) ? tourSaleMap[(int)t.Id] : int.MaxValue)
+                        .ThenBy(t => t.Id)
+                        .ToList();
+                }
+
+                var total = itemsList.Count;
+                var pagedItems = itemsList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                var mapped = pagedItems.Select(t => EnrichTourDtoWithSale(t, activeSales)).ToList();
+                return new PagedResult<TourDto>(mapped, total);
+            }
+            else
+            {
+                q = sortLower switch
+                {
+                    "nameasc" => q.OrderBy(t => t.Name),
+                    "namedesc" => q.OrderByDescending(t => t.Name),
+                    "priceasc" => q.OrderBy(t => t.Price),
+                    "pricedesc" => q.OrderByDescending(t => t.Price),
+                    _ => q.OrderBy(t => t.Id)
+                };
+
+                var total = q.Count();
+
+                var items = q.Skip((page - 1) * pageSize)
+                             .Take(pageSize)
+                             .ToList();
+
+                var mapped = items.Select(t => EnrichTourDtoWithSale(t, activeSales)).ToList();
+
+                return new PagedResult<TourDto>(mapped, total);
+            }
         }
 
         public IEnumerable<string> GetAllTags()
@@ -280,14 +339,11 @@ namespace Explorer.Tours.Core.UseCases.Author
             return _tourRepository.GetAllTags();
         }
 
-       
-
         public PagedResult<PopularTourDto> GetPopular(int authorId, int page, int pageSize, double? lat, double? lon, double? radiusKm)
         {
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
-         
             var publishedArchived = _tourRepository.GetPublishedAndArchived().ToList();
             var myDrafts = _tourRepository.GetByAuthor(authorId)
                 .Where(t => t.Status == TourStatus.Draft)
@@ -299,7 +355,6 @@ namespace Explorer.Tours.Core.UseCases.Author
                 .Select(g => g.First())
                 .ToList();
 
-           
             Dictionary<long, double>? distanceByTourId = null;
 
             var useRadius = radiusKm.HasValue && radiusKm.Value > 0 && lat.HasValue && lon.HasValue;
@@ -334,7 +389,6 @@ namespace Explorer.Tours.Core.UseCases.Author
                 }).ToList();
             }
 
-            
             var projected = visibleTours.Select(t =>
             {
                 var reviews = _tourReviewRepository.GetByTour((int)t.Id).ToList();
@@ -380,6 +434,7 @@ namespace Explorer.Tours.Core.UseCases.Author
             return R * c;
         }
 
+        // ======= feat/author-tour-dashboard =======
 
         public PagedResult<AuthorTourDashboardItemDto> GetDashboard(int authorId, int page, int pageSize)
         {
@@ -452,24 +507,19 @@ namespace Explorer.Tours.Core.UseCases.Author
             if (tourDto.Points != null)
                 tourDto.Points = tourDto.Points.OrderBy(p => p.Order).ToList();
 
-            // review aggregate
             var reviewStats = _tourReviewRepository.GetStatsForTours(new[] { tourId });
             reviewStats.TryGetValue(tourId, out var rs);
 
-            // execution aggregate
             var execStats = _tourExecutionRepository.GetStatsForTours(new[] { tourId });
             execStats.TryGetValue(tourId, out var es);
 
-            // time range for trends
             var to = DateTime.UtcNow;
             var from = to.Date.AddDays(-days + 1);
 
-            // execution trends (zahteva repo metode koje dodajemo u nastavku)
             var startsTrend = _tourExecutionRepository.GetDailyStarts(tourId, from, to);
             var completedTrend = _tourExecutionRepository.GetDailyCompleted(tourId, from, to);
             var abandonedTrend = _tourExecutionRepository.GetDailyAbandoned(tourId, from, to);
 
-            // latest reviews
             var latestReviews = _tourReviewRepository.GetLatestForTour(tourId, take: 5);
 
             return new AuthorTourDashboardDetailsDto
@@ -493,8 +543,8 @@ namespace Explorer.Tours.Core.UseCases.Author
         }
 
         private static List<TrendPointDto> FillDaysWithZeros(
-    DateTime from, DateTime to,
-    List<(DateTime Date, int Count)> data)
+            DateTime from, DateTime to,
+            List<(DateTime Date, int Count)> data)
         {
             var dict = data.ToDictionary(x => x.Date.Date, x => x.Count);
 
@@ -508,6 +558,34 @@ namespace Explorer.Tours.Core.UseCases.Author
                 });
             }
             return result;
+        }
+
+        // ======= development (sale enrich) =======
+
+        private TourDto EnrichTourDtoWithSale(Tour tour, List<Sale> activeSales)
+        {
+            var dto = _mapper.Map<TourDto>(tour);
+            if (dto.Points != null) dto.Points = dto.Points.OrderBy(p => p.Order).ToList();
+
+            var tourSales = activeSales.Where(s => s.IsTourInSale((int)tour.Id)).ToList();
+
+            if (tourSales.Any())
+            {
+                var bestSale = tourSales.OrderByDescending(s => s.DiscountPercent).First();
+                dto.OriginalPrice = tour.Price;
+                dto.DiscountedPrice = bestSale.CalculateDiscountedPrice(tour.Price);
+                dto.IsOnSale = true;
+                dto.SaleDiscountPercent = bestSale.DiscountPercent;
+            }
+            else
+            {
+                dto.OriginalPrice = tour.Price;
+                dto.DiscountedPrice = null;
+                dto.IsOnSale = false;
+                dto.SaleDiscountPercent = null;
+            }
+
+            return dto;
         }
     }
 }

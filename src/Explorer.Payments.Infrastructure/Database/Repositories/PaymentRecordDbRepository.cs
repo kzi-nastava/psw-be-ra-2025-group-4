@@ -1,5 +1,6 @@
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Payments.Infrastructure.Database.Repositories
 {
@@ -17,6 +18,12 @@ namespace Explorer.Payments.Infrastructure.Database.Repositories
             _dbContext.PaymentRecords.Add(paymentRecord);
             _dbContext.SaveChanges();
             return paymentRecord;
+        }
+
+        public bool ExistsForBundle(int touristId, int bundleId)
+        {
+            return _dbContext.PaymentRecords
+                .Any(pr => pr.TouristId == touristId && pr.BundleId == bundleId);
         }
     }
 }
