@@ -18,12 +18,14 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<TourProblem> TourProblems { get; set; }
         public DbSet<HistoricalMonument> HistoricalMonuments { get; set; }
         public DbSet<TourPoint> TourPoints { get; set; }
-        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<TourExecution> TourExecutions { get; set; }
         public DbSet<TourReview> TourReviews { get; set; }
+        public DbSet<Bundle> Bundles { get; set; }
 
-        public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
+        public DbSet<MysteryTourOffer> MysteryTourOffers { get; set; }
+        public DbSet<Sale> Sales { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,6 +61,10 @@ namespace Explorer.Tours.Infrastructure.Database
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Tour>()
+                .Property(t => t.Tags)
+                .HasColumnType("text[]");
+
+            modelBuilder.Entity<Tour>()
                 .Property(t => t.TransportDuration)
                 .HasColumnType("jsonb")
                 .HasConversion(
@@ -66,37 +72,6 @@ namespace Explorer.Tours.Infrastructure.Database
                     v => JsonSerializer.Deserialize<List<TourTransportDuration>>(v, (JsonSerializerOptions)null) ?? new List<TourTransportDuration>()
                 );
 
-            modelBuilder.Entity<TourPurchaseToken>()
-                .HasIndex(t => new { t.TouristId, t.TourId })
-                .IsUnique();
-
-
-            modelBuilder.Entity<ShoppingCart>(builder =>
-            {
-                builder.ToTable("ShoppingCarts");
-
-                builder.HasKey(c => c.Id);
-                builder.Property(c => c.TouristId).IsRequired();
-                builder.Property(c => c.TotalPrice).IsRequired();
-
-                builder.OwnsMany(c => c.Items, owned =>
-                {
-                    
-                    owned.ToTable("OrderItem");
-
-                    owned.WithOwner()
-                         .HasForeignKey("ShoppingCartId");
-
-                   
-                    owned.Property<int>("Id");
-                    owned.HasKey("Id");
-
-                    
-                    owned.Property(o => o.TourId).IsRequired();
-                    owned.Property(o => o.TourName).IsRequired();
-                    owned.Property(o => o.Price).IsRequired();
-                });
-            });
 
             modelBuilder.Entity<TourExecution>()
                 .HasMany(te => te.CompletedPoints)
@@ -112,6 +87,48 @@ namespace Explorer.Tours.Infrastructure.Database
                         v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null) ?? new List<string>()
                         );
 
+            modelBuilder.Entity<MysteryTourOffer>(b =>
+            {
+                b.ToTable("MysteryTourOffers");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.TouristId).IsRequired();
+                b.Property(x => x.TourId).IsRequired();
+                b.Property(x => x.DiscountPercent).IsRequired();
+                b.Property(x => x.CreatedAt).IsRequired();
+                b.Property(x => x.ExpiresAt).IsRequired();
+                b.Property(x => x.Redeemed).IsRequired();
+                b.HasIndex(x => x.TouristId);
+            });
+
+            modelBuilder.Entity<Sale>(b =>
+            {
+                b.ToTable("Sales");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.AuthorId).IsRequired();
+                b.Property(x => x.TourIds)
+                    .HasColumnType("integer[]");
+                b.Property(x => x.StartDate).IsRequired();
+                b.Property(x => x.EndDate).IsRequired();
+                b.Property(x => x.DiscountPercent).IsRequired();
+                b.Property(x => x.IsActive).IsRequired();
+                b.HasIndex(x => x.AuthorId);
+            });
+            modelBuilder.Entity<Bundle>()
+                .HasMany(b => b.Tours)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "BundleTour",
+                    j => j
+                        .HasOne<Tour>()
+                        .WithMany()
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<Bundle>()
+                        .WithMany()
+                        .HasForeignKey("BundleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                );
 
             base.OnModelCreating(modelBuilder);
 

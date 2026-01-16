@@ -3,6 +3,7 @@ using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Tourist;
+using Explorer.Payments.API.Internal;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using System.Linq;
@@ -14,20 +15,20 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourExecutionRepository _executionRepository;
     private readonly ITourRepository _tourRepository;
     private readonly ITourPointRepository _tourPointRepository;
-    private readonly ITourPurchaseTokenRepository _tokenRepository;
+    private readonly ITourPurchaseTokenService _tokenService;
     private readonly IMapper _mapper;
 
     public TourExecutionService(
         ITourExecutionRepository executionRepository,
         ITourRepository tourRepository,
         ITourPointRepository tourPointRepository,
-        ITourPurchaseTokenRepository tokenRepository,
+        ITourPurchaseTokenService tokenService,
         IMapper mapper)
     {
         _executionRepository = executionRepository;
         _tourRepository = tourRepository;
         _tourPointRepository = tourPointRepository;
-        _tokenRepository = tokenRepository;
+        _tokenService = tokenService;
         _mapper = mapper;
     }
 
@@ -42,7 +43,7 @@ public class TourExecutionService : ITourExecutionService
         if (tour.Status != TourStatus.Published && tour.Status != TourStatus.Archived)
             throw new InvalidOperationException("Only published and archived tours can be started.");
 
-        if (!_tokenRepository.Exists((int)touristId, dto.TourId))
+        if (!_tokenService.HasToken((int)touristId, dto.TourId))
             throw new InvalidOperationException("Tour must be purchased before starting.");
 
         var execution = new TourExecution(touristId, dto.TourId, dto.StartLatitude, dto.StartLongitude);

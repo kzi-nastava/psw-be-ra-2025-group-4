@@ -106,4 +106,33 @@ public class TourController : ControllerBase
         var updated = _tourService.UpdateRouteLength(id, GetAuthorId(), request.LengthInKm);
         return Ok(updated);
     }
+
+    [HttpGet("popular")]
+    public ActionResult<PagedResult<PopularTourDto>> GetPopular(
+    [FromQuery] int page,
+    [FromQuery] int pageSize,
+    [FromQuery] double? lat,
+    [FromQuery] double? lon,
+    [FromQuery] double? radiusKm)
+    {
+        return Ok(_tourService.GetPopular(GetAuthorId(), page, pageSize, lat, lon, radiusKm));
+    }
+
+
+    [HttpGet("dashboard")]
+    public ActionResult<PagedResult<AuthorTourDashboardItemDto>> GetDashboard(
+       [FromQuery] int page = 1,
+       [FromQuery] int pageSize = 10)
+    {
+        return Ok(_tourService.GetDashboard(GetAuthorId(), page, pageSize));
+    }
+
+    [HttpGet("{id:int}/dashboard")]
+    public ActionResult<AuthorTourDashboardDetailsDto> GetDashboardDetails(
+        int id,
+        [FromQuery] int days = 30)
+    {
+        return Ok(_tourService.GetDashboardDetails(GetAuthorId(), id, days));
+    }
+
 }

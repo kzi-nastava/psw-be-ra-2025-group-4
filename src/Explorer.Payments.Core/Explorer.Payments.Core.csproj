@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="UseCases\Administration\" />
+    <Folder Include="UseCases\Author\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks\Explorer.BuildingBlocks.Core\Explorer.BuildingBlocks.Core.csproj" />
+    <ProjectReference Include="..\Explorer.Payments.API\Explorer.Payments.API.csproj" />
+    <ProjectReference Include="..\Modules\Tours\Explorer.Tours.API\Explorer.Tours.API.csproj" />
+  </ItemGroup>
+
+</Project>

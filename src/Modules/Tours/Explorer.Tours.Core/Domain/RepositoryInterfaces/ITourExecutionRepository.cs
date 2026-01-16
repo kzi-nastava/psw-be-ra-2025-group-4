@@ -10,5 +10,11 @@ public interface ITourExecutionRepository
     IEnumerable<TourExecution> GetByTourist(long touristId);
 
     IEnumerable<TourExecution> GetByTouristAndTour(int touristId, int tourId);
+
+    Dictionary<int, ExecutionStats> GetStatsForTours(IEnumerable<int> tourIds);
+
+    List<(DateTime Date, int Count)> GetDailyStarts(int tourId, DateTime from, DateTime to);
+    List<(DateTime Date, int Count)> GetDailyCompleted(int tourId, DateTime from, DateTime to);
+    List<(DateTime Date, int Count)> GetDailyAbandoned(int tourId, DateTime from, DateTime to);
 }
 

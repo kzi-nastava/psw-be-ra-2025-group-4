@@ -2,9 +2,9 @@ using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.API.Public.Author;
-using Explorer.Tours.API.Public.Shopping;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
 using Explorer.Tours.Core.UseCases.Author;
@@ -13,6 +13,8 @@ using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Explorer.Tours.API.Internal;
+using Explorer.Tours.Core.UseCases.Internal;
 using Npgsql;
 
 namespace Explorer.Tours.Infrastructure;
@@ -32,6 +34,9 @@ public static class ToursStartup
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IFacilityService, FacilityService>();
         services.AddScoped<ITourService, TourService>();
+        services.AddScoped<IBundleService, BundleService>();
+        services.AddScoped<ITourSaleService, TourSaleService>();
+        services.AddScoped<ITouristBundleService, TouristBundleService>();
 
         services.AddScoped<IQuizService, QuizService>();
         services.AddScoped<IQuizSubmissionService, QuizSubmissionService>();
@@ -45,13 +50,16 @@ public static class ToursStartup
         services.AddScoped<IHistoricalMonumentService, HistoricalMonumentService>();
         services.AddScoped<ITourPointService, TourPointService>();
 
-        services.AddScoped<ICheckoutService, CheckoutService>();
+        
 
         services.AddScoped<ITourExecutionService, TourExecutionService>();
         services.AddScoped<ITourSearchService, TourSearchService>();
         services.AddScoped<ITourPointSecretService, TourPointSecretService>();
 
         services.AddScoped<ITourReviewService, TourReviewService>();
+        services.AddScoped<ITourInfoService, TourInfoService>();
+        services.AddScoped<IBundleInfoService, BundleInfoService>();
+        services.AddScoped<IMysteryTourOfferService, MysteryTourService>();
 
     }
 
@@ -61,6 +69,8 @@ public static class ToursStartup
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
 
         services.AddScoped<ITourRepository, TourDbRepository>();
+        services.AddScoped<IBundleRepository, BundleDbRepository>();
+        services.AddScoped<ISaleRepository, SaleDbRepository>();
 
         services.AddScoped<IQuizRepository, QuizDbRepository>();
         services.AddScoped<IQuizAnswerRepository, QuizAnswerDbRepository>();
@@ -73,10 +83,9 @@ public static class ToursStartup
         // Both repositories preserved
         services.AddScoped<IHistoricalMonumentRepository, HistoricalMonumentRepository>();
         services.AddScoped<ITourPointRepository, TourPointDbRepository>();
-        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
-        services.AddScoped<IShoppingCartService, ShoppingCartService>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<ITourReviewRepository, TourReviewDbRepository>();
+        services.AddScoped<IMysteryTourOfferRepository, MysteryTourOfferDbRepository>();
 
 
 
@@ -88,7 +97,7 @@ public static class ToursStartup
             opt.UseNpgsql(dataSource,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "tours")));
 
-        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+        
 
         
 

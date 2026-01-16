@@ -5,6 +5,9 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Infrastructure.Database;
+using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -23,7 +26,7 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        EnsurePurchaseToken(db, -1, -2);
+        EnsurePurchaseToken(scope, -1, -2);
         CleanupActiveExecutions(db, -1, -2);
 
         var createDto = new TourExecutionCreateDto
@@ -52,7 +55,7 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        EnsurePurchaseToken(db, -1, -2);
+        EnsurePurchaseToken(scope, -1, -2);
         CleanupActiveExecutions(db, -1, -2);
 
         var createDto = new TourExecutionCreateDto
@@ -88,7 +91,7 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
         var service = scope.ServiceProvider.GetRequiredService<ITourExecutionService>();
         var db = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        EnsurePurchaseToken(db, -1, -2);
+        EnsurePurchaseToken(scope, -1, -2);
         CleanupActiveExecutions(db, -1, -2);
 
         var createDto = new TourExecutionCreateDto
@@ -102,15 +105,18 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
         Should.Throw<ForbiddenException>(() => service.GetById(created.Id, -2));
     }
 
-    private static void EnsurePurchaseToken(ToursContext db, int touristId, int tourId)
+    private static void EnsurePurchaseToken(IServiceScope scope, int touristId, int tourId)
     {
-        var existingToken = db.TourPurchaseTokens
+        var paymentsDb = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+        paymentsDb.Database.EnsureCreated();
+
+        var existingToken = paymentsDb.TourPurchaseTokens
             .FirstOrDefault(t => t.TouristId == touristId && t.TourId == tourId);
-        
+
         if (existingToken == null)
         {
-            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, tourId));
-            db.SaveChanges();
+            paymentsDb.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, tourId));
+            paymentsDb.SaveChanges();
         }
     }
 

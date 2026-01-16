@@ -12,6 +12,9 @@ namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
         IEnumerable<Tour> GetByAuthor(int authorId);
         IEnumerable<Tour> GetPublishedAndArchived();
         IEnumerable<Tour> GetPublished();
+        IQueryable<Tour> QueryPublished();
+        IEnumerable<string> GetAllTags();
+
 
     }
 }

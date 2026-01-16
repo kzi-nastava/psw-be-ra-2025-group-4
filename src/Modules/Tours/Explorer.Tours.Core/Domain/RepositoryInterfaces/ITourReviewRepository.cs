@@ -12,5 +12,13 @@ namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
         IEnumerable<TourReview> GetByTourist(int touristId);
         IEnumerable<TourReview> GetByTour(int tourId);
         TourReview GetByTouristAndTour(int touristId, int tourId);
+
+        Dictionary<int, ReviewStats> GetStatsForTours(IEnumerable<int> tourIds);
+
+       
+        List<TourReview> GetLatestForTour(int tourId, int take);
+
+      
+        List<(DateTime Date, double Avg, int Count)> GetDailyReviewStats(int tourId, DateTime from, DateTime to);
     }
 }
