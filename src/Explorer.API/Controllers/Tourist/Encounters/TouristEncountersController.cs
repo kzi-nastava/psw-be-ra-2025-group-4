@@ -68,6 +68,14 @@ namespace Explorer.API.Controllers.Tourist.Encounters
             return Ok(result);
         }
 
+        [HttpGet("encounter-participant")]
+        public ActionResult<EncounterParticipantDto> GetEncounterParticipant()
+        {
+            var touristId = GetTouristId();
+            var result = _encounterParticipantService.Get(touristId);
+            return Ok(result);
+        }
+
         [HttpPost("{id:long}/activate")]
         public ActionResult Activate([FromRoute] long id)
         {

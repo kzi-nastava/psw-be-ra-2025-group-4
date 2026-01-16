@@ -20,6 +20,8 @@ public class EncountersProfile : Profile
             .IncludeBase<Encounter, EncounterDto>();
         CreateMap<EncounterExecution, EncounterExecutionDto>().ReverseMap();
 
+        CreateMap<EncounterParticipant, EncounterParticipantDto>().ReverseMap();
+
         CreateMap<Encounter, EncounterViewDto>()
     .Include<HiddenLocationEncounter, EncounterViewDto>()
     .Include<SocialEncounter, EncounterViewDto>()
