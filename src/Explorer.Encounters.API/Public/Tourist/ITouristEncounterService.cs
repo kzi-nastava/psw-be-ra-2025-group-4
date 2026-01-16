@@ -15,6 +15,7 @@ namespace Explorer.Encounters.API.Public.Tourist
         void CompleteEncounter(long touristId, long encounterId);
         void UpdateLocation (long touristId, long encounterId, LocationDto touristLocation);
         List<EncounterViewDto> GetByTourPoint(long touristId, int tourPointId, LocationDto touristLocation);
-
+        int UpdateTouristLocation(long encounterId, long touristId, double lat, double lng);
+        IEnumerable<EncounterViewDto> GetByTourist(long touristId);
     }
 }

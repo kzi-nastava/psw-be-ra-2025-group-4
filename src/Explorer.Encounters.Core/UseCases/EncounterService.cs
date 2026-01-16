@@ -9,6 +9,7 @@ using Explorer.Encounters.Core.Domain.Repositories;
 using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,13 +30,36 @@ namespace Explorer.Encounters.Core.UseCases
             _hiddenLocationEncounterRepository = hiddenLocationEncounterRepository;
         }
 
-        public EncounterDto Create(EncounterDto dto)
+        public EncounterDto Create(EncounterDto dto, bool needsApproval)
         {
-            var encounter = new Encounter(dto.Name, dto.Description, _mapper.Map<Location>(dto.Location), dto.ExperiencePoints, (Domain.EncounterType)dto.Type);
+            var encounter = new Encounter(dto.Name, dto.Description, _mapper.Map<Location>(dto.Location), dto.ExperiencePoints, (Domain.EncounterType)dto.Type, needsApproval ? EncounterApprovalStatus.PENDING : EncounterApprovalStatus.APPROVED);
             var created = _encounterRepository.Create(encounter);
             return _mapper.Map<EncounterDto>(created);
         }
-        public HiddenLocationEncounterDto CreateHiddenLocation(HiddenLocationEncounterDto dto)
+
+        public SocialEncounterDto CreateSocial(SocialEncounterDto dto, bool needsApproval)
+        {
+            var social = new SocialEncounter(dto.Name, dto.Description, _mapper.Map<Location>(dto.Location), dto.ExperiencePoints, dto.MinimumParticipants, dto.ActivationRadiusMeters, needsApproval ? EncounterApprovalStatus.PENDING : EncounterApprovalStatus.APPROVED);
+
+            var created = _encounterRepository.Create(social) as SocialEncounter;
+            return _mapper.Map<SocialEncounterDto>(created);
+        }
+
+        public SocialEncounterDto UpdateSocial(SocialEncounterDto dto, int encounterId)
+        {
+            var social = _encounterRepository.GetById(encounterId) as SocialEncounter;
+            if (social == null)
+                throw new InvalidOperationException("Encounter is not a SocialEncounter.");
+
+
+            social.UpdateSocial(dto.Name, dto.Description, _mapper.Map<Location>(dto.Location), dto.ExperiencePoints, dto.MinimumParticipants, dto.ActivationRadiusMeters);
+          
+            var updated = _encounterRepository.Update(social) as SocialEncounter;
+            return _mapper.Map<SocialEncounterDto>(updated!);
+
+        }
+
+        public HiddenLocationEncounterDto CreateHiddenLocation(HiddenLocationEncounterDto dto, bool needsApproval)
         {
             var hidden = new HiddenLocationEncounter(
                 dto.Name,
@@ -44,7 +68,8 @@ namespace Explorer.Encounters.Core.UseCases
                 dto.ExperiencePoints,
                 dto.ImageUrl,
                 _mapper.Map<Location>(dto.PhotoPoint),
-                dto.ActivationRadiusMeters
+                dto.ActivationRadiusMeters, 
+                needsApproval ? EncounterApprovalStatus.PENDING : EncounterApprovalStatus.APPROVED
             );
 
             var created = _hiddenLocationEncounterRepository.Create(hidden);
@@ -136,6 +161,35 @@ namespace Explorer.Encounters.Core.UseCases
             }
             encounter.Archive();
             _encounterRepository.Update(encounter);
+        }
+
+        public void Approve(long id)
+        {
+            var encounter = _encounterRepository.GetById(id);
+            if (encounter == null)
+            {
+                throw new NotFoundException($"Encounter with id {id} not found.");
+            }
+            encounter.Approve();
+            _encounterRepository.Update(encounter);
+        }
+
+        public void Decline(long id)
+        {
+            var encounter = _encounterRepository.GetById(id);
+            if (encounter == null)
+            {
+                throw new NotFoundException($"Encounter with id {id} not found.");
+            }
+            encounter.Decline();
+            _encounterRepository.Update(encounter);
+        }
+
+        public IEnumerable<EncounterViewDto> GetPendingApproval()
+        {
+            return _encounterRepository.GetPendingEncounters()
+                .Select(_mapper.Map<EncounterViewDto>)
+                .ToList();
         }
     }
 }

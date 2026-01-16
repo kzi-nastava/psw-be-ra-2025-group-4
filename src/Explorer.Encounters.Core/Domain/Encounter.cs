@@ -21,6 +21,13 @@ namespace Explorer.Encounters.Core.Domain
         Misc
     }
 
+    public enum EncounterApprovalStatus
+    {
+        APPROVED,
+        PENDING,
+        DECLINED
+    }
+
     public class Encounter : AggregateRoot
     {
         public string Name { get; private set; }
@@ -33,13 +40,15 @@ namespace Explorer.Encounters.Core.Domain
         public long? TourPointId { get; private set; }
         public bool IsRequiredForPointCompletion { get; private set; }
 
+        public EncounterApprovalStatus ApprovalStatus { get; private set; }
+
 
         public Encounter()
         {
 
         }
 
-        public Encounter(string name, string description, Location location, int experiencePoints, EncounterType type)
+        public Encounter(string name, string description, Location location, int experiencePoints, EncounterType type, EncounterApprovalStatus approvalStatus)
         {
             Name = name;
             Description = description;
@@ -48,6 +57,7 @@ namespace Explorer.Encounters.Core.Domain
             Status = EncounterStatus.Draft;
             Type = type;
             Validate();
+            ApprovalStatus = approvalStatus;
         }
 
         public void Update(string name, string description, Location location, int experiencePoints, EncounterType type)
@@ -61,11 +71,30 @@ namespace Explorer.Encounters.Core.Domain
             Validate();
         }
 
+        public void Approve()
+        {
+            if (ApprovalStatus == EncounterApprovalStatus.APPROVED)
+                throw new InvalidOperationException("Encounter already approved.");
+
+            ApprovalStatus = EncounterApprovalStatus.APPROVED;
+        }
+
+        public void Decline()
+        {
+            if (ApprovalStatus == EncounterApprovalStatus.DECLINED)
+                throw new InvalidOperationException("Encounter already declined.");
+
+            ApprovalStatus = EncounterApprovalStatus.DECLINED;
+        }
+
+
         public void Activate()
         {
             //TODO: U drugoj nedelji ovde dodati ostale uslove (po potrebi)
             if (Status == EncounterStatus.Active)
                 throw new InvalidOperationException("Encounter is already active.");
+            if (ApprovalStatus != EncounterApprovalStatus.APPROVED)
+                throw new InvalidOperationException("Only approved encounters can be activated.");
 
             Status = EncounterStatus.Active;
         }

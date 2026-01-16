@@ -1,4 +1,5 @@
-﻿using Explorer.BuildingBlocks.Core.Exceptions;
+﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public.Tourist;
 using Explorer.Encounters.Core.Domain;
@@ -6,7 +7,9 @@ using Explorer.Encounters.Core.Domain.Repositories;
 using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Security.Cryptography;
 using DomainEncounterType = Explorer.Encounters.Core.Domain.EncounterType;
 
 namespace Explorer.Encounters.Core.UseCases
@@ -16,15 +19,24 @@ namespace Explorer.Encounters.Core.UseCases
         private readonly IEncounterRepository _encounterRepository;
         private readonly IHiddenLocationEncounterRepository _hiddenLocationEncounterRepository;
         private readonly IEncounterExecutionRepository _encounterExecutionRepository;
+        private readonly ISocialEncounterParticipantRepository _participantRepository;
+        private readonly IEncounterParticipantRepository _encounterParticipantRepository;
+        private readonly IMapper _mapper;
 
         public TouristEncounterService(
             IEncounterRepository encounterRepository,
             IHiddenLocationEncounterRepository hiddenLocationEncounterRepository,
-            IEncounterExecutionRepository encounterExecutionRepository)
+            IEncounterExecutionRepository encounterExecutionRepository,
+            ISocialEncounterParticipantRepository socialEncounterParticipantRepository,
+            IEncounterParticipantRepository encounterParticipantRepository,
+            IMapper mapper)
         {
             _encounterRepository = encounterRepository;
             _hiddenLocationEncounterRepository = hiddenLocationEncounterRepository;
             _encounterExecutionRepository = encounterExecutionRepository;
+            _participantRepository = socialEncounterParticipantRepository;
+            _encounterParticipantRepository = encounterParticipantRepository;
+            _mapper = mapper;
         }
 
         public List<EncounterViewDto> GetByTourPoint(long touristId, int tourPointId, LocationDto touristLocation)
@@ -78,6 +90,16 @@ namespace Explorer.Encounters.Core.UseCases
                     }
                 }
 
+                if (e.Type == DomainEncounterType.Social)
+                {
+                    var social = e as SocialEncounter;
+                    if (social != null)
+                    {
+                        dto.MinimumParticipants = social.MinimumParticipants;
+                        dto.ActivationRadiusMeters = social.ActivationRadiusMeters;
+                    }
+                }
+
                 return dto;
             }).ToList();
         }
@@ -93,6 +115,81 @@ namespace Explorer.Encounters.Core.UseCases
             var execution = new EncounterExecution(touristId, encounterId);
             _encounterExecutionRepository.Create(execution);
         }
+
+        public int UpdateTouristLocation(long encounterId, long touristId, double lat, double lng)
+        {
+            var now = DateTime.UtcNow;
+
+            var execution = _encounterExecutionRepository.Get(touristId, encounterId);
+
+            if (execution == null)
+            {
+                execution = new EncounterExecution(touristId, encounterId);
+                _encounterExecutionRepository.Create(execution);
+            }
+
+            if (execution?.Status == EncounterExecutionStatus.Completed)
+                throw new InvalidOperationException("Encounter already completed.");
+
+            var encounter = _encounterRepository.GetById(encounterId) as SocialEncounter;
+            if (encounter == null)
+                throw new InvalidOperationException("Not a SocialEncounter");
+
+            var distance = CalculateDistanceMeters(lat, lng, encounter.Location.Latitude, encounter.Location.Longitude);
+            var participant = _participantRepository.Get(encounterId, touristId);
+
+            if (distance <= encounter.ActivationRadiusMeters)
+            {
+                if (participant == null)
+                {
+                    participant = new SocialEncounterParticipant(encounterId, touristId, now);
+                    _participantRepository.Add(participant);
+                }
+                else
+                {
+                    participant.SetLastSeenAt(now);
+                    _participantRepository.Update(participant);
+                }
+            }
+            else
+            {
+                if (participant != null)
+                {
+                    _participantRepository.Remove(participant);
+                }
+            }
+
+            var activeParticipants = _participantRepository.GetActive(encounterId, now).ToList();
+            var activeCount = activeParticipants.Count;
+
+            if (activeCount >= encounter.MinimumParticipants && execution != null)
+            {
+                var touristIdsInRange = activeParticipants.Select(p => p.TouristId);
+                _encounterExecutionRepository.ResolveEncounterForParticipants(encounterId, touristIdsInRange);
+                foreach (int tId in touristIdsInRange)
+                {
+                    UpdateParticipance(tId, encounter.ExperiencePoints);
+                }
+            }
+
+            return activeCount;
+        }
+
+        private void UpdateParticipance(int touristId, int xp)
+        {
+            var encounterParticipant = _encounterParticipantRepository.Get(touristId);
+            if (encounterParticipant == null)
+            {
+                _encounterParticipantRepository.Add(new EncounterParticipant(touristId));
+            }
+            else
+            {
+                encounterParticipant.AddExperience(xp);
+                _encounterParticipantRepository.Update(encounterParticipant);
+            }
+        }
+
+
 
         public void UpdateLocation(long touristId, long encounterId, LocationDto touristLocation)
         {
@@ -136,6 +233,7 @@ namespace Explorer.Encounters.Core.UseCases
             if (secondsInside >= hidden.CompletionHoldSeconds)
             {
                 execution.Complete();
+                UpdateParticipance((int)touristId, encounter.ExperiencePoints);
                 _encounterExecutionRepository.Update(execution);
             }
         }
@@ -168,12 +266,35 @@ namespace Explorer.Encounters.Core.UseCases
             if (secondsInside < hidden.CompletionHoldSeconds) return;
 
             execution.Complete();
+            UpdateParticipance((int)touristId, encounter.ExperiencePoints);
             _encounterExecutionRepository.Update(execution);
+        }
+
+        public IEnumerable<EncounterViewDto> GetByTourist(long touristId)
+        {
+            return _encounterRepository.GetByTourist(touristId)
+                .Select(_mapper.Map<EncounterViewDto>)
+                .ToList();
         }
 
         private static Location ToDomainLocation(LocationDto dto)
         {
             return new Location(dto.Longitude, dto.Latitude);
         }
+
+        private double CalculateDistanceMeters(double lat1, double lon1, double lat2, double lon2)
+        {
+            var R = 6371000; 
+            var dLat = DegreesToRadians(lat2 - lat1);
+            var dLon = DegreesToRadians(lon2 - lon1);
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                    Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) *
+                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            return R * c;
+        }
+
+        private double DegreesToRadians(double deg) => deg * Math.PI / 180;
+
     }
 }
