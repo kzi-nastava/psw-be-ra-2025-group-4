@@ -121,10 +121,14 @@ namespace Explorer.Encounters.Core.UseCases
             var now = DateTime.UtcNow;
 
             var execution = _encounterExecutionRepository.Get(touristId, encounterId);
-            if (execution == null) 
-                throw new InvalidOperationException("Encounter not started.");
 
-            if (execution.Status == EncounterExecutionStatus.Completed) 
+            if (execution == null)
+            {
+                execution = new EncounterExecution(touristId, encounterId);
+                _encounterExecutionRepository.Create(execution);
+            }
+
+            if (execution?.Status == EncounterExecutionStatus.Completed)
                 throw new InvalidOperationException("Encounter already completed.");
 
             var encounter = _encounterRepository.GetById(encounterId) as SocialEncounter;
@@ -133,7 +137,6 @@ namespace Explorer.Encounters.Core.UseCases
 
             var distance = CalculateDistanceMeters(lat, lng, encounter.Location.Latitude, encounter.Location.Longitude);
             var participant = _participantRepository.Get(encounterId, touristId);
-        
 
             if (distance <= encounter.ActivationRadiusMeters)
             {
@@ -144,7 +147,6 @@ namespace Explorer.Encounters.Core.UseCases
                 }
                 else
                 {
-      
                     participant.SetLastSeenAt(now);
                     _participantRepository.Update(participant);
                 }
@@ -157,16 +159,14 @@ namespace Explorer.Encounters.Core.UseCases
                 }
             }
 
-            //_participantRepository.RemoveStale(encounterId, TimeSpan.FromSeconds(20), now);
             var activeParticipants = _participantRepository.GetActive(encounterId, now).ToList();
             var activeCount = activeParticipants.Count;
 
-            if (activeCount >= encounter.MinimumParticipants)
+            if (activeCount >= encounter.MinimumParticipants && execution != null)
             {
-               
                 var touristIdsInRange = activeParticipants.Select(p => p.TouristId);
                 _encounterExecutionRepository.ResolveEncounterForParticipants(encounterId, touristIdsInRange);
-                foreach(int tId in touristIdsInRange)
+                foreach (int tId in touristIdsInRange)
                 {
                     UpdateParticipance(tId, encounter.ExperiencePoints);
                 }
