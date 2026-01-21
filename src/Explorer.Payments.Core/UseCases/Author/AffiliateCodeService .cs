@@ -36,14 +36,6 @@ namespace Explorer.Payments.Core.UseCases.Author
             {
                 var tour = _tourInfoService.Get(tourId.Value);
 
-                // DEBUG - garantovan ispis
-                System.Diagnostics.Debug.WriteLine(
-                    $"DEBUG >>> Tour.AuthorId={tour.AuthorId}, token personId={authorId}, tourId={tourId.Value}"
-                );
-                Console.WriteLine(
-                    $"CONSOLE >>> Tour.AuthorId={tour.AuthorId}, token personId={authorId}, tourId={tourId.Value}"
-                );
-
                 if (tour.AuthorId != authorId)
                     throw new ForbiddenException("Not your tour.");
             }
