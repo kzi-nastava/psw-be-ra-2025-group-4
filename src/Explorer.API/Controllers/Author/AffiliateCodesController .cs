@@ -19,12 +19,12 @@ namespace Explorer.API.Controllers.Author
 
         private int GetAuthorId()
         {
-            var id = User.FindFirst("id")?.Value;
-            if (id != null) return int.Parse(id);
+            var personId = User.FindFirst("personId")?.Value;
+            if (!string.IsNullOrWhiteSpace(personId)) return int.Parse(personId);
 
-            var pid = User.FindFirst("personId")?.Value;
-            return int.Parse(pid ?? throw new Exception("No user id found"));
+            throw new Exception("No personId found in token.");
         }
+
 
         [HttpGet]
         public ActionResult<List<AffiliateCodeDto>> GetAll([FromQuery] int? tourId = null)
