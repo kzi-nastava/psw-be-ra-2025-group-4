@@ -302,6 +302,16 @@ namespace Explorer.Encounters.Core.UseCases
                 .ToList();
         }
 
+        public bool IsEncounterCompleted(long tourPointId, long touristId)
+        {
+            var encounter = _encounterRepository.GetByTourPointId((int)tourPointId);
+            if (encounter == null || !encounter.IsRequiredForPointCompletion)
+                return true;
+
+            return _encounterExecutionRepository.Get(touristId, encounter.Id)?
+                .Status == EncounterExecutionStatus.Completed;
+        }
+
         private static Location ToDomainLocation(LocationDto dto)
         {
             return new Location(dto.Longitude, dto.Latitude);
