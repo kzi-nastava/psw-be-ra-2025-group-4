@@ -39,26 +39,6 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
         }
 
         [Fact]
-        public void UpdateLocation_RemovesParticipantWhenOutOfRange()
-        {
-            using var scope = Factory.Services.CreateScope();
-            var controller = CreateController(scope);
-
-            controller.Activate(-1);
-
-            var dto = new TouristLocationDto
-            {
-                Latitude = 1000.0, 
-                Longitude = 1000.0
-            };
-
-            var result = controller.UpdateSocialLocation(-1, dto) as ActionResult<int>;
-            var activeCount = result?.Value;
-
-            activeCount.ShouldBe(0);
-        }
-
-        [Fact]
         public void can_read_seeded_encounters()
         {
             using var scope = Factory.Services.CreateScope();
@@ -203,7 +183,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
                 Description = "Created via test",
                 ExperiencePoints = 200,
                 ImageUrl = "http://example.com/new.png",
-                ActivationRadiusMeters = 50,
+                ActivationRadiusMeters = 500,
                 Location = new LocationDto { Latitude = 45.8000, Longitude = 15.9800 },
                 PhotoPoint = new LocationDto { Latitude = 45.8010, Longitude = 15.9810 }
             };
@@ -216,10 +196,58 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
             var created = okResult.Value as HiddenLocationEncounterDto;
             created.ShouldNotBeNull();    
             created.Name.ShouldBe("New Hidden Encounter");
-            created.ActivationRadiusMeters.ShouldBe(50);
+            created.ActivationRadiusMeters.ShouldBe(500);
         }
 
+        [Fact]
+        public void can_activate_encounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
 
+            // Act
+            var result = controller.Activate(-1);
+
+            // Assert
+            result.ShouldBeOfType<OkResult>();
+        }
+
+        [Fact]
+        public void social_encounter_completes_when_minimum_participants_met()
+        {
+            using var scope = Factory.Services.CreateScope();
+
+            // Get the repository
+            var executionRepository = scope.ServiceProvider.GetRequiredService<IEncounterExecutionRepository>();
+
+            // Create multiple tourists
+            var controller1 = CreateController(scope, userId: "-22");
+            var controller2 = CreateController(scope, userId: "-23");
+
+            // Both activate the social encounter
+            controller1.Activate(-1);
+            controller2.Activate(-1);
+
+            var location = new LocationDto
+            {
+                Latitude = 45.2671,
+                Longitude = 19.8335
+            };
+
+            // Both enter the radius
+            controller1.UpdateTouristsLocationSocial(-1, location);
+            controller2.UpdateTouristsLocationSocial(-1, location);
+
+            // Assert - check both executions are completed
+            var execution1 = executionRepository.Get(-22, -1);
+            var execution2 = executionRepository.Get(-23, -1);
+
+            execution1.ShouldNotBeNull();
+            execution1.Status.ShouldBe(EncounterExecutionStatus.Completed);
+
+            execution2.ShouldNotBeNull();
+            execution2.Status.ShouldBe(EncounterExecutionStatus.Completed);
+        }
 
         private static TouristEncountersController CreateController(IServiceScope scope, string userId = "-21")
         {
