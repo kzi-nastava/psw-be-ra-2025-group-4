@@ -11,8 +11,6 @@ namespace Explorer.Encounters.Core.Domain
         public int MinimumParticipants { get; private set; }
         public double ActivationRadiusMeters { get; private set; }
 
-        public ICollection<SocialEncounterParticipant> Participants { get; private set; } = new List<SocialEncounterParticipant>();
-
         private SocialEncounter()
         {
 

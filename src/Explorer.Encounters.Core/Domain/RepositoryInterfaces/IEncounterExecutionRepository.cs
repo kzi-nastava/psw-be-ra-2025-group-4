@@ -7,7 +7,6 @@
 
         EncounterExecution Create(EncounterExecution execution);
         EncounterExecution Update(EncounterExecution execution);
-
-        void ResolveEncounterForParticipants(long encounterId, IEnumerable<long> touristIdsInRange);
+        IEnumerable<EncounterExecution> GetActiveExecutions(long encounterId);
     }
 }
