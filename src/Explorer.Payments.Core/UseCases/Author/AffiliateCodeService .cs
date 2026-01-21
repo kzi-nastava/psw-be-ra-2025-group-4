@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
-using Explorer.Tours.API.Public;
+using Explorer.Tours.API.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +15,16 @@ namespace Explorer.Payments.Core.UseCases.Author
     public class AffiliateCodeService : IAffiliateCodeService
     {
         private readonly IAffiliateCodeRepository _repo;
-        private readonly ITourService _tourService;
+        private readonly ITourInfoService _tourInfoService;
         private readonly IMapper _mapper;
 
         public AffiliateCodeService(
             IAffiliateCodeRepository repo,
-            ITourService tourService,
+            ITourInfoService tourInfoService,
             IMapper mapper)
         {
             _repo = repo;
-            _tourService = tourService;
+            _tourInfoService = tourInfoService;
             _mapper = mapper;
         }
 
@@ -33,9 +34,12 @@ namespace Explorer.Payments.Core.UseCases.Author
 
             if (tourId.HasValue)
             {
-                // kao u Tours: baci ForbiddenException ako nije njegova tura
-                _tourService.GetByIdForAuthor(authorId, tourId.Value);
+                var tour = _tourInfoService.Get(tourId.Value);
+
+                if (tour.AuthorId != authorId)
+                    throw new ForbiddenException("Not your tour.");
             }
+
 
             for (var attempt = 0; attempt < 10; attempt++)
             {
