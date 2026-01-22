@@ -44,6 +44,8 @@ public static class PaymentsStartup
         services.AddScoped<ICartPricingService, ShoppingCartService>();
         services.AddScoped<IBundlePurchaseService, BundlePurchaseService>();
         services.AddScoped<IAffiliateCodeService, AffiliateCodeService>();
+        services.AddScoped<ICoinsBundleService, CoinsBundleService>();
+        services.AddScoped<ICoinsBundleSaleService, CoinsBundleSaleService>();
 
     }
 
@@ -56,6 +58,9 @@ public static class PaymentsStartup
         services.AddScoped<IPaymentRecordRepository, PaymentRecordDbRepository>();
         services.AddScoped<ICouponRepository, CouponDbRepository>();
         services.AddScoped<IAffiliateCodeRepository, AffiliateCodeDbRepository>();
+        services.AddScoped<ICoinsBundleRepository, CoinsBundleDbRepository>();
+        services.AddScoped<ICoinsBundleSaleRepository, CoinsBundleSaleDbRepository>();
+        services.AddScoped<ICoinsBundlePurchaseRepository, CoinsBundlePurchaseDbRepository>();
 
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
