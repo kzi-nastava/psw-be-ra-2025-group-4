@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Folder Include="Integration\Administration\" />
-    <Folder Include="Integration\Author\" />
     <Folder Include="TestData\" />
   </ItemGroup>
 

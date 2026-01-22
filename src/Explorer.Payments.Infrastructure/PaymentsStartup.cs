@@ -11,6 +11,8 @@ using Explorer.Payments.Core.UseCases.Internal;
 using Explorer.Payments.Core.UseCases.Tourist;
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Payments.Infrastructure.Database.Repositories;
+using Explorer.Payments.API.Public.Author;
+using Explorer.Payments.Core.UseCases.Author;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -41,6 +43,8 @@ public static class PaymentsStartup
         services.AddScoped<ICouponService, CouponService>();
         services.AddScoped<ICartPricingService, ShoppingCartService>();
         services.AddScoped<IBundlePurchaseService, BundlePurchaseService>();
+        services.AddScoped<IAffiliateCodeService, AffiliateCodeService>();
+
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -51,6 +55,8 @@ public static class PaymentsStartup
         services.AddScoped<IWalletRepository, WalletDbRepository>();
         services.AddScoped<IPaymentRecordRepository, PaymentRecordDbRepository>();
         services.AddScoped<ICouponRepository, CouponDbRepository>();
+        services.AddScoped<IAffiliateCodeRepository, AffiliateCodeDbRepository>();
+
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
         dataSourceBuilder.EnableDynamicJson();

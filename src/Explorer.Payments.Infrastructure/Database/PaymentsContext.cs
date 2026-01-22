@@ -12,6 +12,8 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<PaymentRecord> PaymentRecords { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
+        public DbSet<AffiliateCode> AffiliateCodes { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,6 +85,22 @@ namespace Explorer.Payments.Infrastructure.Database
 
                 builder.HasIndex(c => c.AuthorId);
             });
+
+            modelBuilder.Entity<AffiliateCode>(builder =>
+            {
+                builder.ToTable("AffiliateCodes");
+                builder.HasKey(a => a.Id);
+
+                builder.Property(a => a.Code).IsRequired().HasMaxLength(16);
+                builder.Property(a => a.AuthorId).IsRequired();
+                builder.Property(a => a.TourId).IsRequired(false);
+                builder.Property(a => a.CreatedAt).IsRequired();
+                builder.Property(a => a.Active).IsRequired();
+
+                builder.HasIndex(a => a.Code).IsUnique();
+                builder.HasIndex(a => a.AuthorId);
+            });
+
 
             base.OnModelCreating(modelBuilder);
         }
