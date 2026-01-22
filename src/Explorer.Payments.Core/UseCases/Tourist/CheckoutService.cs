@@ -119,5 +119,11 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 
             return createdTokens;
         }
+
+        public List<TourPurchaseTokenDto> GetPurchaseTokens(int touristId)
+        {
+            var tokens = _tokenRepository.GetByTouristId(touristId);
+            return tokens.Select(t => _mapper.Map<TourPurchaseTokenDto>(t)).ToList();
+        }
     }
 }
