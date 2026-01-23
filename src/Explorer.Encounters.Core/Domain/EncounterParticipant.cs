@@ -18,9 +18,6 @@ namespace Explorer.Encounters.Core.Domain
 
         public EncounterParticipant(long userId)
         {
-            if (userId <= 0)
-                throw new ArgumentException("UserId must be positive.", nameof(userId));
-
             UserId = userId;
             Level = 1;
             ExperiencePoints = 0;

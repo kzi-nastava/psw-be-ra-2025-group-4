@@ -18,7 +18,7 @@ namespace Explorer.Encounters.Core.Domain
         public DateTime StartedAtUtc { get; private set; }
         public DateTime? CompletedAtUtc { get; private set; }
 
-        // Samo za Hidden
+        // Samo za Hidden i social
         public DateTime? WithinRadiusSinceUtc { get; private set; }
 
         private EncounterExecution() { }

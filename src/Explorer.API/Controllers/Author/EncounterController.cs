@@ -22,7 +22,7 @@ namespace Explorer.API.Controllers.Author
         }
 
         [HttpGet]
-        public ActionResult<PagedResult<EncounterDto>> GetPaged(
+        public ActionResult<PagedResult<EncounterViewDto>> GetPaged(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 50)
         {
@@ -32,7 +32,7 @@ namespace Explorer.API.Controllers.Author
 
 
         [HttpGet("by-tour/{tourId:int}")]
-        public ActionResult<List<EncounterDto>> GetByTourId(int tourId)
+        public ActionResult<List<EncounterViewDto>> GetByTourId(int tourId)
         {
             var tour = _tourService.GetById(tourId);
             if (tour == null)

@@ -12,12 +12,12 @@ namespace Explorer.Encounters.Core.Domain.RepositoryInterfaces
     {
         Encounter Create(Encounter encounter);
         Encounter? GetById(long id);
+        Encounter? GetByTourPointId(int tourPointId);
         PagedResult<Encounter> GetPaged(int page, int pageSize);
         List<Encounter> GetByTourPointIds(IEnumerable<int> tourPointIds);
         public IEnumerable<Encounter> GetActive();
         Encounter Update(Encounter encounter);
         void Delete(long id);
-        bool ExistsByTourPoint(long tourPointId);
         IEnumerable<Encounter> GetPendingEncounters();
         IEnumerable<Encounter> GetByTourist(long touristId);
     }

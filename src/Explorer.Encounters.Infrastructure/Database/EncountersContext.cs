@@ -15,9 +15,6 @@ public class EncountersContext : DbContext
 
     public DbSet<Encounter> Encounters { get; set; } = null!;
     public DbSet<EncounterExecution> EncounterExecutions { get; set; }
-    public DbSet<HiddenLocationEncounter> HiddenLocationEncounters { get; set; }
-
-    public DbSet<SocialEncounterParticipant> SocialEncounterParticipant { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,19 +56,6 @@ public class EncountersContext : DbContext
 
         modelBuilder.Entity<SocialEncounter>()
             .ToTable("SocialEncounters");
-
-        modelBuilder.Entity<SocialEncounterParticipant>()
-            .ToTable("SocialEncounterParticipants")
-            .HasKey(p => p.Id);
-
-        modelBuilder.Entity<SocialEncounterParticipant>()
-            .HasOne(p => p.SocialEncounter)
-            .WithMany(e => e.Participants)
-            .HasForeignKey(p => p.SocialEncounterId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<SocialEncounterParticipant>()
-            .HasIndex(p => p.LastSeenAt);
 
         modelBuilder.Entity<EncounterParticipant>()
             .ToTable("EncounterParticipants")
