@@ -9,7 +9,6 @@ using Explorer.Payments.Core.UseCases;
 using Explorer.Payments.Core.UseCases.Administration;
 using Explorer.Payments.Core.UseCases.Internal;
 using Explorer.Payments.Core.UseCases.Tourist;
-using Explorer.Payments.API.Internal;
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Payments.Infrastructure.Database.Repositories;
 using Explorer.Payments.Infrastructure.Internal;
@@ -47,6 +46,8 @@ public static class PaymentsStartup
         services.AddScoped<IBundlePurchaseService, BundlePurchaseService>();
         services.AddScoped<IAffiliateCodeService, AffiliateCodeService>();
         services.AddScoped<IGroupTravelService, GroupTravelService>();
+        services.AddScoped<ICoinsBundleService, CoinsBundleService>();
+        services.AddScoped<ICoinsBundleSaleService, CoinsBundleSaleService>();
 
     }
 
@@ -62,6 +63,10 @@ public static class PaymentsStartup
         services.AddScoped<IGroupTravelRequestRepository, GroupTravelRequestDbRepository>();
         
         RegisterAdapters(services);
+
+        services.AddScoped<ICoinsBundleRepository, CoinsBundleDbRepository>();
+        services.AddScoped<ICoinsBundleSaleRepository, CoinsBundleSaleDbRepository>();
+        services.AddScoped<ICoinsBundlePurchaseRepository, CoinsBundlePurchaseDbRepository>();
 
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));

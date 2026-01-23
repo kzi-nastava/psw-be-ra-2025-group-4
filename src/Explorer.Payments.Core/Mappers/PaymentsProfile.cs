@@ -23,5 +23,11 @@ public class PaymentsProfile : Profile
         CreateMap<CouponUpdateDto, Coupon>();
         CreateMap<AffiliateCode, AffiliateCodeDto>();
 
+        CreateMap<CoinsBundle, CoinsBundleDto>().ReverseMap();
+        CreateMap<CoinsBundleSale, CoinsBundleSaleDto>().ReverseMap();
+        CreateMap<CoinsBundlePurchase, CoinsBundlePurchaseDto>()
+            .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod.ToString()))
+            .ReverseMap();
+
     }
 }
