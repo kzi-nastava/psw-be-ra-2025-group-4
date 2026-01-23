@@ -5,11 +5,9 @@ using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
-using Explorer.Stakeholders.API.Public;
-using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
-using Explorer.Stakeholders.Core.Domain;
 using Explorer.Tours.API.Internal;
 
 namespace Explorer.Payments.Core.UseCases.Tourist
@@ -21,8 +19,8 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private readonly ITourPurchaseTokenRepository _tokenRepository;
         private readonly IPaymentRecordRepository _paymentRecordRepository;
         private readonly ITourInfoService _tourInfoService;
-        private readonly IUserRepository _userRepository;
-        private readonly INotificationService _notificationService;
+        private readonly IUserInfoService _userInfoService;
+        private readonly INotificationServiceInternal _notificationService;
         private readonly IMapper _mapper;
 
         public GroupTravelService(
@@ -31,8 +29,8 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             ITourPurchaseTokenRepository tokenRepository,
             IPaymentRecordRepository paymentRecordRepository,
             ITourInfoService tourInfoService,
-            IUserRepository userRepository,
-            INotificationService notificationService,
+            IUserInfoService userInfoService,
+            INotificationServiceInternal notificationService,
             IMapper mapper)
         {
             _requestRepository = requestRepository;
@@ -40,7 +38,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             _tokenRepository = tokenRepository;
             _paymentRecordRepository = paymentRecordRepository;
             _tourInfoService = tourInfoService;
-            _userRepository = userRepository;
+            _userInfoService = userInfoService;
             _notificationService = notificationService;
             _mapper = mapper;
         }
@@ -53,15 +51,15 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 
             var participantIds = new List<int>();
             
-            var organizerUser = _userRepository.Get(organizerId);
+            var organizerUser = _userInfoService.GetUser(organizerId);
             if (organizerUser == null)
                 throw new NotFoundException("User not found.");
 
             foreach (var username in dto.ParticipantEmails)
             {
-                var user = _userRepository.GetByUsername(username);
+                var user = _userInfoService.GetUserByUsername(username);
                 
-                if (user == null || !user.IsActive || user.Role == Explorer.Stakeholders.Core.Domain.UserRole.Administrator)
+                if (user == null || !user.IsActive || user.IsAdministrator)
                     throw new NotFoundException($"User '{username}' not found.");
 
                 if (user.Id == organizerId)
@@ -86,8 +84,6 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 
             foreach (var participantId in participantIds)
             {
-                var participantUser = _userRepository.Get((long)participantId);
-                
                 _notificationService.CreateMessageNotification(
                     userId: participantId,
                     actorId: organizerId,
@@ -147,8 +143,8 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             request.AcceptParticipant(participantId);
             var updated = _requestRepository.Update(request);
 
-            var participantUser = _userRepository.Get((long)participantId);
-            var organizerUser = _userRepository.Get((long)request.OrganizerId);
+            var participantUser = _userInfoService.GetUser(participantId);
+            var organizerUser = _userInfoService.GetUser(request.OrganizerId);
 
             if (participantUser != null && organizerUser != null)
             {
@@ -177,8 +173,8 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             request.RejectParticipant(participantId);
             var updated = _requestRepository.Update(request);
 
-            var participantUser = _userRepository.Get((long)participantId);
-            var organizerUser = _userRepository.Get((long)request.OrganizerId);
+            var participantUser = _userInfoService.GetUser(participantId);
+            var organizerUser = _userInfoService.GetUser(request.OrganizerId);
 
             if (participantUser != null && organizerUser != null)
             {
@@ -277,12 +273,12 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 
         private GroupTravelRequestDto MapToDto(GroupTravelRequest request, int currentUserId)
         {
-            var organizerUser = _userRepository.Get((long)request.OrganizerId);
+            var organizerUser = _userInfoService.GetUser(request.OrganizerId);
 
             var participants = new List<GroupTravelParticipantDto>();
             foreach (var participant in request.Participants)
             {
-                var participantUser = _userRepository.Get((long)participant.TouristId);
+                var participantUser = _userInfoService.GetUser(participant.TouristId);
 
                 participants.Add(new GroupTravelParticipantDto
                 {

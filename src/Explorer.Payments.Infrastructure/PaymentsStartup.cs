@@ -9,8 +9,10 @@ using Explorer.Payments.Core.UseCases;
 using Explorer.Payments.Core.UseCases.Administration;
 using Explorer.Payments.Core.UseCases.Internal;
 using Explorer.Payments.Core.UseCases.Tourist;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Payments.Infrastructure.Database.Repositories;
+using Explorer.Payments.Infrastructure.Internal;
 using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.Core.UseCases.Author;
 using Microsoft.EntityFrameworkCore;
@@ -58,6 +60,8 @@ public static class PaymentsStartup
         services.AddScoped<ICouponRepository, CouponDbRepository>();
         services.AddScoped<IAffiliateCodeRepository, AffiliateCodeDbRepository>();
         services.AddScoped<IGroupTravelRequestRepository, GroupTravelRequestDbRepository>();
+        
+        RegisterAdapters(services);
 
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
@@ -67,5 +71,31 @@ public static class PaymentsStartup
         services.AddDbContext<PaymentsContext>(opt =>
             opt.UseNpgsql(dataSource,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "payments")));
+    }
+
+    private static void RegisterAdapters(IServiceCollection services)
+    {
+        var userServiceType = Type.GetType("Explorer.Stakeholders.API.Public.IUserService, Explorer.Stakeholders.API");
+        var userDiscoveryServiceType = Type.GetType("Explorer.Stakeholders.API.Public.IUserDiscoveryService, Explorer.Stakeholders.API");
+        var notificationServiceType = Type.GetType("Explorer.Stakeholders.API.Public.INotificationService, Explorer.Stakeholders.API");
+        
+        if (userServiceType != null && userDiscoveryServiceType != null)
+        {
+            services.AddScoped(typeof(IUserInfoService), sp =>
+            {
+                var userService = sp.GetRequiredService(userServiceType);
+                var userDiscoveryService = sp.GetRequiredService(userDiscoveryServiceType);
+                return Activator.CreateInstance(typeof(UserInfoServiceAdapter), userService, userDiscoveryService);
+            });
+        }
+        
+        if (notificationServiceType != null)
+        {
+            services.AddScoped(typeof(INotificationServiceInternal), sp =>
+            {
+                var notificationService = sp.GetRequiredService(notificationServiceType);
+                return Activator.CreateInstance(typeof(NotificationServiceAdapter), notificationService);
+            });
+        }
     }
 }

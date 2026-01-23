@@ -3,10 +3,9 @@ using System.Linq;
 using AutoMapper;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
-using Explorer.Stakeholders.API.Public;
-using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.API.Internal;
 
 namespace Explorer.Payments.Core.UseCases.Tourist
@@ -20,8 +19,8 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private readonly ITourInfoService _tourInfoService;
         private readonly IBundlePurchaseService _bundlePurchaseService;
         private readonly IGroupTravelRequestRepository _groupTravelRequestRepository;
-        private readonly INotificationService _notificationService;
-        private readonly IUserRepository _userRepository;
+        private readonly INotificationServiceInternal _notificationService;
+        private readonly IUserInfoService _userInfoService;
         private readonly IMapper _mapper;
 
         public CheckoutService(
@@ -32,8 +31,8 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             ITourInfoService tourInfoService,
             IBundlePurchaseService bundlePurchaseService,
             IGroupTravelRequestRepository groupTravelRequestRepository,
-            INotificationService notificationService,
-            IUserRepository userRepository,
+            INotificationServiceInternal notificationService,
+            IUserInfoService userInfoService,
             IMapper mapper)
         {
             _cartRepository = cartRepository;
@@ -44,7 +43,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             _bundlePurchaseService = bundlePurchaseService;
             _groupTravelRequestRepository = groupTravelRequestRepository;
             _notificationService = notificationService;
-            _userRepository = userRepository;
+            _userInfoService = userInfoService;
             _mapper = mapper;
         }
 
@@ -144,7 +143,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 var organizerPayment = new PaymentRecord(touristId, item.TourId, groupTravelRequest.PricePerPerson);
                 _paymentRecordRepository.Create(organizerPayment);
 
-                var organizerUser = _userRepository.Get((long)touristId);
+                var organizerUser = _userInfoService.GetUser(touristId);
                 foreach (var participantId in acceptedParticipantIds)
                 {
                     if (_tokenRepository.Exists(participantId, item.TourId)) continue;
@@ -156,8 +155,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                     var participantPayment = new PaymentRecord(participantId, item.TourId, groupTravelRequest.PricePerPerson);
                     _paymentRecordRepository.Create(participantPayment);
 
-                    var participantUser = _userRepository.Get((long)participantId);
-                    if (organizerUser != null && participantUser != null)
+                    if (organizerUser != null)
                     {
                         _notificationService.CreateMessageNotification(
                             userId: participantId,

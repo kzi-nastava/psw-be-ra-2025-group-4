@@ -3,14 +3,11 @@ using System.Linq;
 using AutoMapper;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.UseCases.Tourist;
-using Explorer.Stakeholders.API.Dtos;
-using Explorer.Stakeholders.API.Public;
-using Explorer.Stakeholders.Core.Domain;
-using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.API.Internal;
 using Shouldly;
 using Xunit;
@@ -150,111 +147,28 @@ namespace Explorer.Payments.Tests.Unit
             }
         }
 
-        private class NotificationServiceStub : INotificationService
+        private class NotificationServiceStub : INotificationServiceInternal
         {
-            public PagedResult<NotificationDto> GetPaged(long userId, int page, int pageSize)
+            public void CreateMessageNotification(int userId, int actorId, string actorUsername, string content, string? resourceUrl)
             {
-                return new PagedResult<NotificationDto>(new List<NotificationDto>(), 0);
-            }
-
-            public NotificationDto CreateMessageNotification(long userId, long actorId, string actorUsername, string content, string? resourceUrl)
-            {
-                return new NotificationDto();
-            }
-
-            public NotificationDto CreateClubNotification(long userId, string content, long actorId, string actorUsername, long clubId)
-            {
-                return new NotificationDto();
-            }
-
-            public NotificationDto CreateClubJoinRequestResponseNotification(long userId, long actorId, long clubId, string clubName, bool accepted)
-            {
-                return new NotificationDto();
-            }
-
-            public void MarkAsRead(long id)
-            {
-            }
-
-            public void MarkAll(long userId)
-            {
-            }
-
-            public void MarkConversationAsRead(long userId, long actorId)
-            {
-            }
-
-            public NotificationDto CreateFollowNotification(long userId, long actorId, string actorUsername, string resourceUrl)
-            {
-                return new NotificationDto();
             }
         }
 
-        private class UserRepositoryStub : IUserRepository
+        private class UserInfoServiceStub : IUserInfoService
         {
-            public bool Exists(string username)
+            public UserInfo? GetUser(long userId)
+            {
+                return null;
+            }
+
+            public UserInfo? GetUserByUsername(string username)
+            {
+                return null;
+            }
+
+            public bool IsAdministrator(long userId)
             {
                 return false;
-            }
-
-            public User? GetActiveByName(string username)
-            {
-                return null;
-            }
-
-            public User? Get(long userId)
-            {
-                return null;
-            }
-
-            public User Create(User user)
-            {
-                return user;
-            }
-
-            public long GetPersonId(long userId)
-            {
-                return 0;
-            }
-
-            public User Update(User user)
-            {
-                return user;
-            }
-
-            public PagedResult<User> GetPaged(int page, int pageSize)
-            {
-                return new PagedResult<User>(new List<User>(), 0);
-            }
-
-            public User? GetById(long userId)
-            {
-                return null;
-            }
-
-            public IEnumerable<User> GetAllActiveTourists()
-            {
-                return new List<User>();
-            }
-
-            public Person? GetPersonByUserId(long userId)
-            {
-                return null;
-            }
-
-            public IEnumerable<User> SearchByUsername(string username)
-            {
-                return new List<User>();
-            }
-
-            public User? GetByUsername(string username)
-            {
-                return null;
-            }
-
-            public IEnumerable<User> GetAllActiveNonAdmins()
-            {
-                return new List<User>();
             }
         }
 
@@ -282,8 +196,8 @@ namespace Explorer.Payments.Tests.Unit
             var bundlePurchaseService = new BundlePurchaseServiceStub();
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
-            var userRepository = new UserRepositoryStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userRepository, Mapper());
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -304,8 +218,8 @@ namespace Explorer.Payments.Tests.Unit
             var bundlePurchaseService = new BundlePurchaseServiceStub();
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
-            var userRepository = new UserRepositoryStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userRepository, Mapper());
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -329,8 +243,8 @@ namespace Explorer.Payments.Tests.Unit
             var bundlePurchaseService = new BundlePurchaseServiceStub();
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
-            var userRepository = new UserRepositoryStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userRepository, Mapper());
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -353,8 +267,8 @@ namespace Explorer.Payments.Tests.Unit
             var bundlePurchaseService = new BundlePurchaseServiceStub();
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
-            var userRepository = new UserRepositoryStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userRepository, Mapper());
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -376,8 +290,8 @@ namespace Explorer.Payments.Tests.Unit
             var bundlePurchaseService = new BundlePurchaseServiceStub();
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
-            var userRepository = new UserRepositoryStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userRepository, Mapper());
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             svc.Checkout(123);
 
@@ -403,8 +317,8 @@ namespace Explorer.Payments.Tests.Unit
             var bundlePurchaseService = new BundlePurchaseServiceStub();
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
-            var userRepository = new UserRepositoryStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userRepository, Mapper());
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             svc.Checkout(123);
 
