@@ -13,7 +13,24 @@ public class EncountersProfile : Profile
 {
     public EncountersProfile()
     {
-        CreateMap<Encounter, EncounterDto>().ReverseMap();
+        CreateMap<Encounter, EncounterDto>()
+            .Include<HiddenLocationEncounter, EncounterDto>()
+            .Include<SocialEncounter, EncounterDto>();
+
+        CreateMap<HiddenLocationEncounter, EncounterDto>()
+            .IncludeBase<Encounter, EncounterDto>()
+            .ForMember(d => d.ImageUrl, o => o.MapFrom(s => s.ImageUrl))
+            .ForMember(d => d.PhotoPoint, o => o.MapFrom(s => s.PhotoPoint))
+            .ForMember(d => d.ActivationRadiusMeters, o => o.MapFrom(s => s.ActivationRadiusMeters))
+            .ForMember(d => d.MinimumParticipants, o => o.Ignore());
+
+        CreateMap<SocialEncounter, EncounterDto>()
+            .IncludeBase<Encounter, EncounterDto>()
+            .ForMember(d => d.MinimumParticipants, o => o.MapFrom(s => s.MinimumParticipants))
+            .ForMember(d => d.ActivationRadiusMeters, o => o.MapFrom(s => s.ActivationRadiusMeters))
+            .ForMember(d => d.ImageUrl, o => o.Ignore())
+            .ForMember(d => d.PhotoPoint, o => o.Ignore());
+
         CreateMap<Location, LocationDto>().ReverseMap();
         CreateMap<HiddenLocationEncounter, HiddenLocationEncounterDto>().ReverseMap();
         CreateMap<SocialEncounter, SocialEncounterDto>()
@@ -21,6 +38,8 @@ public class EncountersProfile : Profile
         CreateMap<EncounterExecution, EncounterExecutionDto>().ReverseMap();
 
         CreateMap<EncounterParticipant, EncounterParticipantDto>().ReverseMap();
+
+        
 
         CreateMap<Encounter, EncounterViewDto>()
     .Include<HiddenLocationEncounter, EncounterViewDto>()

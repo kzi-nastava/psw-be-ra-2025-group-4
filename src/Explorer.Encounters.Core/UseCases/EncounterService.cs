@@ -135,11 +135,11 @@ namespace Explorer.Encounters.Core.UseCases
                 .Select(_mapper.Map<EncounterDto>);
         }
 
-        public List<EncounterDto> GetByTourPointIds(IEnumerable<int> tourPointIds)
+        public List<EncounterViewDto> GetByTourPointIds(IEnumerable<int> tourPointIds)
         {
             return _encounterRepository
                 .GetByTourPointIds(tourPointIds)
-                .Select(_mapper.Map<EncounterDto>)
+                .Select(_mapper.Map<EncounterViewDto>)
                 .ToList();
         }
 
