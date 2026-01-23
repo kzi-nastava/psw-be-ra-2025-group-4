@@ -1,3 +1,5 @@
+DELETE FROM payments."GroupTravelParticipants";
+DELETE FROM payments."GroupTravelRequests";
 DELETE FROM payments."Coupons";
 DELETE FROM payments."PaymentRecords";
 DELETE FROM payments."TourPurchaseTokens";

@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
@@ -112,6 +114,64 @@ namespace Explorer.Payments.Tests.Unit
             }
         }
 
+        private class GroupTravelRequestRepoStub : IGroupTravelRequestRepository
+        {
+            public List<GroupTravelRequest> GetByOrganizerId(int organizerId)
+            {
+                return new List<GroupTravelRequest>();
+            }
+
+            public List<GroupTravelRequest> GetByParticipantId(int participantId)
+            {
+                return new List<GroupTravelRequest>();
+            }
+
+            public GroupTravelRequest? GetById(int id)
+            {
+                return null;
+            }
+
+            public GroupTravelRequest? GetPendingByParticipantAndTour(int participantId, int tourId)
+            {
+                return null;
+            }
+
+            public GroupTravelRequest Create(GroupTravelRequest request)
+            {
+                return request;
+            }
+
+            public GroupTravelRequest Update(GroupTravelRequest request)
+            {
+                return request;
+            }
+        }
+
+        private class NotificationServiceStub : INotificationServiceInternal
+        {
+            public void CreateMessageNotification(int userId, int actorId, string actorUsername, string content, string? resourceUrl)
+            {
+            }
+        }
+
+        private class UserInfoServiceStub : IUserInfoService
+        {
+            public UserInfo? GetUser(long userId)
+            {
+                return null;
+            }
+
+            public UserInfo? GetUserByUsername(string username)
+            {
+                return null;
+            }
+
+            public bool IsAdministrator(long userId)
+            {
+                return false;
+            }
+        }
+
         private static IMapper Mapper()
         {
             var cfg = new MapperConfiguration(c =>
@@ -134,7 +194,10 @@ namespace Explorer.Payments.Tests.Unit
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -153,7 +216,10 @@ namespace Explorer.Payments.Tests.Unit
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -175,7 +241,10 @@ namespace Explorer.Payments.Tests.Unit
             tourInfoService.SetTourPrice(10, 20m);
             tourInfoService.SetTourPrice(11, 30m);
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -196,7 +265,10 @@ namespace Explorer.Payments.Tests.Unit
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 100m);
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -216,7 +288,10 @@ namespace Explorer.Payments.Tests.Unit
             tourInfoService.SetTourPrice(10, 20m);
             tourInfoService.SetTourPrice(11, 30m);
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             svc.Checkout(123);
 
@@ -240,7 +315,10 @@ namespace Explorer.Payments.Tests.Unit
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
             var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
 
             svc.Checkout(123);
 

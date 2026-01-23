@@ -25,4 +25,19 @@ public class BasePaymentsIntegrationTest : BaseWebIntegrationTest<PaymentsTestFa
             }
         };
     }
+
+    protected static ControllerContext BuildTouristContext(string userId)
+    {
+        return new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim("personId", userId),
+                    new Claim(ClaimTypes.Role, "tourist")
+                }, "test"))
+            }
+        };
+    }
 }
