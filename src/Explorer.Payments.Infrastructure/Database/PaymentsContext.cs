@@ -13,6 +13,7 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<PaymentRecord> PaymentRecords { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
         public DbSet<AffiliateCode> AffiliateCodes { get; set; }
+        public DbSet<GroupTravelRequest> GroupTravelRequests { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -101,6 +102,37 @@ namespace Explorer.Payments.Infrastructure.Database
                 builder.HasIndex(a => a.AuthorId);
             });
 
+            modelBuilder.Entity<GroupTravelRequest>(builder =>
+            {
+                builder.ToTable("GroupTravelRequests");
+                builder.HasKey(r => r.Id);
+                builder.Property(r => r.OrganizerId).IsRequired();
+                builder.Property(r => r.TourId).IsRequired();
+                builder.Property(r => r.TourName).IsRequired();
+                builder.Property(r => r.PricePerPerson).IsRequired().HasColumnType("decimal(18,2)");
+                builder.Property(r => r.Status).IsRequired().HasConversion<int>();
+                builder.Property(r => r.CreatedAt).IsRequired();
+                builder.Property(r => r.CompletedAt).IsRequired(false);
+
+                builder.HasMany(r => r.Participants)
+                    .WithOne()
+                    .HasForeignKey("GroupTravelRequestId")
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                builder.HasIndex(r => r.OrganizerId);
+                builder.HasIndex(r => r.TourId);
+            });
+
+            modelBuilder.Entity<GroupTravelParticipant>(builder =>
+            {
+                builder.ToTable("GroupTravelParticipants");
+                builder.HasKey(p => p.Id);
+                builder.Property(p => p.TouristId).IsRequired();
+                builder.Property(p => p.Status).IsRequired().HasConversion<int>();
+                builder.Property(p => p.RespondedAt).IsRequired(false);
+
+                builder.HasIndex(p => p.TouristId);
+            });
 
             base.OnModelCreating(modelBuilder);
         }

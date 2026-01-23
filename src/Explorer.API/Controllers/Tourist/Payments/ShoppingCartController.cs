@@ -74,8 +74,11 @@ namespace Explorer.API.Controllers.Tourist.Payments
             return Ok(result);
         }
 
-
-
-
+        [HttpPost("{tourId:int}/with-price")]
+        public ActionResult<ShoppingCartDto> AddToCartWithPrice(int tourId, [FromBody] AddToCartWithPriceDto dto)
+        {
+            var result = _shoppingCartService.AddToCartWithPrice(GetTouristId(), tourId, dto.FinalPrice);
+            return Ok(result);
+        }
     }
 }

@@ -5,6 +5,8 @@ using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
+using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.API.Internal;
 
 namespace Explorer.Payments.Core.UseCases.Tourist
@@ -17,6 +19,9 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private readonly IPaymentRecordRepository _paymentRecordRepository;
         private readonly ITourInfoService _tourInfoService;
         private readonly IBundlePurchaseService _bundlePurchaseService;
+        private readonly IGroupTravelRequestRepository _groupTravelRequestRepository;
+        private readonly INotificationService _notificationService;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
         public CheckoutService(
@@ -26,6 +31,9 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             IPaymentRecordRepository paymentRecordRepository,
             ITourInfoService tourInfoService,
             IBundlePurchaseService bundlePurchaseService,
+            IGroupTravelRequestRepository groupTravelRequestRepository,
+            INotificationService notificationService,
+            IUserRepository userRepository,
             IMapper mapper)
         {
             _cartRepository = cartRepository;
@@ -34,6 +42,9 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             _paymentRecordRepository = paymentRecordRepository;
             _tourInfoService = tourInfoService;
             _bundlePurchaseService = bundlePurchaseService;
+            _groupTravelRequestRepository = groupTravelRequestRepository;
+            _notificationService = notificationService;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
 
@@ -52,9 +63,9 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 wallet = _walletRepository.Create(wallet);
             }
 
-            decimal tourTotalPrice = 0;
-            var tourItemsToPurchase = new List<(OrderItem Item, decimal CurrentPrice)>();
+            var tourItemsToPurchase = new List<OrderItem>();
             var bundleItemsToPurchase = new List<OrderItem>();
+            var groupTravelItems = new List<(OrderItem Item, GroupTravelRequest Request)>();
 
             foreach (var item in cart.Items)
             {
@@ -67,40 +78,104 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 {
                     if (_tokenRepository.Exists(touristId, item.TourId)) continue;
 
-                    var tourInfo = _tourInfoService.Get(item.TourId);
-                    decimal currentPrice = tourInfo.Price;
+                    var groupTravelRequest = _groupTravelRequestRepository.GetByOrganizerId(touristId)
+                        .FirstOrDefault(r => r.TourId == item.TourId && r.Status != GroupTravelStatus.Completed && r.Status != GroupTravelStatus.Cancelled);
 
-                    tourTotalPrice += currentPrice;
-                    tourItemsToPurchase.Add((item, currentPrice));
+                    if (groupTravelRequest != null)
+                    {
+                        groupTravelItems.Add((item, groupTravelRequest));
+                        continue;
+                    }
+
+                    tourItemsToPurchase.Add(item);
                 }
             }
 
-            if (tourItemsToPurchase.Count == 0 && bundleItemsToPurchase.Count == 0)
+            if (tourItemsToPurchase.Count == 0 && bundleItemsToPurchase.Count == 0 && groupTravelItems.Count == 0)
             {
                 cart.Clear();
                 _cartRepository.Update(cart);
                 return new List<TourPurchaseTokenDto>();
             }
 
+            decimal tourTotalPrice = tourItemsToPurchase.Sum(item => item.Price);
             decimal bundleTotalPrice = bundleItemsToPurchase.Sum(item => item.Price);
-            decimal totalPrice = tourTotalPrice + bundleTotalPrice;
+            decimal groupTravelTotalPrice = 0;
+            foreach (var (item, groupTravelRequest) in groupTravelItems)
+            {
+                var acceptedParticipantIds = groupTravelRequest.GetAcceptedParticipantIds();
+                var totalParticipants = 1 + acceptedParticipantIds.Count;
+                groupTravelTotalPrice += groupTravelRequest.PricePerPerson * totalParticipants;
+            }
+            decimal totalPrice = tourTotalPrice + bundleTotalPrice + groupTravelTotalPrice;
 
             if (wallet.Balance < totalPrice)
             {
                 throw new System.InvalidOperationException($"Insufficient balance. Required: {totalPrice} AC, Available: {wallet.Balance} AC");
             }
 
-            if (tourTotalPrice > 0)
+            if (totalPrice > 0)
             {
-                wallet.DeductBalance(tourTotalPrice);
+                wallet.DeductBalance(totalPrice);
                 _walletRepository.Update(wallet);
             }
 
             var createdTokens = new List<TourPurchaseTokenDto>();
 
-            foreach (var (item, currentPrice) in tourItemsToPurchase)
+            foreach (var (item, groupTravelRequest) in groupTravelItems)
             {
-                var paymentRecord = new PaymentRecord(touristId, item.TourId, currentPrice);
+                var acceptedParticipantIds = groupTravelRequest.GetAcceptedParticipantIds();
+
+                if (acceptedParticipantIds.Count == 0)
+                {
+                    var paymentRecord = new PaymentRecord(touristId, item.TourId, item.Price);
+                    _paymentRecordRepository.Create(paymentRecord);
+
+                    var token = new TourPurchaseToken(touristId, item.TourId);
+                    var saved = _tokenRepository.Create(token);
+                    createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(saved));
+                    continue;
+                }
+
+                var organizerToken = new TourPurchaseToken(touristId, item.TourId);
+                var savedOrganizerToken = _tokenRepository.Create(organizerToken);
+                createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(savedOrganizerToken));
+
+                var organizerPayment = new PaymentRecord(touristId, item.TourId, groupTravelRequest.PricePerPerson);
+                _paymentRecordRepository.Create(organizerPayment);
+
+                var organizerUser = _userRepository.Get((long)touristId);
+                foreach (var participantId in acceptedParticipantIds)
+                {
+                    if (_tokenRepository.Exists(participantId, item.TourId)) continue;
+
+                    var participantToken = new TourPurchaseToken(participantId, item.TourId);
+                    var savedParticipantToken = _tokenRepository.Create(participantToken);
+                    createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(savedParticipantToken));
+
+                    var participantPayment = new PaymentRecord(participantId, item.TourId, groupTravelRequest.PricePerPerson);
+                    _paymentRecordRepository.Create(participantPayment);
+
+                    var participantUser = _userRepository.Get((long)participantId);
+                    if (organizerUser != null && participantUser != null)
+                    {
+                        _notificationService.CreateMessageNotification(
+                            userId: participantId,
+                            actorId: touristId,
+                            actorUsername: organizerUser.Username,
+                            content: $"{organizerUser.Username} has completed the group travel for tour '{groupTravelRequest.TourName}'. The tour is now in your collection!",
+                            resourceUrl: "/tour-execution/purchased-tours"
+                        );
+                    }
+                }
+
+                groupTravelRequest.Complete();
+                _groupTravelRequestRepository.Update(groupTravelRequest);
+            }
+
+            foreach (var item in tourItemsToPurchase)
+            {
+                var paymentRecord = new PaymentRecord(touristId, item.TourId, item.Price);
                 _paymentRecordRepository.Create(paymentRecord);
 
                 var token = new TourPurchaseToken(touristId, item.TourId);
