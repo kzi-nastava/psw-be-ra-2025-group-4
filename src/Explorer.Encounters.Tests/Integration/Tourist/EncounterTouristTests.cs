@@ -1,5 +1,6 @@
 ﻿using Explorer.API.Controllers.Administrator.Administration;
 using Explorer.API.Controllers.Tourist.Encounters;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public.Administration;
@@ -35,7 +36,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
 
             // Assert
             result.ShouldNotBeNull();
-            result.Count().ShouldBe(2);
+            result.Count().ShouldBe(4);
         }
 
         [Fact]
@@ -247,6 +248,117 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
 
             execution2.ShouldNotBeNull();
             execution2.Status.ShouldBe(EncounterExecutionStatus.Completed);
+        }
+
+
+        [Fact]
+        public void get_by_tourist_returns_encounters_for_given_tourist()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            // Act
+            var result = service.GetByTourist(-21).ToList();
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Count.ShouldBeGreaterThan(0);
+        }
+
+        [Fact]
+        public void get_by_tour_point_returns_encounters()
+        {
+            // Arrange
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            var touristLocation = new LocationDto
+            {
+                Latitude = 45.2671,
+                Longitude = 19.8335
+            };
+
+            // Act
+            var result = service.GetByTourPoint(
+                touristId: -21,
+                tourPointId: -1,
+                touristLocation: touristLocation);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.ShouldBeOfType<List<EncounterViewDto>>();
+            result.Count.ShouldBeGreaterThan(0);
+        }
+
+        [Fact]
+        public void CompleteEncounter_Throws_When_EncounterNotFound()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            Should.Throw<NotFoundException>(() =>
+                service.CompleteEncounter(touristId: -21, encounterId: -999));
+        }
+
+
+        [Fact]
+        public void CompleteEncounter_Throws_When_ExecutionNotFound()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            Should.Throw<NotFoundException>(() =>
+                service.CompleteEncounter(touristId: -21, encounterId: -1));
+        }
+
+        [Fact]
+        public void CompleteEncounter_Throws_When_EncounterNotMisc()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            var executionRepo = scope.ServiceProvider.GetRequiredService<IEncounterExecutionRepository>();
+            executionRepo.Create(new EncounterExecution(-23, -5));
+
+            Should.Throw<ArgumentException>(() =>
+                service.CompleteEncounter(touristId: -23, encounterId: -5));
+        }
+
+
+        [Fact]
+        public void CompleteEncounter_Throws_When_AlreadyCompleted()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            var executionRepo = scope.ServiceProvider.GetRequiredService<IEncounterExecutionRepository>();
+            var execution = new EncounterExecution(-21, -3);
+            execution.Complete();
+            executionRepo.Create(execution);
+
+            Should.Throw<InvalidOperationException>(() =>
+                service.CompleteEncounter(touristId: -21, encounterId: -3));
+        }
+
+        [Fact]
+        public void CompleteEncounter_CompletesSuccessfully_When_ValidMiscEncounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            var executionRepo = scope.ServiceProvider.GetRequiredService<IEncounterExecutionRepository>();
+            var participantRepo = scope.ServiceProvider.GetRequiredService<IEncounterParticipantRepository>();
+
+            executionRepo.Create(new EncounterExecution(-23, -4));
+
+            var result = service.CompleteEncounter(-23, -4);
+
+            result.ShouldNotBeNull();
+            result.IsCompleted.ShouldBeTrue();
+            result.ExperiencePointsGained.ShouldBe(150); 
+
+            var participant = participantRepo.Get(-23);
+            participant.ExperiencePoints.ShouldBeGreaterThanOrEqualTo(200);
         }
 
         private static TouristEncountersController CreateController(IServiceScope scope, string userId = "-21")
