@@ -63,20 +63,17 @@ namespace Explorer.API.Controllers.Tourist.Payments
                 var buyerTouristId = GetTouristId();
                 var result = _giftCardService.PurchaseGiftCard(buyerTouristId, request);
 
-                if (result.RecipientTouristId.HasValue)
-                {
-                    var content = "You have received a gift card! You can use it to purchase Coins Bundles.";
-                    var notification = _notificationService.CreateMessageNotification(
-                        userId: result.RecipientTouristId.Value,
-                        actorId: -1,
-                        actorUsername: "System",
-                        content: content,
-                        resourceUrl: "/tourist/coins-bundles"
-                    );
-                    await _hubContext.Clients
-                        .Group($"user_{result.RecipientTouristId.Value}")
-                        .SendAsync("ReceiveNotification", notification);
-                }
+                var content = "You have received a gift card! You can use it to purchase Coins Bundles.";
+                var notification = _notificationService.CreateMessageNotification(
+                    userId: result.RecipientTouristId,
+                    actorId: -1,
+                    actorUsername: "System",
+                    content: content,
+                    resourceUrl: "/tourist/coins-bundles"
+                );
+                await _hubContext.Clients
+                    .Group($"user_{result.RecipientTouristId}")
+                    .SendAsync("ReceiveNotification", notification);
 
                 return Ok(result);
             }

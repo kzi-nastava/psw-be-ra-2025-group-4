@@ -171,7 +171,7 @@ namespace Explorer.Payments.Tests.Integration
             dto.Amount.ShouldBe(25m);
             dto.Balance.ShouldBe(25m);
             dto.Code.Length.ShouldBeGreaterThanOrEqualTo(10);
-            dto.RecipientTouristId.ShouldNotBeNull();
+            dto.RecipientTouristId.ShouldBeGreaterThan(0);
 
             paymentsDb.GiftCards.Any(g => g.Code == dto.Code && g.BuyerTouristId == -1).ShouldBeTrue();
         }

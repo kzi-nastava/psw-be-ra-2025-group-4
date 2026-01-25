@@ -10,6 +10,6 @@ namespace Explorer.Payments.API.Dtos
         public decimal Balance { get; set; }
         public DateTime PurchasedAt { get; set; }
         public string? SenderUsername { get; set; }
-        public int? RecipientTouristId { get; set; }
+        public int RecipientTouristId { get; set; }
     }
 }
