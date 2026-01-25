@@ -78,6 +78,7 @@ namespace Explorer.Tours.Core.Mappers
             CreateMap<TourReviewDTO, TourReview>().ReverseMap();
             CreateMap<TourReview, TourReviewDTO>();
             CreateMap<MysteryTourOffer, MysteryTourOfferDto>();
+            CreateMap<FavoriteTour, FavoriteTourDto>().ReverseMap();
         }
     }
 }
