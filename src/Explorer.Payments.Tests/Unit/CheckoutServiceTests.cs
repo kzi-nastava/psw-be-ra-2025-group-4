@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Explorer.BuildingBlocks.Core.UseCases;
@@ -162,6 +162,11 @@ namespace Explorer.Payments.Tests.Unit
             }
 
             public UserInfo? GetUserByUsername(string username)
+            {
+                return null;
+            }
+
+            public long? GetPersonIdByUsername(string username)
             {
                 return null;
             }
