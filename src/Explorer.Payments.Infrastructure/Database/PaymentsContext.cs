@@ -1,4 +1,4 @@
-﻿using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Core.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Payments.Infrastructure.Database
@@ -17,6 +17,7 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<CoinsBundle> CoinsBundles { get; set; }
         public DbSet<CoinsBundleSale> CoinsBundleSales { get; set; }
         public DbSet<CoinsBundlePurchase> CoinsBundlePurchases { get; set; }
+        public DbSet<GiftCard> GiftCards { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -149,6 +150,20 @@ namespace Explorer.Payments.Infrastructure.Database
             modelBuilder.Entity<CoinsBundlePurchase>().Property(p => p.PricePaid).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<CoinsBundlePurchase>().Property(p => p.OriginalPrice).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<CoinsBundlePurchase>().Property(p => p.TransactionId).IsRequired().HasMaxLength(50);
+
+            modelBuilder.Entity<GiftCard>(builder =>
+            {
+                builder.ToTable("GiftCards");
+                builder.HasKey(g => g.Id);
+                builder.Property(g => g.Code).IsRequired().HasMaxLength(20);
+                builder.Property(g => g.RecipientTouristId).IsRequired();
+                builder.Property(g => g.Amount).HasColumnType("decimal(18,2)");
+                builder.Property(g => g.Balance).HasColumnType("decimal(18,2)");
+                builder.Property(g => g.BuyerTouristId).IsRequired();
+                builder.Property(g => g.PurchasedAt).IsRequired();
+                builder.HasIndex(g => g.Code).IsUnique();
+                builder.HasIndex(g => g.RecipientTouristId);
+            });
 
             modelBuilder.Entity<CoinsBundle>().HasData(
                 new

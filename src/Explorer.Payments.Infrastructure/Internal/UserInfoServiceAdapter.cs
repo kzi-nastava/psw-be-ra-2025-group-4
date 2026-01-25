@@ -6,11 +6,13 @@ namespace Explorer.Payments.Infrastructure.Internal
     {
         private readonly object _userService;
         private readonly object _userDiscoveryService;
+        private readonly object? _personIdResolver;
 
-        public UserInfoServiceAdapter(object userService, object userDiscoveryService)
+        public UserInfoServiceAdapter(object userService, object userDiscoveryService, object? personIdResolver = null)
         {
             _userService = userService;
             _userDiscoveryService = userDiscoveryService;
+            _personIdResolver = personIdResolver;
         }
 
         public UserInfo? GetUser(long userId)
@@ -53,6 +55,16 @@ namespace Explorer.Payments.Infrastructure.Internal
 
             var userId = (long)(foundUser.GetType().GetProperty("UserId")?.GetValue(foundUser) ?? 0L);
             return GetUser(userId);
+        }
+
+        public long? GetPersonIdByUsername(string username)
+        {
+            var user = GetUserByUsername(username);
+            if (user == null || _personIdResolver == null) return null;
+            var method = _personIdResolver.GetType().GetMethod("GetPersonId");
+            if (method == null) return null;
+            var result = method.Invoke(_personIdResolver, new object[] { user.Id });
+            return result is long l ? l : null;
         }
 
         public bool IsAdministrator(long userId)

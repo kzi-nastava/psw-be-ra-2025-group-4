@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
@@ -15,6 +15,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private readonly ICoinsBundleSaleRepository _saleRepository;
         private readonly ICoinsBundlePurchaseRepository _purchaseRepository;
         private readonly IWalletRepository _walletRepository;
+        private readonly IGiftCardRepository _giftCardRepository;
         private readonly IMapper _mapper;
 
         public CoinsBundleService(
@@ -22,12 +23,14 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             ICoinsBundleSaleRepository saleRepository,
             ICoinsBundlePurchaseRepository purchaseRepository,
             IWalletRepository walletRepository,
+            IGiftCardRepository giftCardRepository,
             IMapper mapper)
         {
             _bundleRepository = bundleRepository;
             _saleRepository = saleRepository;
             _purchaseRepository = purchaseRepository;
             _walletRepository = walletRepository;
+            _giftCardRepository = giftCardRepository;
             _mapper = mapper;
         }
 
@@ -98,6 +101,19 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             if (activeSale != null && activeSale.IsCurrentlyActive())
             {
                 finalPrice = activeSale.CalculateDiscountedPrice(bundle.Price);
+            }
+
+            if (paymentMethod == PaymentMethod.GiftCard)
+            {
+                var giftCard = _giftCardRepository.GetByCode(request.GiftCardCode!.Trim());
+                if (giftCard == null)
+                    throw new ArgumentException("Gift card not found.");
+                if (giftCard.RecipientTouristId != touristId)
+                    throw new ArgumentException("This gift card does not belong to you.");
+                if (giftCard.Balance < finalPrice)
+                    throw new ArgumentException("Insufficient gift card balance.");
+                giftCard.Deduct(finalPrice);
+                _giftCardRepository.Update(giftCard);
             }
 
             var transactionId = GenerateTransactionId(paymentMethod);

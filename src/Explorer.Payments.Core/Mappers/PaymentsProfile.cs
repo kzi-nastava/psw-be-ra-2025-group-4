@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.Core.Domain;
 
@@ -29,5 +29,7 @@ public class PaymentsProfile : Profile
             .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod.ToString()))
             .ReverseMap();
 
+        CreateMap<GiftCard, GiftCardDto>()
+            .ForMember(dest => dest.SenderUsername, opt => opt.Ignore());
     }
 }

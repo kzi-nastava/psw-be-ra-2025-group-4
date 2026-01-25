@@ -174,6 +174,12 @@ namespace Explorer.Payments.Tests.Unit
                 return _usersByUsername.ContainsKey(username) ? _usersByUsername[username] : null;
             }
 
+            public long? GetPersonIdByUsername(string username)
+            {
+                var u = GetUserByUsername(username);
+                return u != null ? u.Id : null;
+            }
+
             public bool IsAdministrator(long userId)
             {
                 return _users.ContainsKey(userId) && _users[userId].IsAdministrator;
