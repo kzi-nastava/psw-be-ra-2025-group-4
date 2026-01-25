@@ -4,7 +4,7 @@ namespace Explorer.Payments.API.Dtos
     {
         public string RecipientUsername { get; set; } = "";
         public decimal Amount { get; set; }
-        public string PaymentMethod { get; set; } = ""; // "CreditCard" | "PayPal"
+        public string PaymentMethod { get; set; } = ""; 
 
         public string? CardNumber { get; set; }
         public string? CardHolderName { get; set; }

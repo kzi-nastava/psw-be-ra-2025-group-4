@@ -4,7 +4,6 @@ namespace Explorer.Payments.API.Internal
     {
         UserInfo? GetUser(long userId);
         UserInfo? GetUserByUsername(string username);
-        /// <summary>Returns the person id (tourist id in payments) for the given username, or null if not found.</summary>
         long? GetPersonIdByUsername(string username);
         bool IsAdministrator(long userId);
     }

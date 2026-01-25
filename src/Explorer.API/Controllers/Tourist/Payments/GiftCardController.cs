@@ -39,7 +39,7 @@ namespace Explorer.API.Controllers.Tourist.Payments
             throw new Exception("No user id found");
         }
 
-        /// <summary>Returns gift cards received by the current user (with balance &gt; 0). Use for dropdown when paying with gift card.</summary>
+        
         [HttpGet]
         public ActionResult<List<GiftCardDto>> GetMyGiftCards()
         {

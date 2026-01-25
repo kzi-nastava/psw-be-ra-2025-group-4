@@ -3,9 +3,6 @@ using Explorer.BuildingBlocks.Core.Domain;
 
 namespace Explorer.Payments.Core.Domain
 {
-    /// <summary>
-    /// Gift card purchased for another user. Amount and Balance are in real currency (e.g. EUR).
-    /// </summary>
     public class GiftCard : Entity
     {
         public string Code { get; private set; }
