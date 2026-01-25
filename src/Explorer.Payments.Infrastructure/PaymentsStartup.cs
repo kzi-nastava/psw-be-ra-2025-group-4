@@ -45,6 +45,7 @@ public static class PaymentsStartup
         services.AddScoped<ICartPricingService, ShoppingCartService>();
         services.AddScoped<IBundlePurchaseService, BundlePurchaseService>();
         services.AddScoped<IAffiliateCodeService, AffiliateCodeService>();
+        services.AddScoped<ITouristReferralInviteService, TouristReferralInviteService>();
         services.AddScoped<IGroupTravelService, GroupTravelService>();
         services.AddScoped<ICoinsBundleService, CoinsBundleService>();
         services.AddScoped<ICoinsBundleSaleService, CoinsBundleSaleService>();
@@ -61,7 +62,9 @@ public static class PaymentsStartup
         services.AddScoped<ICouponRepository, CouponDbRepository>();
         services.AddScoped<IAffiliateCodeRepository, AffiliateCodeDbRepository>();
         services.AddScoped<IGroupTravelRequestRepository, GroupTravelRequestDbRepository>();
-        
+        services.AddScoped<ITouristReferralInviteRepository, TouristReferralInviteDbRepository>();
+
+
         RegisterAdapters(services);
 
         services.AddScoped<ICoinsBundleRepository, CoinsBundleDbRepository>();

@@ -17,6 +17,8 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<CoinsBundle> CoinsBundles { get; set; }
         public DbSet<CoinsBundleSale> CoinsBundleSales { get; set; }
         public DbSet<CoinsBundlePurchase> CoinsBundlePurchases { get; set; }
+        public DbSet<TouristReferralInvite> TouristReferralInvites { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -104,6 +106,20 @@ namespace Explorer.Payments.Infrastructure.Database
                 builder.HasIndex(a => a.Code).IsUnique();
                 builder.HasIndex(a => a.AuthorId);
             });
+            modelBuilder.Entity<TouristReferralInvite>(builder =>
+            {
+                builder.ToTable("TouristReferralInvites");
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.Code).IsRequired().HasMaxLength(16);
+                builder.HasIndex(x => x.Code).IsUnique();
+                builder.Property(x => x.ReferrerTouristId).IsRequired();
+                builder.Property(x => x.IsUsed).IsRequired();
+                builder.Property(x => x.ReferredTouristId).IsRequired(false);
+                builder.Property(x => x.CreatedAtUtc).IsRequired();
+                builder.Property(x => x.UsedAtUtc).IsRequired(false);
+                builder.HasIndex(x => x.ReferrerTouristId);
+            });
+
 
             modelBuilder.Entity<GroupTravelRequest>(builder =>
             {
