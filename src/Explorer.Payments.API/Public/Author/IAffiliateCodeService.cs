@@ -7,5 +7,6 @@ namespace Explorer.Payments.API.Public.Author
     {
         AffiliateCodeDto Create(CreateAffiliateCodeDto dto, int authorId);
         List<AffiliateCodeDto> GetAll(int authorId, int? tourId = null);
+        void Deactivate(int authorId, int affiliateCodeId);
     }
 }

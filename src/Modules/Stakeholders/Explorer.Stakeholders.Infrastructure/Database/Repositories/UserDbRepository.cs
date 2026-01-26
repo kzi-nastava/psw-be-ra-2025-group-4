@@ -115,5 +115,16 @@ public class UserDbRepository : IUserRepository
             .ToList();
     }
 
+    public IEnumerable<User> GetTourists(bool onlyActive)
+    {
+        var query = _dbContext.Users
+            .Where(u => u.Role == UserRole.Tourist);
+
+        if (onlyActive)
+            query = query.Where(u => u.IsActive);
+
+        return query.ToList();
+    }
+
 
 }

@@ -31,6 +31,16 @@ namespace Explorer.Payments.Infrastructure.Database.Repositories
             return q.ToList();
         }
 
+        public AffiliateCode? GetById(int id)
+        {
+            return _dbContext.AffiliateCodes.FirstOrDefault(x => x.Id == id);
+        }
+
+        public void SaveChanges()
+        {
+            _dbContext.SaveChanges();
+        }
+
         public bool CodeExists(string code)
         {
             return _dbContext.AffiliateCodes.Any(x => x.Code == code);
