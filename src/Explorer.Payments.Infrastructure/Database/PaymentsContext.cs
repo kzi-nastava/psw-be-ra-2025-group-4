@@ -100,10 +100,16 @@ namespace Explorer.Payments.Infrastructure.Database
                 builder.Property(a => a.TourId).IsRequired(false);
                 builder.Property(a => a.CreatedAt).IsRequired();
                 builder.Property(a => a.Active).IsRequired();
-
+                builder.Property(a => a.AffiliateTouristId).IsRequired();
+                builder.Property(a => a.Percent).IsRequired().HasColumnType("decimal(5,2)");
+                builder.Property(a => a.ExpiresAt).IsRequired(false);
+                builder.Property(a => a.UsageCount).IsRequired().HasDefaultValue(0);
+                builder.Property(a => a.DeactivatedAt).IsRequired(false);
                 builder.HasIndex(a => a.Code).IsUnique();
                 builder.HasIndex(a => a.AuthorId);
+                builder.HasIndex(a => a.AffiliateTouristId);
             });
+
 
             modelBuilder.Entity<GroupTravelRequest>(builder =>
             {

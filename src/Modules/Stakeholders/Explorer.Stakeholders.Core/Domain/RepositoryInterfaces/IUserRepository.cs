@@ -17,5 +17,6 @@ public interface IUserRepository
     IEnumerable<User> SearchByUsername(string username);
     User? GetByUsername(string username);
     IEnumerable<User> GetAllActiveNonAdmins();
+    IEnumerable<User> GetTourists(bool onlyActive);
 
 }
