@@ -10,3 +10,4 @@ DELETE FROM payments."AffiliateCodes";
 DELETE FROM payments."CoinsBundlePurchases";
 DELETE FROM payments."CoinsBundleSales";
 DELETE FROM payments."CoinsBundles";
+DELETE FROM payments."TouristReferralInvites";

@@ -18,7 +18,6 @@ namespace Explorer.Payments.Core.Domain
         public TouristReferralInvite(string code, long referrerTouristId)
         {
             if (string.IsNullOrWhiteSpace(code)) throw new ArgumentException("Code is required.", nameof(code));
-            if (referrerTouristId <= 0) throw new ArgumentException("Invalid referrer id.", nameof(referrerTouristId));
 
             Code = code;
             ReferrerTouristId = referrerTouristId;
@@ -28,7 +27,6 @@ namespace Explorer.Payments.Core.Domain
 
         public void Consume(long referredTouristId)
         {
-            if (referredTouristId <= 0) throw new ArgumentException("Invalid referred id.", nameof(referredTouristId));
             if (IsUsed) throw new InvalidOperationException("Referral code already used.");
             if (referredTouristId == ReferrerTouristId) throw new InvalidOperationException("Self-referral is not allowed.");
 
