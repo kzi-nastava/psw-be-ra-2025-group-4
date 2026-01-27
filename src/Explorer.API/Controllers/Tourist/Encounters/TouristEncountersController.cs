@@ -134,6 +134,24 @@ namespace Explorer.API.Controllers.Tourist.Encounters
             return Ok(result);
         }
 
+        [HttpPost("quiz")]
+        public ActionResult<QuizEncounterDto> CreateQuiz([FromBody] QuizEncounterDto dto)
+        {
+            if (_encounterParticipantService.GetLevel(GetTouristId()) < 10)
+                throw new InvalidOperationException("You have to be atleast level 10 to create encounters!");
+            var result = _encounterService.CreateQuiz(dto, false);
+
+            return Ok(result);
+        }
+
+        [HttpPut("quiz/{id:int}")]
+        public ActionResult<QuizEncounterDto> UpdateQuiz([FromBody] QuizEncounterDto dto, int id)
+        {
+            dto.Id = id;
+            var result = _encounterService.UpdateQuiz(dto, id);
+            return Ok(result);
+        }
+
         [HttpPut("misc/{id:long}")]
         public ActionResult<EncounterDto> UpdateMisc(long id, [FromBody] EncounterUpdateDto dto)
         {
