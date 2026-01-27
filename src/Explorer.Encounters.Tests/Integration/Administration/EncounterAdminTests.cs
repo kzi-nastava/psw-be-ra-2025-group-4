@@ -22,11 +22,11 @@ namespace Explorer.Encounters.Tests.Integration.Administration
             var controller = CreateController(scope);
 
             // Act
-            var result = ((ObjectResult)controller.GetPaged(0, 10).Result)?.Value as PagedResult<EncounterDto>;
+            var result = ((ObjectResult)controller.GetPaged(0, 10).Result)?.Value as PagedResult<EncounterViewDto>;
 
             // Assert
             result.ShouldNotBeNull();
-            result.Results.Count.ShouldBe(7);
+            result.Results.Count.ShouldBe(8);
         }
 
         [Fact]

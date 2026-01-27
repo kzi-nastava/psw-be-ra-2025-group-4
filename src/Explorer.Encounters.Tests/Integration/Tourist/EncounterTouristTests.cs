@@ -361,6 +361,130 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
             participant.ExperiencePoints.ShouldBeGreaterThanOrEqualTo(200);
         }
 
+        [Fact]
+        public void can_create_quiz_encounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var dto = new QuizEncounterDto
+            {
+                Name = "Quiz Encounter",
+                Description = "Quiz description",
+                ExperiencePoints = 100,
+                TimeLimit = 60,
+                Location = new LocationDto
+                {
+                    Latitude = 45.2671,
+                    Longitude = 19.8335
+                },
+                Questions = new List<QuizQuestionDto>
+        {
+            new QuizQuestionDto
+            {
+                Text = "What is 2 + 2?",
+                Answers = new List<QuizAnswerDto>
+                {
+                    new QuizAnswerDto { Text = "4", IsCorrect = true },
+                    new QuizAnswerDto { Text = "5", IsCorrect = false }
+                }
+            }
+        }
+            };
+
+            // Act
+            var actionResult = controller.CreateQuiz(dto);
+            var okResult = actionResult.Result as OkObjectResult;
+
+            // Assert
+            okResult.ShouldNotBeNull();
+
+            var created = okResult.Value as QuizEncounterDto;
+            created.ShouldNotBeNull();
+            created.Name.ShouldBe("Quiz Encounter");
+            created.TimeLimit.ShouldBe(60);
+            created.Questions.Count.ShouldBe(1);
+            created.Questions.First().Answers.Any(a => a.IsCorrect).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void can_update_quiz_encounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var dto = new QuizEncounterDto
+            {
+                Id = -6,
+                Name = "Updated Quiz",
+                Description = "Updated description",
+                ExperiencePoints = 200,
+                TimeLimit = 120,
+                Location = new LocationDto
+                {
+                    Latitude = 45.3000,
+                    Longitude = 19.8000
+                },
+                Questions = new List<QuizQuestionDto>
+        {
+            new QuizQuestionDto
+            {
+                Text = "Updated question?",
+                Answers = new List<QuizAnswerDto>
+                {
+                    new QuizAnswerDto { Text = "Yes", IsCorrect = true },
+                    new QuizAnswerDto { Text = "No", IsCorrect = false }
+                }
+            }
+        }
+            };
+
+            // Act
+            var actionResult = controller.UpdateQuiz(dto, -6);
+            var okResult = actionResult.Result as OkObjectResult;
+
+            // Assert
+            okResult.ShouldNotBeNull();
+
+            var updated = okResult.Value as QuizEncounterDto;
+            updated.ShouldNotBeNull();
+            updated.Name.ShouldBe("Updated Quiz");
+            updated.TimeLimit.ShouldBe(120);
+            updated.Questions.Single().Text.ShouldBe("Updated question?");
+        }
+
+        [Fact]
+        public void create_quiz_fails_when_no_correct_answer()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var dto = new QuizEncounterDto
+            {
+                Name = "Invalid Quiz",
+                Description = "No correct answers",
+                ExperiencePoints = 50,
+                TimeLimit = 30,
+                Location = new LocationDto { Latitude = 45, Longitude = 19 },
+                Questions = new List<QuizQuestionDto>
+        {
+            new QuizQuestionDto
+            {
+                Text = "Invalid?",
+                Answers = new List<QuizAnswerDto>
+                {
+                    new QuizAnswerDto { Text = "A", IsCorrect = false },
+                    new QuizAnswerDto { Text = "B", IsCorrect = false }
+                }
+            }
+        }
+            };
+
+            Should.Throw<ArgumentException>(() => controller.CreateQuiz(dto));
+        }
+
+
+
         private static TouristEncountersController CreateController(IServiceScope scope, string userId = "-21")
         {
             return new TouristEncountersController(
