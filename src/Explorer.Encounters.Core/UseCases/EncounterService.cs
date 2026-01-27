@@ -66,6 +66,36 @@ namespace Explorer.Encounters.Core.UseCases
             return _mapper.Map<HiddenLocationEncounterDto>(created);
         }
 
+        public QuizEncounterDto CreateQuiz(QuizEncounterDto dto, bool needsApproval)
+        {
+            var quiz = new QuizEncounter(dto.Name,
+                dto.Description,
+                _mapper.Map<Location>(dto.Location),
+                dto.ExperiencePoints,
+                needsApproval ? EncounterApprovalStatus.PENDING : EncounterApprovalStatus.APPROVED,
+                dto.Questions.Select(question => _mapper.Map<QuizQuestion>(question)).ToList(),
+                dto.TimeLimit);
+
+            var created = _encounterRepository.Create(quiz) as QuizEncounter;
+            return _mapper.Map<QuizEncounterDto>(created);
+        }
+
+        public QuizEncounterDto UpdateQuiz(QuizEncounterDto dto, int encounterId)
+        {
+            var quiz = GetEncounterOrThrow<QuizEncounter>(encounterId);
+
+            quiz.UpdateQuiz(
+                dto.Name,
+                dto.Description,
+                _mapper.Map<Location>(dto.Location),
+                dto.ExperiencePoints,
+                dto.Questions.Select(question => _mapper.Map<QuizQuestion>(question)).ToList(),
+                dto.TimeLimit);
+
+            return _mapper.Map<QuizEncounterDto>(_encounterRepository.Update(quiz));
+
+        }
+
         public EncounterDto Update(EncounterUpdateDto dto, int encounterId)
         {
             var encounter = GetEncounterOrThrow(encounterId);
@@ -120,12 +150,18 @@ namespace Explorer.Encounters.Core.UseCases
             _encounterRepository.Delete(id);
         }
 
-        public PagedResult<EncounterDto> GetPaged(int page, int pageSize)
+        public PagedResult<EncounterViewDto> GetPaged(int page, int pageSize)
         {
             var paged = _encounterRepository.GetPaged(page, pageSize);
-            var mapped = paged.Results.Select(_mapper.Map<EncounterDto>).ToList();
 
-            return new PagedResult<EncounterDto>(mapped, paged.Results.Count);
+            if (paged == null || paged.Results == null)
+            {
+                return new PagedResult<EncounterViewDto>(new List<EncounterViewDto>(), 0);
+            }
+
+            var mapped = paged.Results.Select(_mapper.Map<EncounterViewDto>).ToList();
+
+            return new PagedResult<EncounterViewDto>(mapped, paged.TotalCount);
         }
 
         public IEnumerable<EncounterDto> GetActive()

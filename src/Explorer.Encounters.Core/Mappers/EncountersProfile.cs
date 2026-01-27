@@ -15,7 +15,12 @@ public class EncountersProfile : Profile
     {
         CreateMap<Encounter, EncounterDto>()
             .Include<HiddenLocationEncounter, EncounterDto>()
-            .Include<SocialEncounter, EncounterDto>();
+            .Include<SocialEncounter, EncounterDto>()
+            .Include<QuizEncounter, QuizEncounterDto>();
+
+        CreateMap<EncounterDto, Encounter>();
+
+
 
         CreateMap<HiddenLocationEncounter, EncounterDto>()
             .IncludeBase<Encounter, EncounterDto>()
@@ -30,6 +35,12 @@ public class EncountersProfile : Profile
             .ForMember(d => d.ActivationRadiusMeters, o => o.MapFrom(s => s.ActivationRadiusMeters))
             .ForMember(d => d.ImageUrl, o => o.Ignore())
             .ForMember(d => d.PhotoPoint, o => o.Ignore());
+
+        CreateMap<QuizAnswer, QuizAnswerDto>().ReverseMap();
+        CreateMap<QuizQuestion, QuizQuestionDto>().ReverseMap();
+        CreateMap<QuizEncounter, QuizEncounterDto>()
+            .IncludeBase<Encounter, EncounterDto>()
+            .ReverseMap();
 
         CreateMap<Location, LocationDto>().ReverseMap();
         CreateMap<HiddenLocationEncounter, HiddenLocationEncounterDto>().ReverseMap();
@@ -99,5 +110,9 @@ public class EncountersProfile : Profile
             .ForMember(d => d.PhotoPoint,
                 m => m.MapFrom(_ => (LocationDto?)null));
 
+        CreateMap<QuizEncounter, EncounterViewDto>()
+            .ForMember(d => d.Questions,
+                           m => m.MapFrom(s => s.Questions.SelectMany(q => q.Answers).ToList()))
+            .ForMember(d => d.TimeLimit, m => m.MapFrom(s => s.TimeLimit));
     }
 }
