@@ -18,7 +18,8 @@ namespace Explorer.Encounters.Core.Domain
     {
         Social,
         Location,
-        Misc
+        Misc,
+        Quiz
     }
 
     public enum EncounterApprovalStatus
@@ -114,7 +115,7 @@ namespace Explorer.Encounters.Core.Domain
             IsRequiredForPointCompletion = isRequiredForPointCompletion;
         }
 
-        private void Validate()
+        protected void Validate()
         {
             if (string.IsNullOrWhiteSpace(Name))
                 throw new ArgumentException("Encounter name cannot be empty.");
