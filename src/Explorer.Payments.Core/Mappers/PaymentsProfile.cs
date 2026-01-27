@@ -1,6 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Explorer.Payments.API.Dtos;
-using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain;
 
 
@@ -22,5 +21,15 @@ public class PaymentsProfile : Profile
         CreateMap<Coupon, CouponResponseDto>();
         CreateMap<CouponCreateDto, Coupon>();
         CreateMap<CouponUpdateDto, Coupon>();
+        CreateMap<AffiliateCode, AffiliateCodeDto>();
+
+        CreateMap<CoinsBundle, CoinsBundleDto>().ReverseMap();
+        CreateMap<CoinsBundleSale, CoinsBundleSaleDto>().ReverseMap();
+        CreateMap<CoinsBundlePurchase, CoinsBundlePurchaseDto>()
+            .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod.ToString()))
+            .ReverseMap();
+
+        CreateMap<GiftCard, GiftCardDto>()
+            .ForMember(dest => dest.SenderUsername, opt => opt.Ignore());
     }
 }

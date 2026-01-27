@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Explorer.BuildingBlocks.Tests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +21,21 @@ public class BasePaymentsIntegrationTest : BaseWebIntegrationTest<PaymentsTestFa
                 {
                     new Claim("personId", userId),
                     new Claim(ClaimTypes.Role, "author")
+                }, "test"))
+            }
+        };
+    }
+
+    protected static ControllerContext BuildTouristContext(string userId)
+    {
+        return new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim("personId", userId),
+                    new Claim(ClaimTypes.Role, "tourist")
                 }, "test"))
             }
         };

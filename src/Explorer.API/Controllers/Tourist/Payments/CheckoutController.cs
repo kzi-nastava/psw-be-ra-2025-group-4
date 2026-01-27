@@ -41,6 +41,21 @@ namespace Explorer.API.Controllers.Tourist.Payments
             throw new Exception("No user id found");
         }
 
+        [HttpGet]
+        public ActionResult<List<TourPurchaseTokenDto>> GetPurchaseTokens()
+        {
+            try
+            {
+                var touristId = GetTouristId();
+                var tokens = _checkoutService.GetPurchaseTokens(touristId);
+                return Ok(tokens);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<List<TourPurchaseTokenDto>>> Checkout()
         {

@@ -6,5 +6,6 @@ namespace Explorer.Payments.API.Public.Tourist
     public interface ICheckoutService
     {
         List<TourPurchaseTokenDto> Checkout(int touristId);
+        List<TourPurchaseTokenDto> GetPurchaseTokens(int touristId);
     }
 }

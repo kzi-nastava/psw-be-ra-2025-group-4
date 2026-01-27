@@ -13,7 +13,7 @@ namespace Explorer.Encounters.API.Public.Administration
     {
         PagedResult<EncounterDto> GetPaged(int page, int pageSize);
 
-        public List<EncounterDto> GetByTourPointIds(IEnumerable<int> tourPointIds);
+        List<EncounterViewDto> GetByTourPointIds(IEnumerable<int> tourPointIds);
         IEnumerable<EncounterDto> GetActive();
         EncounterDto Create(EncounterDto dto, bool needsApproval);
         HiddenLocationEncounterDto CreateHiddenLocation(HiddenLocationEncounterDto dto, bool needsApproval);
@@ -29,5 +29,6 @@ namespace Explorer.Encounters.API.Public.Administration
         void AddEncounterToTourPoint(long encounterId, long tourPointId, bool isRequiredForPointCompletion);
         void Approve(long id);
         void Decline(long id);
+        IEnumerable<EncounterViewDto> GetPendingApproval();
     }
 }

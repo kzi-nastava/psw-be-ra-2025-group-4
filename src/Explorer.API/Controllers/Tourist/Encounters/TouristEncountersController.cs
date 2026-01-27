@@ -42,6 +42,14 @@ namespace Explorer.API.Controllers.Tourist.Encounters
             return Ok(_encounterService.GetActive());
         }
 
+        [HttpGet("my")]
+        public ActionResult<IEnumerable<EncounterViewDto>> GetMyEncounters()
+        {
+            var touristId = GetTouristId();
+            var result = _touristEncounterService.GetByTourist(touristId);
+            return Ok(result);
+        }
+
         [HttpGet("by-tourpoint/{tourPointId:int}")]
         public ActionResult<List<EncounterViewDto>> GetByTourPoint(
             [FromRoute] int tourPointId,
@@ -60,6 +68,14 @@ namespace Explorer.API.Controllers.Tourist.Encounters
             return Ok(result);
         }
 
+        [HttpGet("encounter-participant")]
+        public ActionResult<EncounterParticipantDto> GetEncounterParticipant()
+        {
+            var touristId = GetTouristId();
+            var result = _encounterParticipantService.Get(touristId);
+            return Ok(result);
+        }
+
         [HttpPost("{id:long}/activate")]
         public ActionResult Activate([FromRoute] long id)
         {
@@ -68,27 +84,26 @@ namespace Explorer.API.Controllers.Tourist.Encounters
             return Ok();
         }
 
-        [HttpPost("{id:long}/location")]
-        public ActionResult UpdateLocation([FromRoute] long id, [FromBody] LocationDto location)
+        [HttpPost("{id:long}/hidden-location")]
+        public ActionResult<EncounterUpdateResultDto> UpdateTouristsLocationHidden([FromRoute] long id, [FromBody] LocationDto location)
         {
             var touristId = GetTouristId();
-
-            _touristEncounterService.UpdateLocation(touristId, id, location);
-            return Ok();
+            var result = _touristEncounterService.UpdateLocationHiddenEncounter(touristId, id, location);
+            return Ok(result);
         }
+
+        [HttpPost("{encounterId:long}/social-location")]
+        public ActionResult<EncounterUpdateResultDto> UpdateTouristsLocationSocial([FromRoute] long encounterId, [FromBody] LocationDto locationDto)
+        {
+            var result = _touristEncounterService.UpdateSocialEncounter(GetTouristId(), encounterId, locationDto);
+            return Ok(result);
+        }
+
         [HttpPost("{id:long}/complete")]
-        public ActionResult Complete([FromRoute] long id)
+        public ActionResult<EncounterUpdateResultDto> Complete([FromRoute] long id)
         {
-            var touristId = GetTouristId();
-            _touristEncounterService.CompleteEncounter(touristId, id);
-            return Ok();
-        }
-
-        [HttpPost("{encounterId:long}/social")]
-        public ActionResult<int> UpdateSocialLocation([FromRoute] long encounterId, [FromBody] TouristLocationDto dto)
-        {
-            var activeCount = _touristEncounterService.UpdateTouristLocation(encounterId, GetTouristId(), dto.Latitude, dto.Longitude);
-            return Ok(activeCount);
+            var result = _touristEncounterService.CompleteEncounter(GetTouristId(), id);
+            return Ok(result);
         }
 
         [HttpPost("social")]

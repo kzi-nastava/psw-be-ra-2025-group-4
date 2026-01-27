@@ -56,6 +56,13 @@ namespace Explorer.API.Controllers.Administrator.Administration
             return NoContent();
         }
 
+        [HttpGet("pending")]
+        public ActionResult<IEnumerable<EncounterViewDto>> GetPendingApproval()
+        {
+            var result = _encounterService.GetPendingApproval();
+            return Ok(result);
+        }
+
         [HttpPut("approve/{id:long}")]
         public IActionResult Approve(long id)
         {

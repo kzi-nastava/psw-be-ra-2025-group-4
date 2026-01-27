@@ -9,7 +9,7 @@ public interface ITourExecutionService
     TourExecutionDto Complete(long executionId, long touristId);
     TourExecutionDto Abandon(long executionId, long touristId);
     TourExecutionDto? GetActiveByTour(int tourId, long touristId);
-    TourExecutionDto Track(long executionId, long touristId, TourExecutionTrackDto dto);
+    TourExecutionDto Track(long executionId, long touristId, TourExecutionTrackDto dto, bool isEncounterCompleted);
 
 }
 

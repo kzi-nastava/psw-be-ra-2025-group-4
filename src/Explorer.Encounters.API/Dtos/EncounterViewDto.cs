@@ -10,6 +10,7 @@ namespace Explorer.Encounters.API.Dtos
         public LocationDto Location { get; set; }
         public int ExperiencePoints { get; set; }
         public EncounterType Type { get; set; }
+        public EncounterStatus Status { get; set; }
         public long? TourPointId { get; set; }
         public bool? IsRequiredForPointCompletion { get; set; }
         public bool CanActivate { get; set; }
@@ -19,5 +20,6 @@ namespace Explorer.Encounters.API.Dtos
         public string? ImageUrl { get; set; }
         public LocationDto? PhotoPoint { get; set; }
         public double? ActivationRadiusMeters { get; set; }
+        public int? MinimumParticipants { get; set; }
     }
 }

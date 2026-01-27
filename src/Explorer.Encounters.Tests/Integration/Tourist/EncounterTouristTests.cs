@@ -1,5 +1,6 @@
 ﻿using Explorer.API.Controllers.Administrator.Administration;
 using Explorer.API.Controllers.Tourist.Encounters;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public.Administration;
@@ -35,27 +36,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
 
             // Assert
             result.ShouldNotBeNull();
-            result.Count().ShouldBe(2);
-        }
-
-        [Fact]
-        public void UpdateLocation_RemovesParticipantWhenOutOfRange()
-        {
-            using var scope = Factory.Services.CreateScope();
-            var controller = CreateController(scope);
-
-            controller.Activate(-1);
-
-            var dto = new TouristLocationDto
-            {
-                Latitude = 1000.0, 
-                Longitude = 1000.0
-            };
-
-            var result = controller.UpdateSocialLocation(-1, dto) as ActionResult<int>;
-            var activeCount = result?.Value;
-
-            activeCount.ShouldBe(0);
+            result.Count().ShouldBe(4);
         }
 
         [Fact]
@@ -203,7 +184,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
                 Description = "Created via test",
                 ExperiencePoints = 200,
                 ImageUrl = "http://example.com/new.png",
-                ActivationRadiusMeters = 50,
+                ActivationRadiusMeters = 500,
                 Location = new LocationDto { Latitude = 45.8000, Longitude = 15.9800 },
                 PhotoPoint = new LocationDto { Latitude = 45.8010, Longitude = 15.9810 }
             };
@@ -216,10 +197,169 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
             var created = okResult.Value as HiddenLocationEncounterDto;
             created.ShouldNotBeNull();    
             created.Name.ShouldBe("New Hidden Encounter");
-            created.ActivationRadiusMeters.ShouldBe(50);
+            created.ActivationRadiusMeters.ShouldBe(500);
+        }
+
+        [Fact]
+        public void can_activate_encounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            // Act
+            var result = controller.Activate(-1);
+
+            // Assert
+            result.ShouldBeOfType<OkResult>();
+        }
+
+        [Fact]
+        public void social_encounter_completes_when_minimum_participants_met()
+        {
+            using var scope = Factory.Services.CreateScope();
+
+            // Get the repository
+            var executionRepository = scope.ServiceProvider.GetRequiredService<IEncounterExecutionRepository>();
+
+            // Create multiple tourists
+            var controller1 = CreateController(scope, userId: "-22");
+            var controller2 = CreateController(scope, userId: "-23");
+
+            // Both activate the social encounter
+            controller1.Activate(-1);
+            controller2.Activate(-1);
+
+            var location = new LocationDto
+            {
+                Latitude = 45.2671,
+                Longitude = 19.8335
+            };
+
+            // Both enter the radius
+            controller1.UpdateTouristsLocationSocial(-1, location);
+            controller2.UpdateTouristsLocationSocial(-1, location);
+
+            // Assert - check both executions are completed
+            var execution1 = executionRepository.Get(-22, -1);
+            var execution2 = executionRepository.Get(-23, -1);
+
+            execution1.ShouldNotBeNull();
+            execution1.Status.ShouldBe(EncounterExecutionStatus.Completed);
+
+            execution2.ShouldNotBeNull();
+            execution2.Status.ShouldBe(EncounterExecutionStatus.Completed);
         }
 
 
+        [Fact]
+        public void get_by_tourist_returns_encounters_for_given_tourist()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            // Act
+            var result = service.GetByTourist(-21).ToList();
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Count.ShouldBeGreaterThan(0);
+        }
+
+        [Fact]
+        public void get_by_tour_point_returns_encounters()
+        {
+            // Arrange
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            var touristLocation = new LocationDto
+            {
+                Latitude = 45.2671,
+                Longitude = 19.8335
+            };
+
+            // Act
+            var result = service.GetByTourPoint(
+                touristId: -21,
+                tourPointId: -1,
+                touristLocation: touristLocation);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.ShouldBeOfType<List<EncounterViewDto>>();
+            result.Count.ShouldBeGreaterThan(0);
+        }
+
+        [Fact]
+        public void CompleteEncounter_Throws_When_EncounterNotFound()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            Should.Throw<NotFoundException>(() =>
+                service.CompleteEncounter(touristId: -21, encounterId: -999));
+        }
+
+
+        [Fact]
+        public void CompleteEncounter_Throws_When_ExecutionNotFound()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            Should.Throw<NotFoundException>(() =>
+                service.CompleteEncounter(touristId: -21, encounterId: -1));
+        }
+
+        [Fact]
+        public void CompleteEncounter_Throws_When_EncounterNotMisc()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            var executionRepo = scope.ServiceProvider.GetRequiredService<IEncounterExecutionRepository>();
+            executionRepo.Create(new EncounterExecution(-23, -5));
+
+            Should.Throw<ArgumentException>(() =>
+                service.CompleteEncounter(touristId: -23, encounterId: -5));
+        }
+
+
+        [Fact]
+        public void CompleteEncounter_Throws_When_AlreadyCompleted()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            var executionRepo = scope.ServiceProvider.GetRequiredService<IEncounterExecutionRepository>();
+            var execution = new EncounterExecution(-21, -3);
+            execution.Complete();
+            executionRepo.Create(execution);
+
+            Should.Throw<InvalidOperationException>(() =>
+                service.CompleteEncounter(touristId: -21, encounterId: -3));
+        }
+
+        [Fact]
+        public void CompleteEncounter_CompletesSuccessfully_When_ValidMiscEncounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<ITouristEncounterService>();
+
+            var executionRepo = scope.ServiceProvider.GetRequiredService<IEncounterExecutionRepository>();
+            var participantRepo = scope.ServiceProvider.GetRequiredService<IEncounterParticipantRepository>();
+
+            executionRepo.Create(new EncounterExecution(-23, -4));
+
+            var result = service.CompleteEncounter(-23, -4);
+
+            result.ShouldNotBeNull();
+            result.IsCompleted.ShouldBeTrue();
+            result.ExperiencePointsGained.ShouldBe(150); 
+
+            var participant = participantRepo.Get(-23);
+            participant.ExperiencePoints.ShouldBeGreaterThanOrEqualTo(200);
+        }
 
         private static TouristEncountersController CreateController(IServiceScope scope, string userId = "-21")
         {

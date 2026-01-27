@@ -10,6 +10,7 @@ using Shouldly;
 using Microsoft.EntityFrameworkCore;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Infrastructure.Database;
+using Explorer.Encounters.API.Public.Tourist;
 
 namespace Explorer.Tours.Tests.Integration.Tourist;
 
@@ -199,7 +200,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
     private static Explorer.API.Controllers.Tourist.Execution.TourExecutionController CreateTrackController(IServiceScope scope)
     {
         return new Explorer.API.Controllers.Tourist.Execution.TourExecutionController(
-            scope.ServiceProvider.GetRequiredService<Explorer.Tours.API.Public.Tourist.ITourExecutionService>())
+            scope.ServiceProvider.GetRequiredService<Explorer.Tours.API.Public.Tourist.ITourExecutionService>(), scope.ServiceProvider.GetRequiredService<ITouristEncounterService>())
         {
             ControllerContext = BuildContext("-1")
         };

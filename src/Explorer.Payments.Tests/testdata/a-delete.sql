@@ -1,6 +1,13 @@
+DELETE FROM payments."GroupTravelParticipants";
+DELETE FROM payments."GroupTravelRequests";
 DELETE FROM payments."Coupons";
 DELETE FROM payments."PaymentRecords";
 DELETE FROM payments."TourPurchaseTokens";
 DELETE FROM payments."Wallets";
 DELETE FROM payments."OrderItem";
 DELETE FROM payments."ShoppingCarts";
+DELETE FROM payments."AffiliateCodes";
+DELETE FROM payments."GiftCards";
+DELETE FROM payments."CoinsBundlePurchases";
+DELETE FROM payments."CoinsBundleSales";
+DELETE FROM payments."CoinsBundles";

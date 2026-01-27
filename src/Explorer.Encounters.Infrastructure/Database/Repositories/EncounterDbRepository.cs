@@ -1,6 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.Core.Domain;
 using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +63,7 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
         public IEnumerable<Encounter> GetActive()
         {
             return _dbSet
-                .Where(e => e.Status == EncounterStatus.Active && e.ApprovalStatus == EncounterApprovalStatus.APPROVED)
+                .Where(e => e.Status == Core.Domain.EncounterStatus.Active && e.ApprovalStatus == EncounterApprovalStatus.APPROVED)
                 .ToList();
         }
 
@@ -86,13 +87,6 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
             }
             return encounter;
         }
-
-        public bool ExistsByTourPoint(long tourPointId)
-        {
-            return _dbSet
-                .Any(e => e.TourPointId == tourPointId);
-        }
-
         public List<Encounter> GetByTourPointIds(IEnumerable<int> tourPointIds)
         {
             return _dbSet
@@ -100,6 +94,25 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
                             tourPointIds.Contains((int)e.TourPointId.Value)
                             && e.ApprovalStatus == EncounterApprovalStatus.APPROVED)
                 .ToList();
+        }
+
+        public Encounter? GetByTourPointId(int tourPointId)
+        {
+            return _dbSet
+                .FirstOrDefault(e => e.TourPointId == tourPointId 
+                               && e.ApprovalStatus == EncounterApprovalStatus.APPROVED);
+        }
+
+        public IEnumerable<Encounter> GetPendingEncounters()
+        {
+            return _dbSet
+                .Where(e => e.ApprovalStatus == EncounterApprovalStatus.PENDING)
+                .ToList();
+        }
+
+        public IEnumerable<Encounter> GetByTourist(long touristId)
+        {
+            return _dbSet.Where(e => e.ApprovalStatus == EncounterApprovalStatus.PENDING);
         }
     }
 }

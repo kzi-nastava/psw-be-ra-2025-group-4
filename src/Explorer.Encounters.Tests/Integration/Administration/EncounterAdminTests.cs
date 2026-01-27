@@ -5,6 +5,7 @@ using Explorer.BuildingBlocks.Core.UseCases;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace Explorer.Encounters.Tests.Integration.Administration
 {
@@ -25,7 +26,7 @@ namespace Explorer.Encounters.Tests.Integration.Administration
 
             // Assert
             result.ShouldNotBeNull();
-            result.Results.Count.ShouldBe(4);
+            result.Results.Count.ShouldBe(7);
         }
 
         [Fact]
@@ -98,6 +99,73 @@ namespace Explorer.Encounters.Tests.Integration.Administration
 
             response.ShouldBeOfType<NoContentResult>();
         }
+
+        [Fact]
+        public void GetPendingApproval_Returns_something()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var result = controller.GetPendingApproval();
+
+            result.ShouldNotBeNull();
+        }
+
+
+        [Fact]
+        public void Archive_DoesNotThrow()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+
+            var ex = Record.Exception(() => service.Archive(-6));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        public void Approve_DoesNotThrow()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+
+            var ex = Record.Exception(() => service.Approve(-5));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        public void Publish_DoesNotThrow()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+
+            var ex = Record.Exception(() => service.Publish(-3));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        public void Decline_DoesNotThrow()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+
+            var ex = Record.Exception(() => service.Decline(-6));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        public void AddEncounterToTourPoint_DoesNotThrow()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+
+            var encounterId = -6;
+            var tourPointId = 999;
+            var isRequired = true;
+
+            service.AddEncounterToTourPoint(encounterId, tourPointId, isRequired);
+        }
+
+
 
         private static EncounterController CreateController(IServiceScope scope)
         {
