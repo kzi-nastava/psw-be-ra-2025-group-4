@@ -39,6 +39,7 @@ public static class StakeholdersStartup
         services.AddScoped<IFollowService, FollowService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IUserDiscoveryService, UserDiscoveryService>();
+        services.AddScoped<ITouristLookupService, TouristLookupService>();
 
     }
 
@@ -56,6 +57,7 @@ public static class StakeholdersStartup
         services.AddScoped<IFollowRepository, FollowDbRepository>();
         services.AddScoped<INotificationRepository, NotificationDbRepository>();
         services.AddScoped<IUserDiscoveryService, UserDiscoveryService>();
+
 
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("stakeholders"));

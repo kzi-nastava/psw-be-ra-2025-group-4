@@ -7,6 +7,7 @@ DELETE FROM payments."Wallets";
 DELETE FROM payments."OrderItem";
 DELETE FROM payments."ShoppingCarts";
 DELETE FROM payments."AffiliateCodes";
+DELETE FROM payments."GiftCards";
 DELETE FROM payments."CoinsBundlePurchases";
 DELETE FROM payments."CoinsBundleSales";
 DELETE FROM payments."CoinsBundles";

@@ -1,4 +1,4 @@
-﻿using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Payments.API.Internal;
 using Explorer.Payments.API.Public;
 using Explorer.Payments.API.Public.Administration;
@@ -49,6 +49,7 @@ public static class PaymentsStartup
         services.AddScoped<IGroupTravelService, GroupTravelService>();
         services.AddScoped<ICoinsBundleService, CoinsBundleService>();
         services.AddScoped<ICoinsBundleSaleService, CoinsBundleSaleService>();
+        services.AddScoped<IGiftCardService, GiftCardService>();
 
     }
 
@@ -70,7 +71,7 @@ public static class PaymentsStartup
         services.AddScoped<ICoinsBundleRepository, CoinsBundleDbRepository>();
         services.AddScoped<ICoinsBundleSaleRepository, CoinsBundleSaleDbRepository>();
         services.AddScoped<ICoinsBundlePurchaseRepository, CoinsBundlePurchaseDbRepository>();
-
+        services.AddScoped<IGiftCardRepository, GiftCardDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
         dataSourceBuilder.EnableDynamicJson();
@@ -85,6 +86,7 @@ public static class PaymentsStartup
     {
         var userServiceType = Type.GetType("Explorer.Stakeholders.API.Public.IUserService, Explorer.Stakeholders.API");
         var userDiscoveryServiceType = Type.GetType("Explorer.Stakeholders.API.Public.IUserDiscoveryService, Explorer.Stakeholders.API");
+        var userRepositoryType = Type.GetType("Explorer.Stakeholders.Core.Domain.RepositoryInterfaces.IUserRepository, Explorer.Stakeholders.Core");
         var notificationServiceType = Type.GetType("Explorer.Stakeholders.API.Public.INotificationService, Explorer.Stakeholders.API");
         
         if (userServiceType != null && userDiscoveryServiceType != null)
@@ -93,7 +95,8 @@ public static class PaymentsStartup
             {
                 var userService = sp.GetRequiredService(userServiceType);
                 var userDiscoveryService = sp.GetRequiredService(userDiscoveryServiceType);
-                return Activator.CreateInstance(typeof(UserInfoServiceAdapter), userService, userDiscoveryService);
+                object? personIdResolver = userRepositoryType != null ? sp.GetService(userRepositoryType) : null;
+                return Activator.CreateInstance(typeof(UserInfoServiceAdapter), userService, userDiscoveryService, personIdResolver!);
             });
         }
         

@@ -21,10 +21,8 @@ namespace Explorer.API.Controllers.Author
         {
             var personId = User.FindFirst("personId")?.Value;
             if (!string.IsNullOrWhiteSpace(personId)) return int.Parse(personId);
-
             throw new Exception("No personId found in token.");
         }
-
 
         [HttpGet]
         public ActionResult<List<AffiliateCodeDto>> GetAll([FromQuery] int? tourId = null)
@@ -37,6 +35,13 @@ namespace Explorer.API.Controllers.Author
         {
             var created = _service.Create(dto, GetAuthorId());
             return Created(string.Empty, created);
+        }
+
+        [HttpDelete("{id:int}")]
+        public IActionResult Deactivate([FromRoute] int id)
+        {
+            _service.Deactivate(GetAuthorId(), id);
+            return NoContent();
         }
     }
 }
