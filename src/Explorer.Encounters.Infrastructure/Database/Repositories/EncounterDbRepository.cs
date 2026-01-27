@@ -54,9 +54,8 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
 
         public PagedResult<Encounter> GetPaged(int pageNumber, int pageSize)
         {
-            var task = _dbSet
-                .GetPagedById(pageSize, pageNumber);
-            task.Wait();
+            var task = _dbSet.GetPagedById(pageSize, pageNumber);
+            task.Wait();  
             return task.Result;
         }
 

@@ -59,6 +59,24 @@ public class EncountersContext : DbContext
 
         modelBuilder.Entity<EncounterParticipant>()
             .ToTable("EncounterParticipants")
-            .HasKey(p => p.Id);            
+            .HasKey(p => p.Id);
+
+        modelBuilder.Entity<QuizEncounter>()
+            .ToTable("QuizEncounters")
+            .HasMany(e => e.Questions)
+            .WithOne()
+            .HasForeignKey(q => q.QuizEncounterId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<QuizAnswer>()
+            .ToTable("QuizAnswers");
+
+        modelBuilder.Entity<QuizQuestion>()
+            .ToTable("QuizQuestions")
+            .HasMany(q => q.Answers)
+            .WithOne()
+            .HasForeignKey(a => a.QuizQuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }
