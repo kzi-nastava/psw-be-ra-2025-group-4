@@ -34,6 +34,14 @@ public class GuideController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("tour-execution/{executionId:long}/guide")]
+    public IActionResult GetSelectedGuide([FromRoute] long executionId)
+    {
+        var touristId = GetTouristId();
+        var result = _service.GetSelectedGuide(executionId, touristId); 
+        return Ok(result);
+    }
+
     [HttpPost("tour-execution/{executionId:long}/guide")]
     public IActionResult SelectGuide([FromRoute] long executionId, [FromBody] SelectGuideDto dto)
     {

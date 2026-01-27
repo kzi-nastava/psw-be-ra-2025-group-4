@@ -81,4 +81,25 @@ public class GuideSelectionService : IGuideSelectionService
         existing.Cancel();
         _assignmentRepo.Update(existing);
     }
+
+    public GuideDto? GetSelectedGuide(long executionId, long touristId)
+    {
+        var execution = _executionRepo.GetById(executionId);
+        if (execution.TouristId != touristId)
+            throw new ForbiddenException("Not your tour execution.");
+
+        if (execution.Status != TourExecutionStatus.Active)
+            return null;
+
+        var assignment = _assignmentRepo.GetActiveForExecution(executionId);
+        if (assignment == null)
+            return null;
+
+        var guide = _guideRepo.GetById(assignment.GuideId);
+        if (guide == null)
+            return null; 
+
+        return _mapper.Map<GuideDto>(guide);
+    }
+
 }
