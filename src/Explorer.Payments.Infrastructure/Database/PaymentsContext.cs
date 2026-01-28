@@ -1,4 +1,4 @@
-﻿using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Core.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Payments.Infrastructure.Database
@@ -39,6 +39,7 @@ namespace Explorer.Payments.Infrastructure.Database
                     owned.Property<int?>("BundleId").IsRequired(false);
                     owned.Property<string>("TourName").IsRequired();
                     owned.Property<decimal>("Price").IsRequired();
+                    owned.Property<int?>("RecipientUserId").IsRequired(false);
                 });
             });
 

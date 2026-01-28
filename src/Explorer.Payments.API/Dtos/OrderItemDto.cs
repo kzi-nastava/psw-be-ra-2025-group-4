@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Explorer.Payments.API.Dtos
 {
@@ -8,5 +8,6 @@ namespace Explorer.Payments.API.Dtos
         public int? BundleId { get; set; }
         public string TourName { get; set; }
         public decimal Price { get; set; }
+        public int? RecipientUserId { get; set; }
     }
 }
