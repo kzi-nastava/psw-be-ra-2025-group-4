@@ -149,21 +149,39 @@ namespace Explorer.Payments.Tests.Unit
 
         private class NotificationServiceStub : INotificationServiceInternal
         {
+            public readonly List<(int userId, int actorId, string actorUsername, string content, string? resourceUrl)> Notifications = new();
+
             public void CreateMessageNotification(int userId, int actorId, string actorUsername, string content, string? resourceUrl)
             {
+                Notifications.Add((userId, actorId, actorUsername, content, resourceUrl));
             }
         }
 
         private class UserInfoServiceStub : IUserInfoService
         {
+            private readonly Dictionary<long, UserInfo> _users = new();
+            private readonly Dictionary<string, UserInfo> _usersByUsername = new();
+
+            public void AddUser(long id, string username, bool isAdministrator = false)
+            {
+                var user = new UserInfo
+                {
+                    Id = id,
+                    Username = username,
+                    IsAdministrator = isAdministrator
+                };
+                _users[id] = user;
+                _usersByUsername[username] = user;
+            }
+
             public UserInfo? GetUser(long userId)
             {
-                return null;
+                return _users.ContainsKey(userId) ? _users[userId] : null;
             }
 
             public UserInfo? GetUserByUsername(string username)
             {
-                return null;
+                return _usersByUsername.ContainsKey(username) ? _usersByUsername[username] : null;
             }
 
             public long? GetPersonIdByUsername(string username)
@@ -173,7 +191,7 @@ namespace Explorer.Payments.Tests.Unit
 
             public bool IsAdministrator(long userId)
             {
-                return false;
+                return _users.ContainsKey(userId) && _users[userId].IsAdministrator;
             }
         }
 
@@ -222,6 +240,53 @@ namespace Explorer.Payments.Tests.Unit
                 c.CreateMap<TourPurchaseToken, TourPurchaseTokenDto>().ReverseMap();
             });
             return cfg.CreateMapper();
+        }
+
+        [Fact]
+        public void Checkout_creates_token_for_gift_recipient_and_sends_notification()
+        {
+            var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
+            cartRepo.Cart!.AddItem(10, "Tour A", 20m);
+            cartRepo.Cart.SetRecipientForItem(10, 456);
+
+            var tokenRepo = new TokenRepoStub();
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            walletRepo.Wallet.AddBalance(100m);
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var tourInfoService = new TourInfoServiceStub();
+            tourInfoService.SetTourPrice(10, 20m);
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            userInfoService.AddUser(123, "buyer");
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+
+            var svc = new CheckoutService(
+                cartRepo,
+                tokenRepo,
+                walletRepo,
+                paymentRecordRepo,
+                tourInfoService,
+                bundlePurchaseService,
+                groupTravelRequestRepo,
+                notificationService,
+                userInfoService,
+                affiliateCodeRepo,
+                Mapper());
+
+            var result = svc.Checkout(123);
+
+            result.Count.ShouldBe(1);
+            tokenRepo.Store.Count.ShouldBe(1);
+            tokenRepo.Store.Single().TouristId.ShouldBe(456);
+
+            notificationService.Notifications.Count.ShouldBe(1);
+            var n = notificationService.Notifications.Single();
+            n.userId.ShouldBe(456);
+            n.actorId.ShouldBe(123);
+            n.actorUsername.ShouldBe("buyer");
+            n.content.ShouldContain("has gifted you the tour");
         }
 
         [Fact]

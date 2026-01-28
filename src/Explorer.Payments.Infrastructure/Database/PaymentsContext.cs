@@ -40,6 +40,7 @@ namespace Explorer.Payments.Infrastructure.Database
                     owned.Property<int?>("BundleId").IsRequired(false);
                     owned.Property<string>("TourName").IsRequired();
                     owned.Property<decimal>("Price").IsRequired();
+                    owned.Property<int?>("RecipientUserId").IsRequired(false);
                 });
             });
 
