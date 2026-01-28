@@ -184,9 +184,52 @@ namespace Explorer.Payments.Tests.Unit
                 return _usersByUsername.ContainsKey(username) ? _usersByUsername[username] : null;
             }
 
+            public long? GetPersonIdByUsername(string username)
+            {
+                return null;
+            }
+
             public bool IsAdministrator(long userId)
             {
                 return _users.ContainsKey(userId) && _users[userId].IsAdministrator;
+            }
+        }
+
+        private class AffiliateCodeRepoStub : IAffiliateCodeRepository
+        {
+            public readonly List<AffiliateCode> Store = new();
+
+            public AffiliateCode Create(AffiliateCode code)
+            {
+                Store.Add(code);
+                return code;
+            }
+
+            public IEnumerable<AffiliateCode> GetByAuthor(int authorId, int? tourId = null)
+            {
+                var q = Store.Where(x => x.AuthorId == authorId);
+                if (tourId.HasValue) q = q.Where(x => x.TourId == tourId.Value);
+                return q.ToList();
+            }
+
+            public AffiliateCode? GetById(int id)
+            {
+                // U ovim unit testovima se ne oslanjamo na Id, ali implementiramo zbog interfejsa.
+                return Store.FirstOrDefault(x => x.Id == id);
+            }
+
+            public void SaveChanges()
+            {
+            }
+
+            public bool CodeExists(string code)
+            {
+                return Store.Any(x => x.Code == code);
+            }
+
+            public AffiliateCode? GetByCode(string code)
+            {
+                return Store.FirstOrDefault(x => x.Code == code);
             }
         }
 
@@ -260,7 +303,12 @@ namespace Explorer.Payments.Tests.Unit
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
             var userInfoService = new UserInfoServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+
+            var svc = new CheckoutService(
+                cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService,
+                bundlePurchaseService, groupTravelRequestRepo, notificationService,
+                userInfoService, affiliateCodeRepo, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -282,7 +330,12 @@ namespace Explorer.Payments.Tests.Unit
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
             var userInfoService = new UserInfoServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+
+            var svc = new CheckoutService(
+                cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService,
+                bundlePurchaseService, groupTravelRequestRepo, notificationService,
+                userInfoService, affiliateCodeRepo, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -307,7 +360,12 @@ namespace Explorer.Payments.Tests.Unit
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
             var userInfoService = new UserInfoServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+
+            var svc = new CheckoutService(
+                cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService,
+                bundlePurchaseService, groupTravelRequestRepo, notificationService,
+                userInfoService, affiliateCodeRepo, Mapper());
 
             var result = svc.Checkout(123);
 
@@ -331,7 +389,12 @@ namespace Explorer.Payments.Tests.Unit
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
             var userInfoService = new UserInfoServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+
+            var svc = new CheckoutService(
+                cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService,
+                bundlePurchaseService, groupTravelRequestRepo, notificationService,
+                userInfoService, affiliateCodeRepo, Mapper());
 
             Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
         }
@@ -354,7 +417,12 @@ namespace Explorer.Payments.Tests.Unit
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
             var userInfoService = new UserInfoServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+
+            var svc = new CheckoutService(
+                cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService,
+                bundlePurchaseService, groupTravelRequestRepo, notificationService,
+                userInfoService, affiliateCodeRepo, Mapper());
 
             svc.Checkout(123);
 
@@ -381,7 +449,12 @@ namespace Explorer.Payments.Tests.Unit
             var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
             var notificationService = new NotificationServiceStub();
             var userInfoService = new UserInfoServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, groupTravelRequestRepo, notificationService, userInfoService, Mapper());
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+
+            var svc = new CheckoutService(
+                cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService,
+                bundlePurchaseService, groupTravelRequestRepo, notificationService,
+                userInfoService, affiliateCodeRepo, Mapper());
 
             svc.Checkout(123);
 

@@ -75,6 +75,7 @@ namespace Explorer.Payments.Tests.Integration
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateTouristController(scope, "-1");
+            var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
 
             var request = new PurchaseCoinsBundleRequestDto
             {
@@ -87,6 +88,9 @@ namespace Explorer.Payments.Tests.Integration
 
             result.PaymentMethod.ShouldBe("GiftCard");
             result.TransactionId.ShouldStartWith("GC-");
+
+            var giftCard = db.GiftCards.First(g => g.Code == "GIFT1234567890");
+            giftCard.Balance.ShouldBe(5.00m);
         }
 
         [Fact]
@@ -159,7 +163,61 @@ namespace Explorer.Payments.Tests.Integration
             {
                 CoinsBundleId = 1,
                 PaymentMethod = "GiftCard",
-                GiftCardCode = "SHORT" 
+                GiftCardCode = "SHORT"
+            };
+
+            var result = controller.PurchaseBundle(request).Result;
+
+            result.ShouldBeOfType<BadRequestObjectResult>();
+        }
+
+        [Fact]
+        public void Purchase_fails_when_gift_card_not_found()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateTouristController(scope, "-1");
+
+            var request = new PurchaseCoinsBundleRequestDto
+            {
+                CoinsBundleId = 1,
+                PaymentMethod = "GiftCard",
+                GiftCardCode = "NONEXISTENT123"
+            };
+
+            var result = controller.PurchaseBundle(request).Result;
+
+            result.ShouldBeOfType<BadRequestObjectResult>();
+        }
+
+        [Fact]
+        public void Purchase_fails_when_gift_card_belongs_to_another_user()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateTouristController(scope, "-2");
+
+            var request = new PurchaseCoinsBundleRequestDto
+            {
+                CoinsBundleId = 1,
+                PaymentMethod = "GiftCard",
+                GiftCardCode = "GIFT1234567890"
+            };
+
+            var result = controller.PurchaseBundle(request).Result;
+
+            result.ShouldBeOfType<BadRequestObjectResult>();
+        }
+
+        [Fact]
+        public void Purchase_fails_when_insufficient_gift_card_balance()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateTouristController(scope, "-1");
+
+            var request = new PurchaseCoinsBundleRequestDto
+            {
+                CoinsBundleId = 3,
+                PaymentMethod = "GiftCard",
+                GiftCardCode = "LOWBALANCE1234"
             };
 
             var result = controller.PurchaseBundle(request).Result;

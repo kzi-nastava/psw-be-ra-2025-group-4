@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Explorer.API.Hubs;
@@ -12,20 +12,20 @@ using Microsoft.AspNetCore.SignalR;
 namespace Explorer.API.Controllers.Tourist.Payments
 {
     [Authorize(Policy = "touristPolicy")]
-    [Route("api/tourist/checkout")]
+    [Route("api/tourist/gift-cards")]
     [ApiController]
-    public class CheckoutController : ControllerBase
+    public class GiftCardController : ControllerBase
     {
-        private readonly ICheckoutService _checkoutService;
+        private readonly IGiftCardService _giftCardService;
         private readonly INotificationService _notificationService;
         private readonly IHubContext<MessageHub> _hubContext;
 
-        public CheckoutController(
-            ICheckoutService checkoutService,
+        public GiftCardController(
+            IGiftCardService giftCardService,
             INotificationService notificationService,
             IHubContext<MessageHub> hubContext)
         {
-            _checkoutService = checkoutService;
+            _giftCardService = giftCardService;
             _notificationService = notificationService;
             _hubContext = hubContext;
         }
@@ -34,62 +34,57 @@ namespace Explorer.API.Controllers.Tourist.Payments
         {
             var id = User.FindFirst("id")?.Value;
             if (!string.IsNullOrWhiteSpace(id)) return int.Parse(id);
-
             var pid = User.FindFirst("personId")?.Value;
             if (!string.IsNullOrWhiteSpace(pid)) return int.Parse(pid);
-
             throw new Exception("No user id found");
         }
 
+        
         [HttpGet]
-        public ActionResult<List<TourPurchaseTokenDto>> GetPurchaseTokens()
+        public ActionResult<List<GiftCardDto>> GetMyGiftCards()
         {
             try
             {
                 var touristId = GetTouristId();
-                var tokens = _checkoutService.GetPurchaseTokens(touristId);
-                return Ok(tokens);
+                var cards = _giftCardService.GetMyGiftCards(touristId);
+                return Ok(cards);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
         [HttpPost]
-        [HttpPost]
-        public async Task<ActionResult<List<TourPurchaseTokenDto>>> Checkout([FromBody] CheckoutRequestDto? request = null)
+        public async Task<ActionResult<GiftCardDto>> PurchaseGiftCard([FromBody] PurchaseGiftCardRequestDto request)
         {
             try
             {
-                var touristId = GetTouristId();
-                var tokens = _checkoutService.Checkout(touristId, request);
+                var buyerTouristId = GetTouristId();
+                var result = _giftCardService.PurchaseGiftCard(buyerTouristId, request);
 
-                var tourCount = tokens.Count;
-                var content = tourCount == 1
-                    ? "A new tour has been added to your collection!"
-                    : $"{tourCount} new tours have been added to your collection!";
-
+                var content = "You have received a gift card! You can use it to purchase Coins Bundles.";
                 var notification = _notificationService.CreateMessageNotification(
-                    userId: touristId,
+                    userId: result.RecipientTouristId,
                     actorId: -1,
                     actorUsername: "System",
                     content: content,
-                    resourceUrl: "/tour-execution/all-tours"
+                    resourceUrl: "/tourist/coins-bundles"
                 );
-
                 await _hubContext.Clients
-                    .Group($"user_{touristId}")
+                    .Group($"user_{result.RecipientTouristId}")
                     .SendAsync("ReceiveNotification", notification);
 
-                return Ok(tokens);
+                return Ok(result);
             }
-            catch (InvalidOperationException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
-
-
     }
 }

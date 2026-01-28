@@ -21,15 +21,16 @@ namespace Explorer.Payments.Tests.Integration
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope, "-11");
 
-
-            controller.Create(new CreateAffiliateCodeDto { TourId = null });
-            controller.Create(new CreateAffiliateCodeDto { TourId = null });
+            controller.Create(new CreateAffiliateCodeDto { TourId = null, AffiliateTouristId = -21, Percent = 10 });
+            controller.Create(new CreateAffiliateCodeDto { TourId = null, AffiliateTouristId = -22, Percent = 15 });
 
             var result = ((ObjectResult)controller.GetAll(tourId: null).Result)?.Value as List<AffiliateCodeDto>;
 
             result.ShouldNotBeNull();
             result.Count.ShouldBeGreaterThan(0);
             result.All(x => x.AuthorId == -11).ShouldBeTrue();
+            result.All(x => x.AffiliateTouristId != 0).ShouldBeTrue();
+            result.All(x => x.Percent > 0).ShouldBeTrue();
         }
 
         [Fact]
@@ -46,16 +47,6 @@ namespace Explorer.Payments.Tests.Integration
             result.All(x => x.TourId == -2).ShouldBeTrue();
         }
 
-
-        private static AffiliateCodesController CreateController(IServiceScope scope, string authorId)
-        {
-            return new AffiliateCodesController(
-                scope.ServiceProvider.GetRequiredService<IAffiliateCodeService>())
-            {
-                ControllerContext = BuildContext(authorId)
-            };
-        }
-
         [Fact]
         public void Returns_global_affiliate_codes()
         {
@@ -69,5 +60,13 @@ namespace Explorer.Payments.Tests.Integration
             result.Any(x => x.TourId == null).ShouldBeTrue();
         }
 
+        private static AffiliateCodesController CreateController(IServiceScope scope, string authorId)
+        {
+            return new AffiliateCodesController(
+                scope.ServiceProvider.GetRequiredService<IAffiliateCodeService>())
+            {
+                ControllerContext = BuildContext(authorId)
+            };
+        }
     }
 }

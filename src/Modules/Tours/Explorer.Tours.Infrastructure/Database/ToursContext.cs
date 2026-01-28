@@ -20,6 +20,7 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<TourPoint> TourPoints { get; set; }
         public DbSet<TourExecution> TourExecutions { get; set; }
         public DbSet<TourReview> TourReviews { get; set; }
+        public DbSet<FavoriteTour> FavoriteTours { get; set; }
         public DbSet<Bundle> Bundles { get; set; }
 
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
@@ -86,6 +87,17 @@ namespace Explorer.Tours.Infrastructure.Database
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                         v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null) ?? new List<string>()
                         );
+
+            modelBuilder.Entity<FavoriteTour>(b =>
+            {
+                b.ToTable("FavoriteTours");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.TouristId).IsRequired();
+                b.Property(x => x.TourId).IsRequired();
+                b.Property(x => x.AddedAt).IsRequired();
+                b.HasIndex(x => new { x.TouristId, x.TourId }).IsUnique();
+                b.HasIndex(x => x.TouristId);
+            });
 
             modelBuilder.Entity<MysteryTourOffer>(b =>
             {
