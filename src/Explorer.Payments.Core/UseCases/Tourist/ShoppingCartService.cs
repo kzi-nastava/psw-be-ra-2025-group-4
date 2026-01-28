@@ -211,6 +211,11 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 throw new EntityValidationException("Recipient user not found.");
             }
 
+            if (!recipientUser.IsActive)
+            {
+                throw new EntityValidationException("Recipient user is blocked.");
+            }
+
             if (recipientUser.Id == touristId)
             {
                 throw new EntityValidationException("Cannot gift a tour to yourself.");
