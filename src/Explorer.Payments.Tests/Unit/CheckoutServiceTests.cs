@@ -260,6 +260,7 @@ namespace Explorer.Payments.Tests.Unit
             var notificationService = new NotificationServiceStub();
             var userInfoService = new UserInfoServiceStub();
             userInfoService.AddUser(123, "buyer");
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
 
             var svc = new CheckoutService(
                 cartRepo,
@@ -271,6 +272,7 @@ namespace Explorer.Payments.Tests.Unit
                 groupTravelRequestRepo,
                 notificationService,
                 userInfoService,
+                affiliateCodeRepo,
                 Mapper());
 
             var result = svc.Checkout(123);

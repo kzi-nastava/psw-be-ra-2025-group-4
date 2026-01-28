@@ -192,7 +192,6 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 var paymentRecord = new PaymentRecord(touristId, item.TourId, item.Price);
                 _paymentRecordRepository.Create(paymentRecord);
 
-                // primenjujemo affiliate na kupca, bez obzira da li je tura poklon
                 TryApplyAffiliate(touristId, item.TourId, item.Price, request);
 
                 var recipientId = item.RecipientUserId ?? touristId;

@@ -190,7 +190,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             return _mapper.Map<ShoppingCartDto>(cart);
         }
 
-        public ShoppingCartDto SetGiftRecipient(int touristId, int tourId, string recipientUsername)
+        public ShoppingCartDto SetGiftRecipient(int touristId, int tourId, string? recipientUsername)
         {
             var cart = _cartRepository.GetByTouristId(touristId);
             if (cart == null)
