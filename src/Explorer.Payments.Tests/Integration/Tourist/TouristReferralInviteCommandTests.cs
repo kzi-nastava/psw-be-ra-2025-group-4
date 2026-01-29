@@ -52,8 +52,8 @@ namespace Explorer.Payments.Tests.Integration.Tourist
 
             db.ChangeTracker.Clear();
 
-            db.Wallets.Single(w => w.TouristId == referrerId).Balance.ShouldBe(beforeRef + 10m);
-            db.Wallets.Single(w => w.TouristId == newTouristId).Balance.ShouldBe(beforeNew + 10m);
+            db.Wallets.Single(w => w.TouristId == referrerId).Balance.ShouldBe(beforeRef + 3m);
+            db.Wallets.Single(w => w.TouristId == newTouristId).Balance.ShouldBe(beforeNew + 3m);
 
             var invite = db.TouristReferralInvites.Single(x => x.Code == code);
             invite.IsUsed.ShouldBeTrue();

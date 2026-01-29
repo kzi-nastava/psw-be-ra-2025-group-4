@@ -13,7 +13,7 @@ namespace Explorer.Payments.Core.Domain
         public DateTime CreatedAtUtc { get; private set; }
         public DateTime? UsedAtUtc { get; private set; }
 
-        private TouristReferralInvite() { } // EF
+        private TouristReferralInvite() { }
 
         public TouristReferralInvite(string code, long referrerTouristId)
         {

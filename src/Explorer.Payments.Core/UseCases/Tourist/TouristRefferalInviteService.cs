@@ -9,7 +9,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 {
     public class TouristReferralInviteService : ITouristReferralInviteService
     {
-        private const decimal RewardAmount = 10m;
+        private const decimal RewardAmount = 3m;
 
         private readonly ITouristReferralInviteRepository _repo;
         private readonly IWalletAdministrationService _walletAdmin;
