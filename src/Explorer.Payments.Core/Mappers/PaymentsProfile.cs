@@ -1,5 +1,6 @@
 using AutoMapper;
 using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Dtos.Explorer.Payments.API.Dtos;
 using Explorer.Payments.Core.Domain;
 
 
@@ -22,6 +23,8 @@ public class PaymentsProfile : Profile
         CreateMap<CouponCreateDto, Coupon>();
         CreateMap<CouponUpdateDto, Coupon>();
         CreateMap<AffiliateCode, AffiliateCodeDto>();
+        CreateMap<TouristReferralInvite, TouristReferralInviteDto>();
+
 
         CreateMap<CoinsBundle, CoinsBundleDto>().ReverseMap();
         CreateMap<CoinsBundleSale, CoinsBundleSaleDto>().ReverseMap();

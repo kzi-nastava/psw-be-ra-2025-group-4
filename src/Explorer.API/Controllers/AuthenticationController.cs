@@ -2,6 +2,7 @@
 using Explorer.Stakeholders.API.Public;
 using Explorer.Payments.API.Public.Administration;
 using Microsoft.AspNetCore.Mvc;
+using Explorer.Payments.API.Public.Tourist;
 
 namespace Explorer.API.Controllers;
 
@@ -11,30 +12,37 @@ public class AuthenticationController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly IWalletAdministrationService _walletAdministrationService;
+    private readonly ITouristReferralInviteService _touristReferralInviteService;
 
     public AuthenticationController(
         IAuthenticationService authenticationService,
-        IWalletAdministrationService walletAdministrationService)
+        IWalletAdministrationService walletAdministrationService,
+        ITouristReferralInviteService touristReferralInviteService)
     {
         _authenticationService = authenticationService;
         _walletAdministrationService = walletAdministrationService;
+        _touristReferralInviteService = touristReferralInviteService;
     }
 
     [HttpPost]
     public ActionResult<AuthenticationTokensDto> RegisterTourist([FromBody] AccountRegistrationDto account)
     {
+        
         var result = _authenticationService.RegisterTourist(account);
-        
-        try
+
+        if (!int.TryParse(result.Id.ToString(), out var touristId))
+            return StatusCode(500, "Registration succeeded but user id is invalid.");
+
+        _walletAdministrationService.AddBalance(touristId, 0);
+
+        if (!string.IsNullOrWhiteSpace(account.ReferralCode))
         {
-            var touristId = int.Parse(result.Id.ToString());
-            _walletAdministrationService.AddBalance(touristId, 0);
+            _touristReferralInviteService.ConsumeOnRegistration(account.ReferralCode, touristId);
         }
-        catch
-        {
-        }
-        
+
+
         return Ok(result);
+
     }
 
     [HttpPost("login")]
