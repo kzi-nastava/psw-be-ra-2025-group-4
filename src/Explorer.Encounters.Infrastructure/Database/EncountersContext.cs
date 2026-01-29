@@ -15,6 +15,7 @@ public class EncountersContext : DbContext
 
     public DbSet<Encounter> Encounters { get; set; } = null!;
     public DbSet<EncounterExecution> EncounterExecutions { get; set; }
+    public DbSet<QuizEncounter> QuizEncounters { get; set;} = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,11 +49,17 @@ public class EncountersContext : DbContext
 
         modelBuilder.Entity<HiddenLocationEncounter>()
             .Property(h => h.PhotoPoint)
-            .HasColumnType("jsonb")
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<Location>(v, (JsonSerializerOptions?)null)!
-            );
+               .HasColumnType("jsonb")
+               .HasConversion(
+                   v => JsonSerializer.Serialize(v, new JsonSerializerOptions
+                   {
+                       PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                   }),
+                   v => JsonSerializer.Deserialize<Location>(v, new JsonSerializerOptions
+                   {
+                       PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                   })
+               );
 
         modelBuilder.Entity<SocialEncounter>()
             .ToTable("SocialEncounters");

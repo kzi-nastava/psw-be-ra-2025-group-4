@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.Encounters.Tests.Integration.Author
 {
@@ -57,6 +58,19 @@ namespace Explorer.Encounters.Tests.Integration.Author
             encounters.ShouldNotBeNull();
             encounters.Count.ShouldBeGreaterThan(0);
         }
+
+        [Fact]
+        public void GetByTourId_Returns_NotFound_When_TourDoesNotExist()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            Should.Throw<NotFoundException>(() =>
+            {
+                controller.GetByTourId(-999);
+            });
+        }
+
 
         [Fact]
         public void Can_Create_Social_Encounter()
@@ -180,10 +194,10 @@ namespace Explorer.Encounters.Tests.Integration.Author
                     new QuizQuestionDto
                     {
                         Text = "What is 1+1?",
-                        Answers = new List<QuizAnswerDto>
+                        Answers = new List<EncounterQuizAnswerDto>
                         {
-                            new QuizAnswerDto { Text = "2", IsCorrect = true },
-                            new QuizAnswerDto { Text = "3", IsCorrect = false }
+                            new EncounterQuizAnswerDto { Text = "2", IsCorrect = true },
+                            new EncounterQuizAnswerDto { Text = "3", IsCorrect = false }
                         }
                     }
                 }
@@ -218,10 +232,10 @@ namespace Explorer.Encounters.Tests.Integration.Author
                     new QuizQuestionDto
                     {
                         Text = "Updated question?",
-                        Answers = new List<QuizAnswerDto>
+                        Answers = new List<EncounterQuizAnswerDto>
                         {
-                            new QuizAnswerDto { Text = "Yes", IsCorrect = true },
-                            new QuizAnswerDto { Text = "No", IsCorrect = false }
+                            new EncounterQuizAnswerDto { Text = "Yes", IsCorrect = true },
+                            new EncounterQuizAnswerDto { Text = "No", IsCorrect = false }
                         }
                     }
                 }
@@ -235,6 +249,111 @@ namespace Explorer.Encounters.Tests.Integration.Author
             updated.Name.ShouldBe("Updated Author Quiz");
             updated.TimeLimit.ShouldBe(120);
         }
+
+        [Fact]
+        public void Can_Create_Encounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var dto = new EncounterDto
+            {
+                Name = "Integration Test Encounter",
+                Description = "Created via integration test",
+                ExperiencePoints = 100,
+                Type = EncounterType.Misc,
+                Location = new LocationDto { Latitude = 45.267, Longitude = 19.833 }
+            };
+
+            var result = controller.Create(dto).Result as CreatedAtActionResult;
+            result.ShouldNotBeNull();
+            result.ActionName.ShouldBe(nameof(controller.GetPaged));
+
+            var created = result.Value as EncounterDto;
+            created.ShouldNotBeNull();
+            created.Name.ShouldBe("Integration Test Encounter");
+            created.ExperiencePoints.ShouldBe(100);
+            created.Type.ShouldBe(EncounterType.Misc);
+        }
+
+        [Fact]
+        public void Can_Update_Encounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var updateDto = new EncounterUpdateDto
+            {
+                Name = "Updated Encounter Name",
+                Description = "Updated description",
+                ExperiencePoints = 200,
+                Type = EncounterType.Misc,
+                Location = new LocationDto { Latitude = 45.300, Longitude = 19.800 }
+            };
+
+            var result = controller.Update(updateDto, -1).Result as OkObjectResult;
+            result.ShouldNotBeNull();
+
+            var updated = result.Value as EncounterDto;
+            updated.ShouldNotBeNull();
+            updated.Name.ShouldBe("Updated Encounter Name");
+            updated.Description.ShouldBe("Updated description");
+            updated.ExperiencePoints.ShouldBe(200);
+            updated.Type.ShouldBe(EncounterType.Misc);
+            updated.Location.Latitude.ShouldBe(45.300);
+            updated.Location.Longitude.ShouldBe(19.800);
+        }
+
+        [Fact]
+        public void Update_Throws_When_EncounterDoesNotExist()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var updateDto = new EncounterUpdateDto
+            {
+                Name = "Nonexistent Update",
+                Description = "This should fail",
+                ExperiencePoints = 50,
+                Type = EncounterType.Misc,
+                Location = new LocationDto { Latitude = 45, Longitude = 19 }
+            };
+
+            Should.Throw<NotFoundException>(() =>
+            {
+                controller.Update(updateDto, -999);
+            });
+        }
+
+        [Fact]
+        public void Create_Encounter_With_TourPoint_Assigns_Correctly()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var dto = new EncounterDto
+            {
+                Name = "TourPoint Test Encounter",
+                Description = "Assigned to a tour point",
+                ExperiencePoints = 50,
+                Type = EncounterType.Misc,
+                Location = new LocationDto { Latitude = 45, Longitude = 19 },
+                TourPointId = -1,
+                IsRequiredForPointCompletion = true
+            };
+
+            var result = controller.Create(dto).Result as CreatedAtActionResult;
+            result.ShouldNotBeNull();
+
+            var created = result.Value as EncounterDto;
+            created.ShouldNotBeNull();
+            created.Name.ShouldBe("TourPoint Test Encounter");
+
+            var encounterService = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+            var linked = encounterService.GetByTourPointIds(new List<int>{-1});
+            linked.ShouldContain(e => e.Id == created.Id);
+        }
+
 
         [Fact]
         public void Can_Publish_Encounter()

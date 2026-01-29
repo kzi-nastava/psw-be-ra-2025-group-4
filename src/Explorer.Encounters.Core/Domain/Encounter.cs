@@ -76,6 +76,8 @@ namespace Explorer.Encounters.Core.Domain
         {
             if (ApprovalStatus == EncounterApprovalStatus.APPROVED)
                 throw new InvalidOperationException("Encounter already approved.");
+            if (ApprovalStatus == EncounterApprovalStatus.DECLINED)
+                throw new InvalidOperationException("Cannot approve a declined encounter.");
 
             ApprovalStatus = EncounterApprovalStatus.APPROVED;
         }
@@ -84,6 +86,8 @@ namespace Explorer.Encounters.Core.Domain
         {
             if (ApprovalStatus == EncounterApprovalStatus.DECLINED)
                 throw new InvalidOperationException("Encounter already declined.");
+            if (ApprovalStatus == EncounterApprovalStatus.APPROVED)
+                throw new InvalidOperationException("Cannot decline an approved encounter.");
 
             ApprovalStatus = EncounterApprovalStatus.DECLINED;
         }

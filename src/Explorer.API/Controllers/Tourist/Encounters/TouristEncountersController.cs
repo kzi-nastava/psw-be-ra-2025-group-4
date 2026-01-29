@@ -106,6 +106,20 @@ namespace Explorer.API.Controllers.Tourist.Encounters
             return Ok(result);
         }
 
+        [HttpPost("{id:long}/quiz-answer")]
+        public ActionResult<EncounterUpdateResultDto> SubmitQuizAnswer([FromRoute] long id, [FromBody] List<QuizAnswerSubmitDto> answerDto)
+        {
+            var result = _touristEncounterService.SubmitQuizAnswer(GetTouristId(), id, answerDto);
+            return Ok(result);
+        }
+
+        [HttpPost("{id:long}/fail-quiz")]
+        public ActionResult<EncounterUpdateResultDto> FailQuiz([FromRoute] long id)
+        {
+            var result = _touristEncounterService.FailQuiz(GetTouristId(), id);
+            return Ok(result);
+        }
+
         [HttpPost("social")]
         public ActionResult<SocialEncounterDto> CreateSocial([FromBody] SocialEncounterDto dto)
         {

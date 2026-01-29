@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Explorer.Encounters.API.Dtos
 {
-    public class QuizQuestionDto
+    public class EncounterQuizAnswerDto
     {
         public long Id { get; set; }
         public string Text { get; set; }
-        public List<EncounterQuizAnswerDto> Answers { get; set; } = new List<EncounterQuizAnswerDto>();
+        public bool IsCorrect { get; set; }
     }
 }

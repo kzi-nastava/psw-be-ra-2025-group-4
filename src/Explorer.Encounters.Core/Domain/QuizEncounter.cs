@@ -48,5 +48,17 @@ namespace Explorer.Encounters.Core.Domain
             if (TimeLimit <= 0)
                 throw new ArgumentException("Time limit must be a positive integer.");
         }
+
+        public bool IsAnswerCorrect(long questionId, long answerId)
+            => Questions
+                .FirstOrDefault(q => q.Id == questionId)?
+                .Answers
+                .Any(a => a.Id == answerId && a.IsCorrect) ?? false;
+
+        public bool IsCompletedOnTime(DateTime startedAtUtc)
+        {
+            return DateTime.UtcNow - startedAtUtc <= TimeSpan.FromSeconds(TimeLimit);
+        }
+
     }
 }

@@ -10,7 +10,10 @@ VALUES
     (-7, 'Test Encounter 3', 'This is pending', '{{"latitude":45.0,"longitude":19.0}}', 100, 1, 3, false, 0, -1),
     (-8, 'Test Encounter 4', 'awdaw', '{{"latitude":45.0,"longitude":19.0}}', 100, 1, 3, false, 0, -101),
     (-9, 'Test Encounter 5', 'awdaw', '{{"latitude":45.0,"longitude":19.0}}', 100, 1, 3, false, 0, -101),
-    (-10, 'Test Encounter 6', 'awdaw', '{{"latitude":45.0,"longitude":19.0}}', 100, 1, 3, false, 0, -101);
+    (-10, 'Test Encounter 6', 'awdaw', '{{"latitude":45.0,"longitude":19.0}}', 100, 1, 1, false, 0, -1),
+    (-11, 'Test Encounter 6', 'awdaw', '{{"latitude":45.0,"longitude":19.0}}', 100, 1, 1, false, 0, -1),
+    (-12, 'Pending Encounter', 'This is pending', '{{"latitude":45.0,"longitude":19.0}}', 100, 0, 3, false, 1, -1);
+
 
 INSERT INTO encounters."SocialEncounters"
 ("Id", "MinimumParticipants", "ActivationRadiusMeters")
@@ -20,7 +23,10 @@ VALUES
 INSERT INTO encounters."HiddenLocationEncounters"
 ("Id", "ImageUrl", "PhotoPoint", "ActivationRadiusMeters")
 VALUES
-(-2, 'http://example.com/image.jpg', '{{"latitude":44.7866,"longitude":20.4489}}', 50.0);
+(-2, 'http://example.com/image.jpg', '{{"latitude":44.7866,"longitude":20.4489}}', 200.0),
+(-10, 'http://example.com/image.jpg', '{{"latitude":44.7866,"longitude":20.4489}}', 200.0),
+(-11, 'http://example.com/image.jpg', '{{"latitude":44.7866,"longitude":20.4489}}', 200.0);
+
 
 INSERT INTO encounters."QuizEncounters"
 ("Id", "TimeLimit")
