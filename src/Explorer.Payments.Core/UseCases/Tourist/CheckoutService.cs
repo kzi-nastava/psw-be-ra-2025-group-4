@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
@@ -197,9 +197,25 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 
                 TryApplyAffiliate(touristId, item.TourId, item.Price, request);
 
-                var token = new TourPurchaseToken(touristId, item.TourId);
+                var recipientId = item.RecipientUserId ?? touristId;
+                var token = new TourPurchaseToken(recipientId, item.TourId);
                 var saved = _tokenRepository.Create(token);
                 createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(saved));
+
+                if (item.RecipientUserId.HasValue && item.RecipientUserId.Value != touristId)
+                {
+                    var buyerUser = _userInfoService.GetUser(touristId);
+                    if (buyerUser != null)
+                    {
+                        _notificationService.CreateMessageNotification(
+                            userId: item.RecipientUserId.Value,
+                            actorId: touristId,
+                            actorUsername: buyerUser.Username,
+                            content: $"{buyerUser.Username} has gifted you the tour '{item.TourName}'. The tour is now in your collection!",
+                            resourceUrl: "/tour-execution/purchased-tours"
+                        );
+                    }
+                }
             }
 
             // BUNDLES

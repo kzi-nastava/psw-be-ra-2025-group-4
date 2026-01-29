@@ -119,18 +119,44 @@ namespace Explorer.Payments.Tests.Unit
 
         private class NotificationServiceStub : INotificationServiceInternal
         {
+            public readonly List<(int userId, int actorId, string actorUsername, string content, string? resourceUrl)> Notifications = new();
+
             public void CreateMessageNotification(int userId, int actorId, string actorUsername, string content, string? resourceUrl)
             {
+                Notifications.Add((userId, actorId, actorUsername, content, resourceUrl));
             }
         }
 
         private class UserInfoServiceStub : IUserInfoService
         {
-            public UserInfo? GetUser(long userId) => null;
-            public UserInfo? GetUserByUsername(string username) => null;
-            public long? GetPersonIdByUsername(string username) => null;
-            public bool IsAdministrator(long userId) => false;
+            private readonly Dictionary<long, UserInfo> _users = new();
+            private readonly Dictionary<string, UserInfo> _usersByUsername = new();
+
+            public void AddUser(long id, string username, bool isAdministrator = false)
+            {
+                var user = new UserInfo
+                {
+                    Id = id,
+                    Username = username,
+                    IsAdministrator = isAdministrator
+                };
+                _users[id] = user;
+                _usersByUsername[username] = user;
+            }
+
+            public UserInfo? GetUser(long userId)
+                => _users.TryGetValue(userId, out var u) ? u : null;
+
+            public UserInfo? GetUserByUsername(string username)
+                => _usersByUsername.TryGetValue(username, out var u) ? u : null;
+
+            public long? GetPersonIdByUsername(string username)
+                => null;
+
+            public bool IsAdministrator(long userId)
+                => _users.TryGetValue(userId, out var u) && u.IsAdministrator;
         }
+
 
         private class AffiliateCodeRepoStub : IAffiliateCodeRepository
         {
@@ -211,6 +237,57 @@ namespace Explorer.Payments.Tests.Unit
                 Mapper(),
                 affiliateRedemptionRepo
             );
+        }
+
+        [Fact]
+        public void Checkout_creates_token_for_gift_recipient_and_sends_notification()
+        {
+            var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
+            cartRepo.Cart!.AddItem(10, "Tour A", 20m);
+            cartRepo.Cart.SetRecipientForItem(10, 456);
+
+            var tokenRepo = new TokenRepoStub();
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            walletRepo.Wallet.AddBalance(100m);
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var tourInfoService = new TourInfoServiceStub();
+            tourInfoService.SetTourPrice(10, 20m);
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            userInfoService.AddUser(123, "buyer");
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+            
+            var affiliateRedemptionRepo = new AffiliateRedemptionRepoStub();
+            var svc = new CheckoutService(
+                cartRepo,
+                tokenRepo,
+                walletRepo,
+                paymentRecordRepo,
+                tourInfoService,
+                bundlePurchaseService,
+                groupTravelRequestRepo,
+                notificationService,
+                userInfoService,
+                affiliateCodeRepo,
+                Mapper(),
+                affiliateRedemptionRepo
+            );
+
+
+            var result = svc.Checkout(123);
+
+            result.Count.ShouldBe(1);
+            tokenRepo.Store.Count.ShouldBe(1);
+            tokenRepo.Store.Single().TouristId.ShouldBe(456);
+
+            notificationService.Notifications.Count.ShouldBe(1);
+            var n = notificationService.Notifications.Single();
+            n.userId.ShouldBe(456);
+            n.actorId.ShouldBe(123);
+            n.actorUsername.ShouldBe("buyer");
+            n.content.ShouldContain("has gifted you the tour");
         }
 
         [Fact]
