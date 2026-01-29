@@ -431,7 +431,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
             };
 
             // Act
-            var actionResult = controller.SubmitQuizAnswer(encounterId, answerDto);
+            var actionResult = controller.SubmitQuizAnswer(encounterId, new List<QuizAnswerSubmitDto> { answerDto });
             var okResult = actionResult.Result as OkObjectResult;
 
             // Assert
@@ -472,7 +472,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
             };
 
             Should.Throw<InvalidOperationException>(() =>
-                controller.SubmitQuizAnswer(encounterId, answerDto));
+                controller.SubmitQuizAnswer(encounterId, new List<QuizAnswerSubmitDto> { answerDto }));
         }
 
         [Fact]
@@ -488,7 +488,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
             };
 
             Should.Throw<NotFoundException>(() =>
-                controller.SubmitQuizAnswer(-6, answerDto));
+                controller.SubmitQuizAnswer(-6, new List<QuizAnswerSubmitDto> { answerDto }));
         }
 
         [Fact]
@@ -512,7 +512,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
             };
 
             Should.Throw<InvalidOperationException>(() =>
-                controller.SubmitQuizAnswer(encounterId, answerDto));
+                controller.SubmitQuizAnswer(encounterId, new List<QuizAnswerSubmitDto> { answerDto }));
         }
 
         [Fact]
@@ -535,7 +535,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
                 SelectedAnswerId = -701 
             };
 
-            var result = controller.SubmitQuizAnswer(encounterId, answerDto)
+            var result = controller.SubmitQuizAnswer(encounterId, new List<QuizAnswerSubmitDto> { answerDto })
                 .Result as OkObjectResult;
 
             result.ShouldNotBeNull();
@@ -546,7 +546,7 @@ namespace Explorer.Encounters.Tests.Integration.Tourist
             dto.ExperiencePointsGained.ShouldBe(0);
 
             executionRepo.Get(touristId, encounterId)
-                .Status.ShouldBe(EncounterExecutionStatus.Started);
+                .Status.ShouldBe(EncounterExecutionStatus.Completed);
         }
 
 
