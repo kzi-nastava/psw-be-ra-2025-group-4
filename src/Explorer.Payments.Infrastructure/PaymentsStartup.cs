@@ -17,6 +17,8 @@ using Explorer.Payments.Core.UseCases.Author;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Explorer.Payments.API.Internal;
+using Explorer.Payments.Infrastructure.Internal;
 
 namespace Explorer.Payments.Infrastructure;
 
@@ -49,6 +51,8 @@ public static class PaymentsStartup
         services.AddScoped<ICoinsBundleService, CoinsBundleService>();
         services.AddScoped<ICoinsBundleSaleService, CoinsBundleSaleService>();
         services.AddScoped<IGiftCardService, GiftCardService>();
+        services.AddScoped<IAffiliateStatsService, AffiliateStatsService>();
+
 
     }
 
@@ -62,7 +66,8 @@ public static class PaymentsStartup
         services.AddScoped<ICouponRepository, CouponDbRepository>();
         services.AddScoped<IAffiliateCodeRepository, AffiliateCodeDbRepository>();
         services.AddScoped<IGroupTravelRequestRepository, GroupTravelRequestDbRepository>();
-        
+        services.AddScoped<IAffiliateRedemptionRepository, AffiliateRedemptionDbRepository>();
+
         RegisterAdapters(services);
 
         services.AddScoped<ICoinsBundleRepository, CoinsBundleDbRepository>();
@@ -85,7 +90,7 @@ public static class PaymentsStartup
         var userDiscoveryServiceType = Type.GetType("Explorer.Stakeholders.API.Public.IUserDiscoveryService, Explorer.Stakeholders.API");
         var userRepositoryType = Type.GetType("Explorer.Stakeholders.Core.Domain.RepositoryInterfaces.IUserRepository, Explorer.Stakeholders.Core");
         var notificationServiceType = Type.GetType("Explorer.Stakeholders.API.Public.INotificationService, Explorer.Stakeholders.API");
-        
+
         if (userServiceType != null && userDiscoveryServiceType != null)
         {
             services.AddScoped(typeof(IUserInfoService), sp =>
@@ -105,5 +110,21 @@ public static class PaymentsStartup
                 return Activator.CreateInstance(typeof(NotificationServiceAdapter), notificationService);
             });
         }
+
+        var tourInfoServiceType = Type.GetType("Explorer.Tours.API.Internal.ITourInfoService, Explorer.Tours.API");
+
+        if (tourInfoServiceType != null)
+        {
+            services.AddScoped(typeof(ITourLookupService), sp =>
+            {
+                var tourInfoService = sp.GetRequiredService(tourInfoServiceType);
+                return Activator.CreateInstance(typeof(TourLookupServiceAdapter), tourInfoService)!;
+            });
+        }
+        else
+        {
+            services.AddScoped<ITourLookupService, NullTourLookupService>();
+        }
+
     }
 }

@@ -2,7 +2,6 @@
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Author;
 using Explorer.Stakeholders.API.Public;
-using Explorer.Tours.API.Internal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -17,14 +16,15 @@ namespace Explorer.API.Controllers.Author
         private readonly IAffiliateCodeService _service;
         private readonly INotificationService _notificationService;
         private readonly IHubContext<MessageHub> _hub;
-        private readonly ITourInfoService _tourInfoService;
 
-        public AffiliateCodesController(IAffiliateCodeService service, INotificationService notificationService, IHubContext<MessageHub> hub, ITourInfoService tourInfoService)
+        public AffiliateCodesController(
+            IAffiliateCodeService service,
+            INotificationService notificationService,
+            IHubContext<MessageHub> hub)
         {
             _service = service;
             _notificationService = notificationService;
             _hub = hub;
-            _tourInfoService = tourInfoService;
         }
 
         private int GetAuthorId()
@@ -54,12 +54,12 @@ namespace Explorer.API.Controllers.Author
                 "Author";
 
             string content;
-            string? resourceUrl = null;
 
             if (created.TourId.HasValue)
             {
-                var tour = _tourInfoService.Get(created.TourId.Value);
-                var tourName = tour?.Name ?? $"#{created.TourId.Value}";
+                var tourName = !string.IsNullOrWhiteSpace(created.TourName)
+                    ? created.TourName
+                    : $"#{created.TourId.Value}";
 
                 content = $"{authorUsername} assigned you an affiliate code for \"{tourName}\" ({created.Percent}%). Code: {created.Code}";
             }
@@ -67,6 +67,8 @@ namespace Explorer.API.Controllers.Author
             {
                 content = $"{authorUsername} assigned you a global affiliate code ({created.Percent}%). Code: {created.Code}";
             }
+
+            string? resourceUrl = null;
 
             var notification = _notificationService.CreateAffiliateCodeAssignedNotification(
                 partnerUserId: partnerId,
@@ -76,13 +78,12 @@ namespace Explorer.API.Controllers.Author
                 resourceUrl: resourceUrl
             );
 
-            await _hub.Clients.Group($"user_{partnerId}")
+            await _hub.Clients
+                .Group($"user_{partnerId}")
                 .SendAsync("ReceiveNotification", notification);
 
             return Created(string.Empty, created);
         }
-
-
 
         [HttpDelete("{id:int}")]
         public IActionResult Deactivate([FromRoute] int id)
