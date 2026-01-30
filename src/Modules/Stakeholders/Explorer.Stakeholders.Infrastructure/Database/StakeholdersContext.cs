@@ -83,19 +83,14 @@ public class StakeholdersContext : DbContext
             ua.HasKey(x => x.Id);
             ua.HasIndex(x => x.UserId).IsUnique();
 
-            ua.OwnsMany(
-                x => x.Achievements,
-                a =>
-                {
-                    a.WithOwner().HasForeignKey("UserAchievementsId"); 
-                    a.Property<int>("Id"); 
-                    a.HasKey("Id");
+            ua.HasMany(x => x.Achievements)
+                .WithOne()
+                .HasForeignKey("UserAchievementsId")
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
-                    a.Property(p => p.Type).IsRequired();
-                    a.Property(p => p.EarnedAt).IsRequired();
-
-                    a.ToTable("UserAchievement"); 
-                });
+            ua.Navigation(x => x.Achievements)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
         });
     }
 

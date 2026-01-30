@@ -28,18 +28,9 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
 
         public void Save(UserAchievements achievements)
         {
-            var existing = _context.UserAchievements
-                .Include(ua => ua.Achievements)
-                .FirstOrDefault(ua => ua.UserId == achievements.UserId);
-
-            if (existing == null)
+            if (_context.Entry(achievements).State == EntityState.Detached)
             {
                 _context.UserAchievements.Add(achievements);
-            }
-            else
-            {
-                // NIŠTA ne briši, samo pusti tracking
-                // achievements je već TRACKED jer dolazi iz context-a
             }
 
             _context.SaveChanges();

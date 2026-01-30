@@ -8,22 +8,19 @@ using Explorer.BuildingBlocks.Core.Domain;
 
 namespace Explorer.Stakeholders.Core.Domain;
 
-public class UserAchievement : ValueObject
+public class UserAchievement
 {
-    public AchievementType Type { get; }
-    public DateTime EarnedAt { get; }
+    public long Id { get; private set; }   
 
-    private UserAchievement() { }
+    public AchievementType Type { get; private set; }
+    public DateTime EarnedAt { get; private set; }
 
-    public UserAchievement(AchievementType type, DateTime earnedAt)
+    private UserAchievement() { } 
+
+    internal UserAchievement(AchievementType type, DateTime earnedAt)
     {
         Type = type;
         EarnedAt = earnedAt;
-    }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Type;
     }
 }
 

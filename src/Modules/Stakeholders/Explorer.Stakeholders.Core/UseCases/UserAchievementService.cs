@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
@@ -29,4 +30,28 @@ public class UserAchievementService : IUserAchievementService
 
         _repo.Save(achievements);
     }
+
+    public List<UserAchievementDto> GetUserAchievements(long userId)
+    {
+        var userAchievements = _repo.GetByUserId(userId);
+        if (userAchievements == null)
+            return new List<UserAchievementDto>();
+
+        return userAchievements.AchievementsReadOnly
+            .Select(a => new UserAchievementDto
+            {
+                Type = a.Type switch
+                {
+                    AchievementType.OneTourCompleted => AchievementTypeDto.OneTourCompleted,
+                    AchievementType.TwoToursCompleted => AchievementTypeDto.TwoToursCompleted,
+                    AchievementType.FiveToursCompleted => AchievementTypeDto.FiveToursCompleted,
+                    AchievementType.TenToursCompleted => AchievementTypeDto.TenToursCompleted,
+                    _ => throw new ArgumentOutOfRangeException()
+                },
+                EarnedAt = a.EarnedAt
+            })
+            .OrderBy(a => a.EarnedAt)
+            .ToList();
+    }
+
 }
