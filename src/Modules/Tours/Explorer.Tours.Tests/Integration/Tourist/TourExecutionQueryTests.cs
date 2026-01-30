@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Explorer.Encounters.API.Public.Tourist;
+using Explorer.Stakeholders.API.Public;
 
 namespace Explorer.Tours.Tests.Integration.Tourist;
 
@@ -136,7 +137,7 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
 
     private static TourExecutionController CreateController(IServiceScope scope)
     {
-        return new TourExecutionController(scope.ServiceProvider.GetRequiredService<ITourExecutionService>(), scope.ServiceProvider.GetRequiredService<ITouristEncounterService>())
+        return new TourExecutionController(scope.ServiceProvider.GetRequiredService<ITourExecutionService>(), scope.ServiceProvider.GetRequiredService<ITouristEncounterService>(), scope.ServiceProvider.GetRequiredService<IUserAchievementService>())
         {
             ControllerContext = BuildContext("-1")
         };
@@ -144,7 +145,7 @@ public class TourExecutionQueryTests : BaseToursIntegrationTest
 
     private static TourExecutionController CreateControllerForTourist(IServiceScope scope, string touristId)
     {
-        return new TourExecutionController(scope.ServiceProvider.GetRequiredService<ITourExecutionService>(), scope.ServiceProvider.GetRequiredService<ITouristEncounterService>())
+        return new TourExecutionController(scope.ServiceProvider.GetRequiredService<ITourExecutionService>(), scope.ServiceProvider.GetRequiredService<ITouristEncounterService>(), scope.ServiceProvider.GetRequiredService<IUserAchievementService>())
         {
             ControllerContext = BuildContext(touristId)
         };
