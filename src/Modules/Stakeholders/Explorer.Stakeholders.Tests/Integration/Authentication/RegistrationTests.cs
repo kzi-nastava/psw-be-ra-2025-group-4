@@ -28,7 +28,8 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
             Email = "turistaA@gmail.com",
             Password = "turistaA",
             Name = "Žika",
-            Surname = "Žikić"
+            Surname = "Žikić",
+            ReferralCode = null
         };
 
         // Act
@@ -57,6 +58,7 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
     {
         return new AuthenticationController(
             scope.ServiceProvider.GetRequiredService<IAuthenticationService>(),
-            scope.ServiceProvider.GetRequiredService<Explorer.Payments.API.Public.Administration.IWalletAdministrationService>());
+            scope.ServiceProvider.GetRequiredService<Explorer.Payments.API.Public.Administration.IWalletAdministrationService>(),
+            scope.ServiceProvider.GetRequiredService<Explorer.Payments.API.Public.Tourist.ITouristReferralInviteService>());
     }
 }

@@ -61,6 +61,7 @@ public static class ToursStartup
         services.AddScoped<ITourInfoService, TourInfoService>();
         services.AddScoped<IBundleInfoService, BundleInfoService>();
         services.AddScoped<IMysteryTourOfferService, MysteryTourService>();
+        services.AddScoped<IGuideSelectionService, GuideSelectionService>();
 
     }
 
@@ -88,6 +89,8 @@ public static class ToursStartup
         services.AddScoped<ITourReviewRepository, TourReviewDbRepository>();
         services.AddScoped<IFavoriteTourRepository, FavoriteTourDbRepository>();
         services.AddScoped<IMysteryTourOfferRepository, MysteryTourOfferDbRepository>();
+        services.AddScoped<IGuideRepository, GuideDbRepository>();
+        services.AddScoped<IGuideAssignmentRepository, GuideAssignmentDbRepository>();
 
 
 
