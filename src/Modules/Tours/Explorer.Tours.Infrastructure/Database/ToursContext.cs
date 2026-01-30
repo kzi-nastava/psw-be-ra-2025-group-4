@@ -26,6 +26,10 @@ namespace Explorer.Tours.Infrastructure.Database
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
         public DbSet<MysteryTourOffer> MysteryTourOffers { get; set; }
         public DbSet<Sale> Sales { get; set; }
+        public DbSet<Guide> Guides { get; set; }
+        public DbSet<GuideTour> GuideTours { get; set; }
+        public DbSet<GuideAssignment> GuideAssignments { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -141,6 +145,37 @@ namespace Explorer.Tours.Infrastructure.Database
                         .HasForeignKey("BundleId")
                         .OnDelete(DeleteBehavior.Cascade)
                 );
+
+            modelBuilder.Entity<Guide>(b =>
+            {
+                b.ToTable("Guides");
+                b.Property(x => x.Languages).HasColumnType("text[]");
+            });
+
+            modelBuilder.Entity<GuideTour>(b =>
+            {
+                b.ToTable("GuideTours");
+                b.HasKey(x => new { x.GuideId, x.TourId });
+
+                b.HasOne(x => x.Guide)
+                    .WithMany(g => g.Tours)
+                    .HasForeignKey(x => x.GuideId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+            });
+
+            modelBuilder.Entity<GuideAssignment>(b =>
+            {
+                b.ToTable("GuideAssignments");
+                b.HasOne(x => x.Guide)
+                    .WithMany()
+                    .HasForeignKey(x => x.GuideId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(x => x.TourExecutionId);
+                b.HasIndex(x => x.GuideId);
+
+            });
 
             base.OnModelCreating(modelBuilder);
 
