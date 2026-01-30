@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Explorer.BuildingBlocks.Core.Domain;
+using System;
 
 namespace Explorer.Tours.Core.Domain;
 
@@ -8,9 +9,8 @@ public enum GuideAssignmentStatus
     Cancelled = 1
 }
 
-public class GuideAssignment
+public class GuideAssignment : Entity
 {
-    public long Id { get; private set; }
     public long GuideId { get; private set; }
     public long TourExecutionId { get; private set; }
     public GuideAssignmentStatus Status { get; private set; }
