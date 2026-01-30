@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Explorer.API.Controllers.Author;
 using Explorer.Tours.API.Dtos;
@@ -90,6 +90,18 @@ public class TourSaleCommandTests : BaseToursIntegrationTest
     {
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
+
+        var createDto = new SaleCreateDto
+        {
+            TourIds = new() { -2, -4 },
+            StartDate = DateTime.UtcNow,
+            EndDate = DateTime.UtcNow.AddDays(5),
+            DiscountPercent = 10
+        };
+
+        var created = ((ObjectResult)controller.Create(createDto).Result)?.Value as SaleDto;
+        created.ShouldNotBeNull();
+
         var dto = new SaleUpdateDto
         {
             TourIds = new() { -2, -4 }, 
@@ -98,10 +110,10 @@ public class TourSaleCommandTests : BaseToursIntegrationTest
             DiscountPercent = 25
         };
 
-        var result = ((ObjectResult)controller.Update(1, dto).Result)?.Value as SaleDto;
+        var result = ((ObjectResult)controller.Update(created.Id, dto).Result)?.Value as SaleDto;
 
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(1);
+        result.Id.ShouldBe(created.Id);
         result.DiscountPercent.ShouldBe(25);
         result.TourIds.Count.ShouldBe(2);
     }

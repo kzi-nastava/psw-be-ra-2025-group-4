@@ -12,5 +12,7 @@ namespace Explorer.Payments.Core.Domain.RepositoryInterfaces
         void SaveChanges();
 
         bool CodeExists(string code);
+        AffiliateCode? GetByCode(string code);
+
     }
 }

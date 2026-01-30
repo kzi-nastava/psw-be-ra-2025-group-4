@@ -45,5 +45,10 @@ namespace Explorer.Payments.Infrastructure.Database.Repositories
         {
             return _dbContext.AffiliateCodes.Any(x => x.Code == code);
         }
+        public AffiliateCode? GetByCode(string code)
+        {
+            return _dbContext.AffiliateCodes.FirstOrDefault(x => x.Code == code);
+        }
+
     }
 }

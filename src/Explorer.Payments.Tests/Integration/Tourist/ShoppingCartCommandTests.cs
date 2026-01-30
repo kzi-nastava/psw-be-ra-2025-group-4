@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Explorer.API.Controllers.Tourist.Payments;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
@@ -271,6 +271,122 @@ namespace Explorer.Payments.Tests.Integration.Tourist
                 db.ShoppingCarts.Remove(cart);
                 db.SaveChanges();
             }
+        }
+
+        [Fact]
+        public void SetGiftRecipient_sets_recipient_for_item()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope, personId: "-1");
+            var paymentsDb = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+            var stakeholdersDb = scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.Infrastructure.Database.StakeholdersContext>();
+
+            CleanCart(paymentsDb, touristId: -1);
+            EnsureTestUsersExist(stakeholdersDb);
+
+            (controller.AddToCart(-2).Result as OkObjectResult).ShouldNotBeNull();
+
+            var dto = new SetGiftRecipientDto
+            {
+                RecipientUsername = "turista1@example.com"
+            };
+
+            var result = controller.SetGiftRecipient(-2, dto);
+            var okResult = result.Result as OkObjectResult;
+
+            okResult.ShouldNotBeNull();
+            var cartDto = okResult.Value as ShoppingCartDto;
+            cartDto.ShouldNotBeNull();
+            cartDto.Items.Count.ShouldBe(1);
+            cartDto.Items.Single().RecipientUserId.ShouldBe(-2);
+
+            var storedCart = paymentsDb.ShoppingCarts
+                .Include(c => c.Items)
+                .FirstOrDefault(c => c.TouristId == -1);
+
+            storedCart.ShouldNotBeNull();
+            storedCart.Items.Single().RecipientUserId.ShouldBe(-2);
+        }
+
+        [Fact]
+        public void SetGiftRecipient_throws_when_recipient_not_found()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope, personId: "-1");
+            var paymentsDb = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+            var stakeholdersDb = scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.Infrastructure.Database.StakeholdersContext>();
+
+            CleanCart(paymentsDb, touristId: -1);
+            EnsureTestUsersExist(stakeholdersDb);
+
+            (controller.AddToCart(-2).Result as OkObjectResult).ShouldNotBeNull();
+
+            var dto = new SetGiftRecipientDto
+            {
+                RecipientUsername = "nonexistent.user@example.com"
+            };
+
+            Should.Throw<Explorer.BuildingBlocks.Core.Exceptions.EntityValidationException>(() =>
+                controller.SetGiftRecipient(-2, dto))
+                .Message.ShouldBe("Recipient user not found.");
+        }
+
+        [Fact]
+        public void SetGiftRecipient_throws_when_gifting_to_self()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope, personId: "-1");
+            var paymentsDb = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+            var stakeholdersDb = scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.Infrastructure.Database.StakeholdersContext>();
+
+            CleanCart(paymentsDb, touristId: -1);
+            EnsureTestUsersExist(stakeholdersDb);
+
+            (controller.AddToCart(-2).Result as OkObjectResult).ShouldNotBeNull();
+
+            var dto = new SetGiftRecipientDto
+            {
+                RecipientUsername = "organizer"
+            };
+
+            Should.Throw<Explorer.BuildingBlocks.Core.Exceptions.EntityValidationException>(() =>
+                controller.SetGiftRecipient(-2, dto))
+                .Message.ShouldBe("Recipient user not found.");
+        }
+
+        private static void EnsureTestUsersExist(Explorer.Stakeholders.Infrastructure.Database.StakeholdersContext stakeholdersDb)
+        {
+            if (!stakeholdersDb.Users.Any(u => u.Id == -1))
+            {
+                var organizer = new Explorer.Stakeholders.Core.Domain.User(
+                    "organizer",
+                    "password",
+                    Explorer.Stakeholders.Core.Domain.UserRole.Tourist,
+                    true);
+                stakeholdersDb.Users.Add(organizer);
+                stakeholdersDb.Entry(organizer).Property("Id").CurrentValue = -1L;
+                stakeholdersDb.SaveChanges();
+
+                var organizerPerson = new Explorer.Stakeholders.Core.Domain.Person(-1L, "Organizer", "Test", "organizer@example.com");
+                stakeholdersDb.People.Add(organizerPerson);
+            }
+
+            if (!stakeholdersDb.Users.Any(u => u.Id == -2))
+            {
+                var participant = new Explorer.Stakeholders.Core.Domain.User(
+                    "turista1@example.com",
+                    "password",
+                    Explorer.Stakeholders.Core.Domain.UserRole.Tourist,
+                    true);
+                stakeholdersDb.Users.Add(participant);
+                stakeholdersDb.Entry(participant).Property("Id").CurrentValue = -2L;
+                stakeholdersDb.SaveChanges();
+
+                var participantPerson = new Explorer.Stakeholders.Core.Domain.Person(-2L, "Turista", "One", "turista1@example.com");
+                stakeholdersDb.People.Add(participantPerson);
+            }
+
+            stakeholdersDb.SaveChanges();
         }
 
         [Fact]

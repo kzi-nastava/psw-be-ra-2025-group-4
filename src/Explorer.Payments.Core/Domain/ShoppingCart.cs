@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Explorer.BuildingBlocks.Core.Domain;
@@ -27,12 +27,12 @@ namespace Explorer.Payments.Core.Domain
             TotalPrice = 0;
         }
 
-        public void AddItem(int tourId, string tourName, decimal price)
+        public void AddItem(int tourId, string tourName, decimal price, int? recipientUserId = null)
         {
 
             if (_items.Any(i => i.TourId == tourId)) return;
 
-            _items.Add(new OrderItem(tourId, tourName, price));
+            _items.Add(new OrderItem(tourId, tourName, price, recipientUserId));
             RecalculateTotal();
         }
 
@@ -60,11 +60,11 @@ namespace Explorer.Payments.Core.Domain
             TotalPrice = _items.Sum(i => i.Price);
         }
 
-        public void AddItemWithPriceOverride(int tourId, string tourName, decimal finalPrice)
+        public void AddItemWithPriceOverride(int tourId, string tourName, decimal finalPrice, int? recipientUserId = null)
         {
             if (_items.Any(i => i.TourId == tourId)) return;
 
-            _items.Add(new OrderItem(tourId, tourName, finalPrice));
+            _items.Add(new OrderItem(tourId, tourName, finalPrice, recipientUserId));
             RecalculateTotal();
         }
 
@@ -74,7 +74,16 @@ namespace Explorer.Payments.Core.Domain
             if (item == null) return;
 
             _items.Remove(item);
-            _items.Add(new OrderItem(tourId, item.TourName, newPrice));
+            _items.Add(new OrderItem(tourId, item.TourName, newPrice, item.RecipientUserId));
+        }
+
+        public void SetRecipientForItem(int tourId, int? recipientUserId)
+        {
+            var item = _items.FirstOrDefault(i => i.TourId == tourId);
+            if (item == null) return;
+
+            _items.Remove(item);
+            _items.Add(new OrderItem(tourId, item.TourName, item.Price, recipientUserId));
         }
         public void AddBundleItem(int bundleId, string bundleName, decimal price)
         {
