@@ -119,7 +119,20 @@ namespace Explorer.Stakeholders.Core.UseCases
             var created = _repo.Create(notif);
             return _mapper.Map<NotificationDto>(created);
         }
+        public NotificationDto CreateAffiliateCodeAssignedNotification( long partnerUserId, long actorId, string? actorUsername, string content, string? resourceUrl)
+        {
+            var notif = new Notification(
+                userId: partnerUserId,
+                content: content,
+                type: NotificationType.AffiliateCodeAssigned,
+                resourceUrl: resourceUrl,
+                actorId: actorId,
+                actorUsername: actorUsername
+            );
 
+            var created = _repo.Create(notif);
+            return _mapper.Map<NotificationDto>(created);
+        }
 
     }
 }

@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
-using Explorer.Tours.API.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,16 +15,16 @@ namespace Explorer.Payments.Core.UseCases.Author
     public class AffiliateCodeService : IAffiliateCodeService
     {
         private readonly IAffiliateCodeRepository _repo;
-        private readonly ITourInfoService _tourInfoService;
+        private readonly ITourLookupService _tourLookup;
         private readonly IMapper _mapper;
 
         public AffiliateCodeService(
             IAffiliateCodeRepository repo,
-            ITourInfoService tourInfoService,
+            ITourLookupService tourLookup,
             IMapper mapper)
         {
             _repo = repo;
-            _tourInfoService = tourInfoService;
+            _tourLookup = tourLookup;
             _mapper = mapper;
         }
 
@@ -36,9 +36,9 @@ namespace Explorer.Payments.Core.UseCases.Author
 
             if (tourId.HasValue)
             {
-                var tour = _tourInfoService.Get(tourId.Value);
-                if (tour.AuthorId != authorId)
-                    throw new ForbiddenException("Not your tour.");
+                var tour = _tourLookup.Get(tourId.Value);
+                if (tour == null) throw new NotFoundException("Tour not found.");
+                if (tour.AuthorId != authorId) throw new ForbiddenException("Not your tour.");
             }
 
             if (dto.AffiliateTouristId == 0) throw new ArgumentException("AffiliateTouristId is required.");
@@ -62,7 +62,15 @@ namespace Explorer.Payments.Core.UseCases.Author
                         dto.ExpiresAt
                     ));
 
-                    return _mapper.Map<AffiliateCodeDto>(created);
+                    var outDto = _mapper.Map<AffiliateCodeDto>(created);
+
+                    // ✅ popuni TourName za notifikaciju / dashboard
+                    if (outDto.TourId.HasValue)
+                    {
+                        outDto.TourName = _tourLookup.Get(outDto.TourId.Value)?.Name;
+                    }
+
+                    return outDto;
                 }
                 catch
                 {
@@ -79,7 +87,18 @@ namespace Explorer.Payments.Core.UseCases.Author
                              .OrderByDescending(x => x.CreatedAt)
                              .ToList();
 
-            return items.Select(_mapper.Map<AffiliateCodeDto>).ToList();
+            var list = items.Select(_mapper.Map<AffiliateCodeDto>).ToList();
+
+            // ✅ popuni TourName svima (bez dodatnih zavisnosti)
+            foreach (var x in list)
+            {
+                if (x.TourId.HasValue)
+                {
+                    x.TourName = _tourLookup.Get(x.TourId.Value)?.Name;
+                }
+            }
+
+            return list;
         }
 
         public void Deactivate(int authorId, int affiliateCodeId)

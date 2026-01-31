@@ -24,6 +24,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private readonly IUserInfoService _userInfoService;
         private readonly IAffiliateCodeRepository _affiliateCodeRepository;
         private readonly IMapper _mapper;
+        private readonly IAffiliateRedemptionRepository _affiliateRedemptionRepository;
 
         public CheckoutService(
             IShoppingCartRepository cartRepository,
@@ -36,7 +37,8 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             INotificationServiceInternal notificationService,
             IUserInfoService userInfoService,
             IAffiliateCodeRepository affiliateCodeRepository,
-            IMapper mapper)
+            IMapper mapper,
+            IAffiliateRedemptionRepository affiliateRedemptionRepository)
         {
             _cartRepository = cartRepository;
             _tokenRepository = tokenRepository;
@@ -49,6 +51,7 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             _userInfoService = userInfoService;
             _affiliateCodeRepository = affiliateCodeRepository;
             _mapper = mapper;
+            _affiliateRedemptionRepository = affiliateRedemptionRepository;
         }
 
         public List<TourPurchaseTokenDto> Checkout(int touristId, CheckoutRequestDto? request = null)
@@ -261,6 +264,18 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 
             affiliateWallet.AddBalance(commission);
             _walletRepository.Update(affiliateWallet);
+
+            var redemption = new AffiliateRedemption(
+                    affiliateCodeId: (int)code.Id,
+                    code: code.Code,
+                    authorId: code.AuthorId,
+                    tourId: tourId,
+                    affiliateTouristId: code.AffiliateTouristId,
+                    buyerTouristId: buyerTouristId,
+                    amountPaid: paidPrice,
+                    commissionAmount: commission
+                );
+            _affiliateRedemptionRepository.Create(redemption);
 
             code.IncrementUsage();
             _affiliateCodeRepository.SaveChanges();

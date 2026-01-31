@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Explorer.API.Controllers.Author;
 using Explorer.Payments.API.Dtos;
-using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +17,7 @@ namespace Explorer.Payments.Tests.Integration
         public AffiliateCodeCommandTests(PaymentsTestFactory factory) : base(factory) { }
 
         [Fact]
-        public void Creates_affiliate_code_for_all_tours()
+        public async Task Creates_affiliate_code_for_all_tours()
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope, "-11");
@@ -31,7 +31,7 @@ namespace Explorer.Payments.Tests.Integration
                 ExpiresAt = null
             };
 
-            var result = ((ObjectResult)controller.Create(dto).Result)?.Value as AffiliateCodeDto;
+            var result = await ExtractCreatedAsync(controller.Create(dto));
 
             result.ShouldNotBeNull();
             result.Id.ShouldNotBe(0);
@@ -48,7 +48,7 @@ namespace Explorer.Payments.Tests.Integration
         }
 
         [Fact]
-        public void Create_generates_unique_readable_code()
+        public async Task Create_generates_unique_readable_code()
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope, "-11");
@@ -60,7 +60,7 @@ namespace Explorer.Payments.Tests.Integration
                 Percent = 10
             };
 
-            var result = ((ObjectResult)controller.Create(dto).Result)?.Value as AffiliateCodeDto;
+            var result = await ExtractCreatedAsync(controller.Create(dto));
 
             result.ShouldNotBeNull();
             result.Code.Length.ShouldBe(10);
@@ -68,7 +68,7 @@ namespace Explorer.Payments.Tests.Integration
         }
 
         [Fact]
-        public void Creates_code_with_expiration()
+        public async Task Creates_code_with_expiration()
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope, "-11");
@@ -83,15 +83,15 @@ namespace Explorer.Payments.Tests.Integration
                 ExpiresAt = expires
             };
 
-            var result = ((ObjectResult)controller.Create(dto).Result)?.Value as AffiliateCodeDto;
+            var result = await ExtractCreatedAsync(controller.Create(dto));
 
             result.ShouldNotBeNull();
             result.ExpiresAt.ShouldNotBeNull();
-            result.ExpiresAt.Value.ShouldBeInRange(expires.AddMinutes(-1), expires.AddMinutes(1));
+            result.ExpiresAt!.Value.ShouldBeInRange(expires.AddMinutes(-1), expires.AddMinutes(1));
         }
 
         [Fact]
-        public void Cannot_create_with_past_expiration()
+        public async Task Cannot_create_with_past_expiration()
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope, "-11");
@@ -104,24 +104,26 @@ namespace Explorer.Payments.Tests.Integration
                 ExpiresAt = DateTime.UtcNow.AddMinutes(-5)
             };
 
-            Should.Throw<Exception>(() => controller.Create(dto));
+            await Should.ThrowAsync<ArgumentException>(async () =>
+            {
+                await controller.Create(dto);
+            });
         }
 
         [Fact]
-        public void Deactivates_affiliate_code()
+        public async Task Deactivates_affiliate_code()
         {
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope, "-11");
             var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
 
-            var dto = new CreateAffiliateCodeDto
+            var created = await ExtractCreatedAsync(controller.Create(new CreateAffiliateCodeDto
             {
                 TourId = null,
                 AffiliateTouristId = -21,
                 Percent = 10
-            };
+            }));
 
-            var created = ((ObjectResult)controller.Create(dto).Result)?.Value as AffiliateCodeDto;
             created.ShouldNotBeNull();
 
             var deleteResult = controller.Deactivate(created.Id);
@@ -133,11 +135,35 @@ namespace Explorer.Payments.Tests.Integration
 
         private static AffiliateCodesController CreateController(IServiceScope scope, string authorId)
         {
-            return new AffiliateCodesController(
-                scope.ServiceProvider.GetRequiredService<IAffiliateCodeService>())
+            var controller = ActivatorUtilities.CreateInstance<AffiliateCodesController>(scope.ServiceProvider);
+            controller.ControllerContext = BuildContext(authorId);
+            return controller;
+        }
+
+        private static async Task<AffiliateCodeDto> ExtractCreatedAsync(Task<ActionResult<AffiliateCodeDto>> actionTask)
+        {
+            var action = await actionTask;
+
+            if (action.Result is CreatedResult created)
             {
-                ControllerContext = BuildContext(authorId)
-            };
+                var dto = created.Value as AffiliateCodeDto;
+                dto.ShouldNotBeNull("Expected CreatedResult.Value to be AffiliateCodeDto.");
+                return dto;
+            }
+
+            if (action.Result is OkObjectResult ok)
+            {
+                var dto = ok.Value as AffiliateCodeDto;
+                dto.ShouldNotBeNull("Expected OkObjectResult.Value to be AffiliateCodeDto.");
+                return dto;
+            }
+
+            if (action.Value != null)
+            {
+                return action.Value;
+            }
+
+            throw new Exception($"Unexpected result type: {action.Result?.GetType().Name ?? "null"}");
         }
     }
 }
