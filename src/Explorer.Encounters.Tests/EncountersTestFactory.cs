@@ -1,6 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Tests;
 using Explorer.Encounters.Infrastructure.Database;
 using Explorer.Stakeholders.Infrastructure.Database;
+using Explorer.Tours.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -22,6 +23,10 @@ public class EncountersTestFactory : BaseTestFactory<EncountersContext>
         var stDesc = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<StakeholdersContext>));
         if (stDesc != null) services.Remove(stDesc);
         services.AddDbContext<StakeholdersContext>(SetupTestContext());
+
+        var tDesc = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ToursContext>));
+        if (tDesc != null) services.Remove(tDesc);
+        services.AddDbContext<ToursContext>(SetupTestContext());
 
         return services;
     }

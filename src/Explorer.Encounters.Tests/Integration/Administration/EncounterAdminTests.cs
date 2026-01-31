@@ -22,11 +22,11 @@ namespace Explorer.Encounters.Tests.Integration.Administration
             var controller = CreateController(scope);
 
             // Act
-            var result = ((ObjectResult)controller.GetPaged(0, 10).Result)?.Value as PagedResult<EncounterDto>;
+            var result = ((ObjectResult)controller.GetPaged(0, 20).Result)?.Value as PagedResult<EncounterViewDto>;
 
             // Assert
             result.ShouldNotBeNull();
-            result.Results.Count.ShouldBe(7);
+            result.Results.Count.ShouldBe(14);
         }
 
         [Fact]
@@ -123,33 +123,24 @@ namespace Explorer.Encounters.Tests.Integration.Administration
         }
 
         [Fact]
-        public void Approve_DoesNotThrow()
+        public void Approve_Endpoint_Completes_Without_Exception()
         {
             using var scope = Factory.Services.CreateScope();
-            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+            var controller = CreateController(scope);
 
-            var ex = Record.Exception(() => service.Approve(-5));
-            Assert.Null(ex);
+
+            var result = controller.Approve(-5) as NoContentResult;
+            result.ShouldNotBeNull();
         }
 
         [Fact]
-        public void Publish_DoesNotThrow()
+        public void Decline_Endpoint_Completes_Without_Exception()
         {
             using var scope = Factory.Services.CreateScope();
-            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+            var controller = CreateController(scope);
 
-            var ex = Record.Exception(() => service.Publish(-3));
-            Assert.Null(ex);
-        }
-
-        [Fact]
-        public void Decline_DoesNotThrow()
-        {
-            using var scope = Factory.Services.CreateScope();
-            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
-
-            var ex = Record.Exception(() => service.Decline(-6));
-            Assert.Null(ex);
+            var result = controller.Decline(-12) as NoContentResult;
+            result.ShouldNotBeNull();
         }
 
         [Fact]

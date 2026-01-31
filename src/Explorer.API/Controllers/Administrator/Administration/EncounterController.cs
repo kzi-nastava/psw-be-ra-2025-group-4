@@ -20,7 +20,7 @@ namespace Explorer.API.Controllers.Administrator.Administration
         }
 
         [HttpGet]
-        public ActionResult<PagedResult<EncounterDto>> GetPaged(
+        public ActionResult<PagedResult<EncounterViewDto>> GetPaged(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 50)
         {

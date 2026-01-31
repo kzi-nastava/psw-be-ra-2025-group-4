@@ -31,6 +31,11 @@ namespace Explorer.Encounters.Core.Domain
             StartedAtUtc = DateTime.UtcNow;
         }
 
+        public void SetWithinRadius(DateTime sinceUtc)
+        {
+            WithinRadiusSinceUtc = sinceUtc;
+        }
+
         public void EnterRadius()
         {
             if (WithinRadiusSinceUtc == null)
@@ -46,6 +51,11 @@ namespace Explorer.Encounters.Core.Domain
         {
             Status = EncounterExecutionStatus.Completed;
             CompletedAtUtc = DateTime.UtcNow;
+        }
+
+        public void SetStartedAt(DateTime startedAtUtc)
+        {
+            StartedAtUtc = startedAtUtc;
         }
     }
 }

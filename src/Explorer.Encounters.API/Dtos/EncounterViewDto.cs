@@ -21,5 +21,8 @@ namespace Explorer.Encounters.API.Dtos
         public LocationDto? PhotoPoint { get; set; }
         public double? ActivationRadiusMeters { get; set; }
         public int? MinimumParticipants { get; set; }
+
+        public List<QuizQuestionDto>? Questions { get; set; }
+        public int? TimeLimit { get; set; }
     }
 }
