@@ -15,5 +15,7 @@ namespace Explorer.Payments.API.Dtos
         public DateTime? ExpiresAt { get; set; }
         public int UsageCount { get; set; }
         public DateTime? DeactivatedAt { get; set; }
+        public string? TourName { get; set; }
+
     }
 }

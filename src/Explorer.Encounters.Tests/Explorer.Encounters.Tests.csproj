@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Integration\" />
     <Folder Include="TestData\" />
     <Folder Include="Unit\Tourist\" />
   </ItemGroup>

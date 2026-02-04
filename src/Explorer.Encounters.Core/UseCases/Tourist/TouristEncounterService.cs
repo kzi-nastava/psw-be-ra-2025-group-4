@@ -110,6 +110,25 @@ namespace Explorer.Encounters.Core.UseCases
                     dto.MinimumParticipants = social.MinimumParticipants;
                     dto.ActivationRadiusMeters = social.ActivationRadiusMeters;
                     break;
+
+                case QuizEncounter quiz:
+                    dto.TimeLimit = quiz.TimeLimit;
+                    dto.Questions = quiz.Questions?
+                        .Select(q => new QuizQuestionDto
+                        {
+                            Id = q.Id,
+                            Text = q.Text,
+                            Answers = q.Answers?
+                                .Select(a => new EncounterQuizAnswerDto
+                                {
+                                    Id = a.Id,
+                                    Text = a.Text,
+                                    IsCorrect = a.IsCorrect
+                                })
+                                .ToList()
+                        })
+                        .ToList();
+                    break;
             }
         }
 
@@ -122,18 +141,20 @@ namespace Explorer.Encounters.Core.UseCases
             if (isStarted || isCompleted)
                 return false;
 
-            if (encounter is HiddenLocationEncounter hidden)
+            switch (encounter)
             {
-                var distance = hidden.PhotoPoint.DistanceToMeters(touristLocation);
-                return distance <= hidden.ActivationRadiusMeters;
-            } else if (encounter is SocialEncounter social)
-            {
-                var distance = social.Location.DistanceToMeters(touristLocation);
-                return distance <= social.ActivationRadiusMeters;
-            }
-            return true;
-        }
+                case HiddenLocationEncounter hidden:
+                    var hiddenDistance = hidden.PhotoPoint.DistanceToMeters(touristLocation);
+                    return hiddenDistance <= hidden.ActivationRadiusMeters;
 
+                case SocialEncounter social:
+                    var socialDistance = social.Location.DistanceToMeters(touristLocation);
+                    return socialDistance <= social.ActivationRadiusMeters;
+
+                default:
+                    return true;
+            }
+        }
         public void StartEncounter(long touristId, long encounterId)
         {
             var encounter = _encounterRepository.GetById(encounterId);
@@ -154,7 +175,9 @@ namespace Explorer.Encounters.Core.UseCases
             var encounterParticipant = _encounterParticipantRepository.Get(touristId);
             if (encounterParticipant == null)
             {
-                _encounterParticipantRepository.Add(new EncounterParticipant(touristId));
+                var participant = new EncounterParticipant(touristId);
+                participant.AddExperience(xp);
+                _encounterParticipantRepository.Add(participant);
             }
             else
             {
@@ -227,11 +250,10 @@ namespace Explorer.Encounters.Core.UseCases
 
             if (execution.Status == EncounterExecutionStatus.Completed)
                 throw new InvalidOperationException("Encounter already completed!");
-
             var touristLoc = ToDomainLocation(touristLocation);
-
             var distanceToPhotoPoint = encounter.PhotoPoint.DistanceToMeters(touristLoc);
             var insideCompletionRadius = distanceToPhotoPoint <= encounter.CompletionRadiusMeters;
+
 
             if (!insideCompletionRadius)
             {
@@ -255,7 +277,6 @@ namespace Explorer.Encounters.Core.UseCases
                 execution.Complete();
                 UpdateParticipance((int)touristId, encounter.ExperiencePoints);
                 _encounterExecutionRepository.Update(execution);
-
                 return new EncounterUpdateResultDto
                 {
                     IsCompleted = true,
@@ -263,6 +284,29 @@ namespace Explorer.Encounters.Core.UseCases
                 };
             }
             return new EncounterUpdateResultDto { IsCompleted = false };
+        }
+
+        public EncounterUpdateResultDto FailQuiz(long touristId, long encounterId)
+        {
+            var encounter = _encounterRepository.GetById(encounterId) as QuizEncounter;
+            if (encounter == null)
+                throw new ArgumentException("Encounter not found.");
+
+            var execution = _encounterExecutionRepository.Get(touristId, encounterId);
+            if (execution == null)
+                throw new NotFoundException("Encounter execution not found. Activate encounter first.");
+
+            if (execution.Status == EncounterExecutionStatus.Completed)
+                throw new InvalidOperationException("Encounter already completed!");
+
+            execution.Complete();
+            _encounterExecutionRepository.Update(execution);
+
+            return new EncounterUpdateResultDto
+            {
+                IsCompleted = false,
+                ExperiencePointsGained = 0
+            };
         }
 
 
@@ -292,8 +336,56 @@ namespace Explorer.Encounters.Core.UseCases
                 IsCompleted = true,
                 ExperiencePointsGained = encounter.ExperiencePoints
             };
-
         }
+
+        public EncounterUpdateResultDto SubmitQuizAnswer(long touristId, long encounterId, List<QuizAnswerSubmitDto> answerDto)
+        {
+            var encounter = _encounterRepository.GetQuizById(encounterId) as QuizEncounter;
+            if (encounter == null)
+                throw new ArgumentException("Encounter not found.");
+
+            var execution = _encounterExecutionRepository.Get(touristId, encounterId);
+            if (execution == null)
+                throw new NotFoundException("Encounter execution not found. Activate encounter first.");
+
+            if (execution.Status == EncounterExecutionStatus.Completed)
+                throw new InvalidOperationException("Encounter already completed!");
+
+            if (!encounter.IsCompletedOnTime(execution.StartedAtUtc))
+                throw new InvalidOperationException("Time limit exceeded for this quiz encounter.");
+
+            bool allCorrect = true;
+            foreach (var answerDtoItem in answerDto)
+            {
+                if (!encounter.IsAnswerCorrect(answerDtoItem.QuestionId, answerDtoItem.SelectedAnswerId))
+                {
+                    allCorrect = false;
+                    break;
+                }
+            }
+
+            if (!allCorrect)
+            {
+                execution.Complete();
+                _encounterExecutionRepository.Update(execution);
+                return new EncounterUpdateResultDto
+                {
+                    IsCompleted = false,
+                    ExperiencePointsGained = 0
+                };
+            }
+
+            execution.Complete();
+            UpdateParticipance((int)touristId, encounter.ExperiencePoints);
+            _encounterExecutionRepository.Update(execution);
+
+            return new EncounterUpdateResultDto
+            {
+                IsCompleted = true,
+                ExperiencePointsGained = encounter.ExperiencePoints
+            };
+        }
+
 
         public IEnumerable<EncounterViewDto> GetByTourist(long touristId)
         {

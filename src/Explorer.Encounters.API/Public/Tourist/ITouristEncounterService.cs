@@ -16,6 +16,8 @@ namespace Explorer.Encounters.API.Public.Tourist
         EncounterUpdateResultDto UpdateSocialEncounter(long touristId, long encounterId, LocationDto touristLocation);
         EncounterUpdateResultDto UpdateLocationHiddenEncounter(long touristId, long encounterId, LocationDto touristLocation);
         EncounterUpdateResultDto CompleteEncounter(long touristId, long encounterId);
+        EncounterUpdateResultDto SubmitQuizAnswer(long touristId, long encounterId, List<QuizAnswerSubmitDto> answerDto);
+        EncounterUpdateResultDto FailQuiz(long touristId, long encounterId);
         IEnumerable<EncounterViewDto> GetByTourist(long touristId);
         bool IsEncounterCompleted(long tourPointId, long touristId);
     }

@@ -12,6 +12,7 @@ namespace Explorer.Encounters.Core.Domain.RepositoryInterfaces
     {
         Encounter Create(Encounter encounter);
         Encounter? GetById(long id);
+        Encounter? GetQuizById(long id);
         Encounter? GetByTourPointId(int tourPointId);
         PagedResult<Encounter> GetPaged(int page, int pageSize);
         List<Encounter> GetByTourPointIds(IEnumerable<int> tourPointIds);

@@ -57,7 +57,6 @@ namespace Explorer.API.Controllers.Tourist.Payments
         }
 
         [HttpPost]
-        [HttpPost]
         public async Task<ActionResult<List<TourPurchaseTokenDto>>> Checkout([FromBody] CheckoutRequestDto? request = null)
         {
             try

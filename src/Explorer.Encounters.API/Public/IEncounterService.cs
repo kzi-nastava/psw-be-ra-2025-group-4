@@ -11,7 +11,7 @@ namespace Explorer.Encounters.API.Public.Administration
 {
     public interface IEncounterService
     {
-        PagedResult<EncounterDto> GetPaged(int page, int pageSize);
+        PagedResult<EncounterViewDto> GetPaged(int page, int pageSize);
 
         List<EncounterViewDto> GetByTourPointIds(IEnumerable<int> tourPointIds);
         IEnumerable<EncounterDto> GetActive();
@@ -21,6 +21,9 @@ namespace Explorer.Encounters.API.Public.Administration
 
         SocialEncounterDto CreateSocial(SocialEncounterDto dto, bool needsApproval);
         SocialEncounterDto UpdateSocial(SocialEncounterDto dto, int encounterId);
+
+        QuizEncounterDto CreateQuiz(QuizEncounterDto dto, bool needsApproval);
+        QuizEncounterDto UpdateQuiz(QuizEncounterDto dto, int encounterId);
 
         EncounterDto Update(EncounterUpdateDto dto, int encounterId);
         void Publish(int id);

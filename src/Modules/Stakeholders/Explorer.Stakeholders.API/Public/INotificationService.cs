@@ -15,6 +15,7 @@ namespace Explorer.Stakeholders.API.Public
         void MarkConversationAsRead(long userId, long actorId);
         NotificationDto CreateFollowNotification(long userId, long actorId, string actorUsername, string resourceUrl);
         public NotificationDto SendAchievementNotification(long userId);
+        NotificationDto CreateAffiliateCodeAssignedNotification(long partnerUserId, long actorId, string? actorUsername, string content, string? resourceUrl);
 
     }
 }

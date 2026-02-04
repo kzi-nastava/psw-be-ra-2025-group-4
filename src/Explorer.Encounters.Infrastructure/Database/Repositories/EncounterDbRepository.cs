@@ -52,11 +52,19 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
             return entity;
         }
 
+        public Encounter? GetQuizById(long id)
+        {
+            return DbContext.Encounters
+                .Include(e => ((QuizEncounter)e).Questions)!
+                    .ThenInclude(q => q.Answers)!
+                .FirstOrDefault(e => e.Id == id);
+        }
+
+
         public PagedResult<Encounter> GetPaged(int pageNumber, int pageSize)
         {
-            var task = _dbSet
-                .GetPagedById(pageSize, pageNumber);
-            task.Wait();
+            var task = _dbSet.GetPagedById(pageSize, pageNumber);
+            task.Wait();  
             return task.Result;
         }
 
@@ -89,12 +97,34 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
         }
         public List<Encounter> GetByTourPointIds(IEnumerable<int> tourPointIds)
         {
-            return _dbSet
+            var encounters = _dbSet
                 .Where(e => e.TourPointId.HasValue &&
-                            tourPointIds.Contains((int)e.TourPointId.Value)
-                            && e.ApprovalStatus == EncounterApprovalStatus.APPROVED)
+                            tourPointIds.Contains((int)e.TourPointId.Value) &&
+                            e.ApprovalStatus == EncounterApprovalStatus.APPROVED)
                 .ToList();
+
+            LoadQuizAggregates(encounters);
+
+            return encounters;
         }
+
+        private void LoadQuizAggregates(List<Encounter> encounters)
+        {
+            var quizIds = encounters
+                .OfType<QuizEncounter>()
+                .Select(q => q.Id)
+                .ToList();
+
+            if (!quizIds.Any()) return;
+
+            DbContext.QuizEncounters
+                .Where(q => quizIds.Contains(q.Id))
+                .Include(q => q.Questions)
+                    .ThenInclude(q => q.Answers)
+                .Load();
+        }
+
+
 
         public Encounter? GetByTourPointId(int tourPointId)
         {

@@ -98,6 +98,27 @@ namespace Explorer.API.Controllers.Author
             return Ok(result);
         }
 
+        [HttpPost("quiz")]
+        public ActionResult<QuizEncounterDto> CreateQuiz([FromBody] QuizEncounterDto dto)
+        {
+            var result = _encounterService.CreateQuiz(dto, false);
+            if (dto.TourPointId != null)
+                _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion ?? false);
+
+            return Ok(result);
+        }
+
+        [HttpPut("quiz/{id:int}")]
+        public ActionResult<QuizEncounterDto> UpdateQuiz([FromBody] QuizEncounterDto dto, int id)
+        {
+            var result = _encounterService.UpdateQuiz(dto, id);
+
+            if (dto.TourPointId != null)
+                _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion ?? false);
+
+            return Ok(result);
+        }
+
         [HttpPut("{id:int}")]
         public ActionResult<EncounterDto> Update([FromBody] EncounterUpdateDto dto, int id)
         {

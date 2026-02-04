@@ -20,6 +20,7 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<TouristReferralInvite> TouristReferralInvites { get; set; }
 
         public DbSet<GiftCard> GiftCards { get; set; }
+        public DbSet<AffiliateRedemption> AffiliateRedemptions { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -128,6 +129,30 @@ namespace Explorer.Payments.Infrastructure.Database
             });
 
 
+            modelBuilder.Entity<AffiliateRedemption>(builder =>
+            {
+                builder.ToTable("AffiliateRedemptions");
+                builder.HasKey(r => r.Id);
+
+                builder.Property(r => r.AffiliateCodeId).IsRequired();
+                builder.Property(r => r.Code).IsRequired().HasMaxLength(16);
+
+                builder.Property(r => r.AuthorId).IsRequired();
+                builder.Property(r => r.TourId).IsRequired();
+
+                builder.Property(r => r.AffiliateTouristId).IsRequired();
+                builder.Property(r => r.BuyerTouristId).IsRequired();
+
+                builder.Property(r => r.AmountPaid).IsRequired().HasColumnType("decimal(18,2)");
+                builder.Property(r => r.CommissionAmount).IsRequired().HasColumnType("decimal(18,2)");
+
+                builder.Property(r => r.CreatedAt).IsRequired();
+
+                builder.HasIndex(r => r.AuthorId);
+                builder.HasIndex(r => r.TourId);
+                builder.HasIndex(r => r.AffiliateCodeId);
+                builder.HasIndex(r => r.CreatedAt);
+            });
 
             modelBuilder.Entity<GroupTravelRequest>(builder =>
             {
