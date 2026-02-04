@@ -13,10 +13,12 @@ namespace Explorer.Stakeholders.Core.UseCases;
 public class UserAchievementService : IUserAchievementService
 {
     private readonly IUserAchievementsRepository _repo;
+    private readonly INotificationService _notificationService;
 
-    public UserAchievementService(IUserAchievementsRepository repo)
+    public UserAchievementService(IUserAchievementsRepository repo, INotificationService notificationService)
     {
         _repo = repo;
+        _notificationService = notificationService;
     }
 
     public void EvaluateTourAchievements(long userId, int completedTours)
@@ -26,9 +28,15 @@ public class UserAchievementService : IUserAchievementService
 
         //var completedTours = _tourStats.CompletedCountForUser(userId);
 
-        achievements.GrantTourAchievements(completedTours, DateTime.UtcNow);
+        var newAchievements =
+            achievements.GrantTourAchievements(completedTours, DateTime.UtcNow);
 
         _repo.Save(achievements);
+
+        foreach (var achievement in newAchievements)
+        {
+            _notificationService.SendAchievementNotification(userId);
+        }
     }
 
     public List<UserAchievementDto> GetUserAchievements(long userId)

@@ -120,6 +120,17 @@ namespace Explorer.Stakeholders.Core.UseCases
             return _mapper.Map<NotificationDto>(created);
         }
 
+        public NotificationDto SendAchievementNotification(long userId)
+        {
+            var notif = new Notification(
+                userId: userId,
+                content: "You unlocked a new Achievement!",
+                type: NotificationType.AchievementUnlocked
+            );
+
+            var created = _repo.Create(notif);
+            return _mapper.Map<NotificationDto>(created);
+        }
 
     }
 }

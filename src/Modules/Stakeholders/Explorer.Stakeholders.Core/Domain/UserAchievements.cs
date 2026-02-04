@@ -22,19 +22,35 @@ public class UserAchievements : Entity
         UserId = userId;
     }
 
-    public void GrantTourAchievements(int completedTours, DateTime now)
+    public List<AchievementType> GrantTourAchievements(int completedTours, DateTime now)
     {
-        GrantIfReached(1, AchievementType.OneTourCompleted, completedTours, now);
-        GrantIfReached(2, AchievementType.TwoToursCompleted, completedTours, now);
-        GrantIfReached(5, AchievementType.FiveToursCompleted, completedTours, now);
-        GrantIfReached(10, AchievementType.TenToursCompleted, completedTours, now);
+        var granted = new List<AchievementType>();
+
+        if (GrantIfReached(1, AchievementType.OneTourCompleted, completedTours, now))
+            granted.Add(AchievementType.OneTourCompleted);
+
+        if (GrantIfReached(2, AchievementType.TwoToursCompleted, completedTours, now))
+            granted.Add(AchievementType.TwoToursCompleted);
+
+        if (GrantIfReached(5, AchievementType.FiveToursCompleted, completedTours, now))
+            granted.Add(AchievementType.FiveToursCompleted);
+
+        if (GrantIfReached(10, AchievementType.TenToursCompleted, completedTours, now))
+            granted.Add(AchievementType.TenToursCompleted);
+
+        return granted;
     }
 
-    private void GrantIfReached(int required, AchievementType type, int completedTours, DateTime now)
+
+    private bool GrantIfReached(int required, AchievementType type, int completedTours, DateTime now)
     {
-        if (completedTours < required) return;
-        if (Achievements.Any(a => a.Type == type)) return;
+        if (completedTours < required)
+            return false;
+
+        if (Achievements.Any(a => a.Type == type))
+            return false;
 
         Achievements.Add(new UserAchievement(type, now));
+        return true;
     }
 }
