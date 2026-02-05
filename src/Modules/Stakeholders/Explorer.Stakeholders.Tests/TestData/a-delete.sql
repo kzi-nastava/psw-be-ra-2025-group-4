@@ -8,3 +8,5 @@ DELETE FROM stakeholders."Notifications";
 DELETE FROM stakeholders."DirectMessages";
 DELETE FROM stakeholders."UserProfiles";
 DELETE FROM stakeholders."ClubMessages";
+DELETE FROM stakeholders."UserAchievements";
+DELETE FROM stakeholders."UserAchievement";

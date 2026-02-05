@@ -141,7 +141,14 @@ public class TourExecutionDbRepository : ITourExecutionRepository
             .ToList();
     }
 
+    public int GetCompletedToursCountByTourist(long touristId)
+    {
+        if (touristId == 0)
+            throw new ArgumentException("Tourist ID must be valid.", nameof(touristId));
 
-
+        return _dbSet
+            .AsNoTracking()
+            .Count(te => te.TouristId == touristId && te.Status == TourExecutionStatus.Completed);
+    }
 }
 

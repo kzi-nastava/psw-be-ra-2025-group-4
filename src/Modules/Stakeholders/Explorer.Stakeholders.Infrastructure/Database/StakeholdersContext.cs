@@ -19,6 +19,8 @@ public class StakeholdersContext : DbContext
   
     public DbSet<Notification> Notifications { get; set; }
 
+    public DbSet<UserAchievements> UserAchievements { get; set; } = null!;
+
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -32,6 +34,7 @@ public class StakeholdersContext : DbContext
         ConfigureStakeholder(modelBuilder);
         ConfigureDirectMessage(modelBuilder);
         ConfigureFollow(modelBuilder);
+        ConfigureUserAchievements(modelBuilder);
     }
 
     private static void ConfigureStakeholder(ModelBuilder modelBuilder)
@@ -72,4 +75,25 @@ public class StakeholdersContext : DbContext
             .HasIndex(f => new { f.FollowerId, f.FollowedId })
             .IsUnique();
     }
+
+    private static void ConfigureUserAchievements(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserAchievements>(ua =>
+        {
+            ua.HasKey(x => x.Id);
+            ua.HasIndex(x => x.UserId).IsUnique();
+
+            ua.HasMany(x => x.Achievements)
+                .WithOne()
+                .HasForeignKey("UserAchievementsId")
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            ua.Navigation(x => x.Achievements)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+    }
+
+
+
 }

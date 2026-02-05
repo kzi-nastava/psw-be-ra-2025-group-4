@@ -16,5 +16,6 @@ public interface ITourExecutionRepository
     List<(DateTime Date, int Count)> GetDailyStarts(int tourId, DateTime from, DateTime to);
     List<(DateTime Date, int Count)> GetDailyCompleted(int tourId, DateTime from, DateTime to);
     List<(DateTime Date, int Count)> GetDailyAbandoned(int tourId, DateTime from, DateTime to);
+    public int GetCompletedToursCountByTourist(long touristId);
 }
 
