@@ -1,4 +1,5 @@
 ﻿DELETE FROM stakeholders."People";
+DELETE FROM stakeholders."TouristLocations";
 DELETE FROM stakeholders."Follows";
 DELETE FROM stakeholders."Users";
 DELETE FROM stakeholders."Clubs";
