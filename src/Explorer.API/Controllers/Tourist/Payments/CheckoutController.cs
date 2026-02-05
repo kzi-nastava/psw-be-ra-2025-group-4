@@ -41,19 +41,34 @@ namespace Explorer.API.Controllers.Tourist.Payments
             throw new Exception("No user id found");
         }
 
-        [HttpPost]
-        public async Task<ActionResult<List<TourPurchaseTokenDto>>> Checkout()
+        [HttpGet]
+        public ActionResult<List<TourPurchaseTokenDto>> GetPurchaseTokens()
         {
             try
             {
                 var touristId = GetTouristId();
-                var tokens = _checkoutService.Checkout(touristId);
-                
+                var tokens = _checkoutService.GetPurchaseTokens(touristId);
+                return Ok(tokens);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<List<TourPurchaseTokenDto>>> Checkout([FromBody] CheckoutRequestDto? request = null)
+        {
+            try
+            {
+                var touristId = GetTouristId();
+                var tokens = _checkoutService.Checkout(touristId, request);
+
                 var tourCount = tokens.Count;
-                var content = tourCount == 1 
-                    ? "A new tour has been added to your collection!" 
+                var content = tourCount == 1
+                    ? "A new tour has been added to your collection!"
                     : $"{tourCount} new tours have been added to your collection!";
-                
+
                 var notification = _notificationService.CreateMessageNotification(
                     userId: touristId,
                     actorId: -1,
@@ -61,11 +76,11 @@ namespace Explorer.API.Controllers.Tourist.Payments
                     content: content,
                     resourceUrl: "/tour-execution/all-tours"
                 );
-                
+
                 await _hubContext.Clients
                     .Group($"user_{touristId}")
                     .SendAsync("ReceiveNotification", notification);
-                
+
                 return Ok(tokens);
             }
             catch (InvalidOperationException ex)
@@ -73,5 +88,7 @@ namespace Explorer.API.Controllers.Tourist.Payments
                 return BadRequest(ex.Message);
             }
         }
+
+
     }
 }

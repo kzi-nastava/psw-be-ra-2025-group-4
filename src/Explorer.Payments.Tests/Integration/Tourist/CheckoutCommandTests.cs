@@ -231,5 +231,84 @@ namespace Explorer.Payments.Tests.Integration.Tourist
             var after = db.TourPurchaseTokens.Count(x => x.TouristId == touristId && x.TourId == 1);
             after.ShouldBe(before);
         }
+
+        [Fact]
+        public void GetPurchaseTokens_returns_all_tokens_for_tourist()
+        {
+            const string TestTourist = "10005";
+            var touristId = int.Parse(TestTourist);
+
+            using var scope = Factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+            var toursDb = scope.ServiceProvider.GetRequiredService<ToursContext>();
+            CleanState(db, toursDb, touristId);
+            EnsureTestToursExist(toursDb);
+
+            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, 1));
+            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, 2));
+            db.SaveChanges();
+
+            var controller = CreateController(scope, TestTourist);
+            var result = controller.GetPurchaseTokens();
+            var ok = result.Result as OkObjectResult;
+            ok.ShouldNotBeNull("GetPurchaseTokens should return 200 OK.");
+
+            var tokens = ok!.Value as List<TourPurchaseTokenDto>;
+            tokens.ShouldNotBeNull();
+            tokens!.Count.ShouldBe(2);
+            tokens.Any(t => t.TourId == 1).ShouldBeTrue();
+            tokens.Any(t => t.TourId == 2).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void GetPurchaseTokens_returns_empty_list_when_no_tokens_exist()
+        {
+            const string TestTourist = "10006";
+            var touristId = int.Parse(TestTourist);
+
+            using var scope = Factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+            var toursDb = scope.ServiceProvider.GetRequiredService<ToursContext>();
+            CleanState(db, toursDb, touristId);
+
+            var controller = CreateController(scope, TestTourist);
+            var result = controller.GetPurchaseTokens();
+            var ok = result.Result as OkObjectResult;
+            ok.ShouldNotBeNull("GetPurchaseTokens should return 200 OK.");
+
+            var tokens = ok!.Value as List<TourPurchaseTokenDto>;
+            tokens.ShouldNotBeNull();
+            tokens!.Count.ShouldBe(0);
+        }
+
+        [Fact]
+        public void GetPurchaseTokens_returns_only_tokens_for_current_tourist()
+        {
+            const string TestTourist = "10007";
+            const string OtherTourist = "10008";
+            var touristId = int.Parse(TestTourist);
+            var otherTouristId = int.Parse(OtherTourist);
+
+            using var scope = Factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+            var toursDb = scope.ServiceProvider.GetRequiredService<ToursContext>();
+            CleanState(db, toursDb, touristId);
+            CleanState(db, toursDb, otherTouristId);
+            EnsureTestToursExist(toursDb);
+
+            db.TourPurchaseTokens.Add(new TourPurchaseToken(touristId, 1));
+            db.TourPurchaseTokens.Add(new TourPurchaseToken(otherTouristId, 2));
+            db.SaveChanges();
+
+            var controller = CreateController(scope, TestTourist);
+            var result = controller.GetPurchaseTokens();
+            var ok = result.Result as OkObjectResult;
+            ok.ShouldNotBeNull("GetPurchaseTokens should return 200 OK.");
+
+            var tokens = ok!.Value as List<TourPurchaseTokenDto>;
+            tokens.ShouldNotBeNull();
+            tokens!.Count.ShouldBe(1);
+            tokens[0].TourId.ShouldBe(1);
+        }
     }
 }

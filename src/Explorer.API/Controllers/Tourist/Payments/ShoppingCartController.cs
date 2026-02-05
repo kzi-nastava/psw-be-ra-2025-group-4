@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
@@ -74,8 +74,18 @@ namespace Explorer.API.Controllers.Tourist.Payments
             return Ok(result);
         }
 
+        [HttpPost("{tourId:int}/with-price")]
+        public ActionResult<ShoppingCartDto> AddToCartWithPrice(int tourId, [FromBody] AddToCartWithPriceDto dto)
+        {
+            var result = _shoppingCartService.AddToCartWithPrice(GetTouristId(), tourId, dto.FinalPrice);
+            return Ok(result);
+        }
 
-
-
+        [HttpPost("{tourId:int}/gift")]
+        public ActionResult<ShoppingCartDto> SetGiftRecipient(int tourId, [FromBody] SetGiftRecipientDto dto)
+        {
+            var result = _shoppingCartService.SetGiftRecipient(GetTouristId(), tourId, dto.RecipientUsername);
+            return Ok(result);
+        }
     }
 }

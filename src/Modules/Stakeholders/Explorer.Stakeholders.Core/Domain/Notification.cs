@@ -9,8 +9,9 @@ namespace Explorer.Stakeholders.Core.Domain
         Message = 0,
         ClubActivity = 1,
         Follow = 2,
-        ClubJoinRequestResponse = 3
-
+        ClubJoinRequestResponse = 3,
+        AffiliateCodeAssigned = 4,
+        AchievementUnlocked = 5
     }
 
     public class Notification : AggregateRoot

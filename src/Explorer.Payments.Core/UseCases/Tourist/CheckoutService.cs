@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
@@ -17,7 +19,12 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private readonly IPaymentRecordRepository _paymentRecordRepository;
         private readonly ITourInfoService _tourInfoService;
         private readonly IBundlePurchaseService _bundlePurchaseService;
+        private readonly IGroupTravelRequestRepository _groupTravelRequestRepository;
+        private readonly INotificationServiceInternal _notificationService;
+        private readonly IUserInfoService _userInfoService;
+        private readonly IAffiliateCodeRepository _affiliateCodeRepository;
         private readonly IMapper _mapper;
+        private readonly IAffiliateRedemptionRepository _affiliateRedemptionRepository;
 
         public CheckoutService(
             IShoppingCartRepository cartRepository,
@@ -26,7 +33,12 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             IPaymentRecordRepository paymentRecordRepository,
             ITourInfoService tourInfoService,
             IBundlePurchaseService bundlePurchaseService,
-            IMapper mapper)
+            IGroupTravelRequestRepository groupTravelRequestRepository,
+            INotificationServiceInternal notificationService,
+            IUserInfoService userInfoService,
+            IAffiliateCodeRepository affiliateCodeRepository,
+            IMapper mapper,
+            IAffiliateRedemptionRepository affiliateRedemptionRepository)
         {
             _cartRepository = cartRepository;
             _tokenRepository = tokenRepository;
@@ -34,15 +46,20 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             _paymentRecordRepository = paymentRecordRepository;
             _tourInfoService = tourInfoService;
             _bundlePurchaseService = bundlePurchaseService;
+            _groupTravelRequestRepository = groupTravelRequestRepository;
+            _notificationService = notificationService;
+            _userInfoService = userInfoService;
+            _affiliateCodeRepository = affiliateCodeRepository;
             _mapper = mapper;
+            _affiliateRedemptionRepository = affiliateRedemptionRepository;
         }
 
-        public List<TourPurchaseTokenDto> Checkout(int touristId)
+        public List<TourPurchaseTokenDto> Checkout(int touristId, CheckoutRequestDto? request = null)
         {
             var cart = _cartRepository.GetByTouristId(touristId);
             if (cart == null || cart.Items == null || !cart.Items.Any())
             {
-                throw new System.InvalidOperationException("Shopping cart is empty.");
+                throw new InvalidOperationException("Shopping cart is empty.");
             }
 
             var wallet = _walletRepository.GetByTouristId(touristId);
@@ -52,9 +69,9 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 wallet = _walletRepository.Create(wallet);
             }
 
-            decimal tourTotalPrice = 0;
-            var tourItemsToPurchase = new List<(OrderItem Item, decimal CurrentPrice)>();
+            var tourItemsToPurchase = new List<OrderItem>();
             var bundleItemsToPurchase = new List<OrderItem>();
+            var groupTravelItems = new List<(OrderItem Item, GroupTravelRequest Request)>();
 
             foreach (var item in cart.Items)
             {
@@ -67,47 +84,141 @@ namespace Explorer.Payments.Core.UseCases.Tourist
                 {
                     if (_tokenRepository.Exists(touristId, item.TourId)) continue;
 
-                    var tourInfo = _tourInfoService.Get(item.TourId);
-                    decimal currentPrice = tourInfo.Price;
+                    var groupTravelRequest = _groupTravelRequestRepository.GetByOrganizerId(touristId)
+                        .FirstOrDefault(r => r.TourId == item.TourId &&
+                                             r.Status != GroupTravelStatus.Completed &&
+                                             r.Status != GroupTravelStatus.Cancelled);
 
-                    tourTotalPrice += currentPrice;
-                    tourItemsToPurchase.Add((item, currentPrice));
+                    if (groupTravelRequest != null)
+                    {
+                        groupTravelItems.Add((item, groupTravelRequest));
+                        continue;
+                    }
+
+                    tourItemsToPurchase.Add(item);
                 }
             }
 
-            if (tourItemsToPurchase.Count == 0 && bundleItemsToPurchase.Count == 0)
+            if (tourItemsToPurchase.Count == 0 && bundleItemsToPurchase.Count == 0 && groupTravelItems.Count == 0)
             {
                 cart.Clear();
                 _cartRepository.Update(cart);
                 return new List<TourPurchaseTokenDto>();
             }
 
+            decimal tourTotalPrice = tourItemsToPurchase.Sum(item => item.Price);
             decimal bundleTotalPrice = bundleItemsToPurchase.Sum(item => item.Price);
-            decimal totalPrice = tourTotalPrice + bundleTotalPrice;
+
+            decimal groupTravelTotalPrice = 0;
+            foreach (var (_, groupTravelRequest) in groupTravelItems)
+            {
+                var acceptedParticipantIds = groupTravelRequest.GetAcceptedParticipantIds();
+                var totalParticipants = 1 + acceptedParticipantIds.Count;
+                groupTravelTotalPrice += groupTravelRequest.PricePerPerson * totalParticipants;
+            }
+
+            decimal totalPrice = tourTotalPrice + bundleTotalPrice + groupTravelTotalPrice;
 
             if (wallet.Balance < totalPrice)
             {
-                throw new System.InvalidOperationException($"Insufficient balance. Required: {totalPrice} AC, Available: {wallet.Balance} AC");
+                throw new InvalidOperationException(
+                    $"Insufficient balance. Required: {totalPrice} AC, Available: {wallet.Balance} AC");
             }
 
-            if (tourTotalPrice > 0)
+            if (totalPrice > 0)
             {
-                wallet.DeductBalance(tourTotalPrice);
+                wallet.DeductBalance(totalPrice);
                 _walletRepository.Update(wallet);
             }
 
             var createdTokens = new List<TourPurchaseTokenDto>();
 
-            foreach (var (item, currentPrice) in tourItemsToPurchase)
+            // GROUP TRAVEL
+            foreach (var (item, groupTravelRequest) in groupTravelItems)
             {
-                var paymentRecord = new PaymentRecord(touristId, item.TourId, currentPrice);
-                _paymentRecordRepository.Create(paymentRecord);
+                var acceptedParticipantIds = groupTravelRequest.GetAcceptedParticipantIds();
 
-                var token = new TourPurchaseToken(touristId, item.TourId);
-                var saved = _tokenRepository.Create(token);
-                createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(saved));
+                if (acceptedParticipantIds.Count == 0)
+                {
+                    var paymentRecord = new PaymentRecord(touristId, item.TourId, item.Price);
+                    _paymentRecordRepository.Create(paymentRecord);
+
+                    TryApplyAffiliate(touristId, item.TourId, item.Price, request);
+
+                    var token = new TourPurchaseToken(touristId, item.TourId);
+                    var saved = _tokenRepository.Create(token);
+                    createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(saved));
+                    continue;
+                }
+
+                var organizerToken = new TourPurchaseToken(touristId, item.TourId);
+                var savedOrganizerToken = _tokenRepository.Create(organizerToken);
+                createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(savedOrganizerToken));
+
+                var organizerPayment = new PaymentRecord(touristId, item.TourId, groupTravelRequest.PricePerPerson);
+                _paymentRecordRepository.Create(organizerPayment);
+
+                // Minimalno: affiliate samo na organizer-ov payment record
+                TryApplyAffiliate(touristId, item.TourId, groupTravelRequest.PricePerPerson, request);
+
+                var organizerUser = _userInfoService.GetUser(touristId);
+                foreach (var participantId in acceptedParticipantIds)
+                {
+                    if (_tokenRepository.Exists(participantId, item.TourId)) continue;
+
+                    var participantToken = new TourPurchaseToken(participantId, item.TourId);
+                    var savedParticipantToken = _tokenRepository.Create(participantToken);
+                    createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(savedParticipantToken));
+
+                    var participantPayment = new PaymentRecord(participantId, item.TourId, groupTravelRequest.PricePerPerson);
+                    _paymentRecordRepository.Create(participantPayment);
+
+                    if (organizerUser != null)
+                    {
+                        _notificationService.CreateMessageNotification(
+                            userId: participantId,
+                            actorId: touristId,
+                            actorUsername: organizerUser.Username,
+                            content: $"{organizerUser.Username} has completed the group travel for tour '{groupTravelRequest.TourName}'. The tour is now in your collection!",
+                            resourceUrl: "/tour-execution/purchased-tours"
+                        );
+                    }
+                }
+
+                groupTravelRequest.Complete();
+                _groupTravelRequestRepository.Update(groupTravelRequest);
             }
 
+            // NORMAL TOUR PURCHASES
+            foreach (var item in tourItemsToPurchase)
+            {
+                var paymentRecord = new PaymentRecord(touristId, item.TourId, item.Price);
+                _paymentRecordRepository.Create(paymentRecord);
+
+                TryApplyAffiliate(touristId, item.TourId, item.Price, request);
+
+                var recipientId = item.RecipientUserId ?? touristId;
+                var token = new TourPurchaseToken(recipientId, item.TourId);
+                var saved = _tokenRepository.Create(token);
+                createdTokens.Add(_mapper.Map<TourPurchaseTokenDto>(saved));
+
+                if (item.RecipientUserId.HasValue && item.RecipientUserId.Value != touristId)
+                {
+                    var buyerUser = _userInfoService.GetUser(touristId);
+                    if (buyerUser != null)
+                    {
+                        _notificationService.CreateMessageNotification(
+                            userId: item.RecipientUserId.Value,
+                            actorId: touristId,
+                            actorUsername: buyerUser.Username,
+                            content: $"{buyerUser.Username} has gifted you the tour '{item.TourName}'. The tour is now in your collection!",
+                            resourceUrl: "/tour-execution/purchased-tours"
+                        );
+                    }
+                }
+            }
+
+            // BUNDLES
             foreach (var item in bundleItemsToPurchase)
             {
                 var bundleTokens = _bundlePurchaseService.PurchaseBundle(touristId, item.BundleId.Value);
@@ -118,6 +229,62 @@ namespace Explorer.Payments.Core.UseCases.Tourist
             _cartRepository.Update(cart);
 
             return createdTokens;
+        }
+
+        private void TryApplyAffiliate(int buyerTouristId, int tourId, decimal paidPrice, CheckoutRequestDto? request)
+        {
+            var map = request?.AffiliateCodesByTourId;
+            if (map == null || map.Count == 0) return;
+
+            if (!map.TryGetValue(tourId, out var codeStr)) return;
+            if (string.IsNullOrWhiteSpace(codeStr)) return;
+
+            codeStr = codeStr.Trim();
+
+            var code = _affiliateCodeRepository.GetByCode(codeStr);
+            if (code == null) throw new InvalidOperationException("Affiliate code not found.");
+            if (!code.Active) throw new InvalidOperationException("Affiliate code is not active.");
+            if (code.IsExpired()) throw new InvalidOperationException("Affiliate code is expired.");
+
+            if (code.TourId.HasValue && code.TourId.Value != tourId)
+                throw new InvalidOperationException("Affiliate code is not valid for this tour.");
+
+            if (code.AffiliateTouristId == buyerTouristId)
+                throw new InvalidOperationException("You cannot use your own affiliate code.");
+
+            var commission = Math.Round(paidPrice * (code.Percent / 100m), 2, MidpointRounding.AwayFromZero);
+            if (commission <= 0) return;
+
+            var affiliateWallet = _walletRepository.GetByTouristId(code.AffiliateTouristId);
+            if (affiliateWallet == null)
+            {
+                affiliateWallet = new Wallet(code.AffiliateTouristId);
+                affiliateWallet = _walletRepository.Create(affiliateWallet);
+            }
+
+            affiliateWallet.AddBalance(commission);
+            _walletRepository.Update(affiliateWallet);
+
+            var redemption = new AffiliateRedemption(
+                    affiliateCodeId: (int)code.Id,
+                    code: code.Code,
+                    authorId: code.AuthorId,
+                    tourId: tourId,
+                    affiliateTouristId: code.AffiliateTouristId,
+                    buyerTouristId: buyerTouristId,
+                    amountPaid: paidPrice,
+                    commissionAmount: commission
+                );
+            _affiliateRedemptionRepository.Create(redemption);
+
+            code.IncrementUsage();
+            _affiliateCodeRepository.SaveChanges();
+        }
+
+        public List<TourPurchaseTokenDto> GetPurchaseTokens(int touristId)
+        {
+            var tokens = _tokenRepository.GetByTouristId(touristId);
+            return tokens.Select(t => _mapper.Map<TourPurchaseTokenDto>(t)).ToList();
         }
     }
 }

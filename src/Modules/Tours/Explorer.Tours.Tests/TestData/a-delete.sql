@@ -11,6 +11,7 @@ DELETE FROM tours."Quizzes";
 DELETE FROM tours."Sales";
 DELETE FROM tours."BundleTour";
 DELETE FROM tours."Bundles";
+DELETE FROM tours."MysteryTourOffers";
 DELETE FROM tours."Tours";
 DELETE FROM tours."Equipment";
 DELETE FROM tours."Facility";

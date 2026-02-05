@@ -16,8 +16,9 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
         public EncounterExecution? Get(long touristId, long encounterId)
         {
             return _context.Set<EncounterExecution>()
-                .SingleOrDefault(x => x.EncounterId == encounterId && x.TouristId == touristId);
+                .FirstOrDefault(x => x.EncounterId == encounterId && x.TouristId == touristId);
         }
+
 
         public bool Exists(long touristId, long encounterId)
         {
@@ -38,28 +39,14 @@ namespace Explorer.Encounters.Infrastructure.Database.Repositories
             return execution;
         }
 
-        public void ResolveEncounterForParticipants(long encounterId, IEnumerable<long> touristIdsInRange)
+        public IEnumerable<EncounterExecution> GetActiveExecutions(long encounterId) 
         {
-            var touristIds = touristIdsInRange.ToList();
-
-            var existingExecutions = _context.Set<EncounterExecution>()
-                .Where(e => e.EncounterId == encounterId && touristIds.Contains(e.TouristId))
-                .ToDictionary(e => e.TouristId, e => e);
-
-            foreach (var touristId in touristIds)
-            {
-                if (existingExecutions.ContainsKey(touristId))
-                {
-                    continue;
-                }
-
-                var execution = new EncounterExecution(touristId, encounterId);
-
-                execution.Complete();
-
-                _context.Add(execution);
-            }
-            _context.SaveChanges();
+            return _context.Set<EncounterExecution>()
+                .Where(execution =>
+                    execution.EncounterId == encounterId &&
+                    execution.Status == EncounterExecutionStatus.Started &&
+                    execution.WithinRadiusSinceUtc != null)
+                .ToList();
         }
     }
 }

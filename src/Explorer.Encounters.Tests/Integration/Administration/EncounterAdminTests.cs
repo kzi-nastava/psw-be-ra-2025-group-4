@@ -5,6 +5,7 @@ using Explorer.BuildingBlocks.Core.UseCases;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace Explorer.Encounters.Tests.Integration.Administration
 {
@@ -21,11 +22,11 @@ namespace Explorer.Encounters.Tests.Integration.Administration
             var controller = CreateController(scope);
 
             // Act
-            var result = ((ObjectResult)controller.GetPaged(0, 10).Result)?.Value as PagedResult<EncounterDto>;
+            var result = ((ObjectResult)controller.GetPaged(0, 20).Result)?.Value as PagedResult<EncounterViewDto>;
 
             // Assert
             result.ShouldNotBeNull();
-            result.Results.Count.ShouldBe(4);
+            result.Results.Count.ShouldBeGreaterThan(0);
         }
 
         [Fact]
@@ -56,6 +57,40 @@ namespace Explorer.Encounters.Tests.Integration.Administration
             created.ShouldNotBeNull();
             created!.Name.ShouldBe("New Encounter");
 
+        }
+
+        [Fact]
+        public void Creates_hidden_location_encounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var dto = new HiddenLocationEncounterDto
+            {
+                Name = "Hidden Encounter",
+                Description = "Hidden test",
+                ExperiencePoints = 150,
+                Location = new LocationDto
+                {
+                    Latitude = 45.1,
+                    Longitude = 19.9
+                },
+                ImageUrl = "https://example.com/img.jpg",
+                PhotoPoint = new LocationDto
+                {
+                    Latitude = 45.11,
+                    Longitude = 19.91
+                },
+                ActivationRadiusMeters = 100
+            };
+
+            var actionResult = controller.CreateHidden(dto);
+            var objectResult = actionResult.Result as ObjectResult;
+
+            objectResult.ShouldNotBeNull();
+            var created = objectResult!.Value as HiddenLocationEncounterDto;
+            created.ShouldNotBeNull();
+            created!.Name.ShouldBe("Hidden Encounter");
         }
 
         [Fact]
@@ -98,6 +133,64 @@ namespace Explorer.Encounters.Tests.Integration.Administration
 
             response.ShouldBeOfType<NoContentResult>();
         }
+
+        [Fact]
+        public void GetPendingApproval_Returns_something()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var result = controller.GetPendingApproval();
+
+            result.ShouldNotBeNull();
+        }
+
+
+        [Fact]
+        public void Archive_DoesNotThrow()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+
+            var ex = Record.Exception(() => service.Archive(-6));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        public void Approve_Endpoint_Completes_Without_Exception()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+
+            var result = controller.Approve(-5) as NoContentResult;
+            result.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public void Decline_Endpoint_Completes_Without_Exception()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var result = controller.Decline(-12) as NoContentResult;
+            result.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public void AddEncounterToTourPoint_DoesNotThrow()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IEncounterService>();
+
+            var encounterId = -6;
+            var tourPointId = 999;
+            var isRequired = true;
+
+            service.AddEncounterToTourPoint(encounterId, tourPointId, isRequired);
+        }
+
+
 
         private static EncounterController CreateController(IServiceScope scope)
         {

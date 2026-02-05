@@ -117,7 +117,7 @@ public class TourExecutionService : ITourExecutionService
         return result;
     }
 
-    public TourExecutionDto Track(long executionId, long touristId, TourExecutionTrackDto dto)
+    public TourExecutionDto Track(long executionId, long touristId, TourExecutionTrackDto dto, bool isEncounterCompleted)
     {
         var execution = _executionRepository.GetById(executionId);
         if (execution.TouristId != touristId)
@@ -131,7 +131,7 @@ public class TourExecutionService : ITourExecutionService
 
         execution.RegisterActivity();
 
-        if (nextPoint != null && IsNear(dto, nextPoint))
+        if (nextPoint != null && IsNear(dto, nextPoint) && isEncounterCompleted)
         {
             execution.TryCompletePoint(nextPoint.Id);
         }
@@ -195,6 +195,11 @@ public class TourExecutionService : ITourExecutionService
         }
 
         return dto;
+    }
+
+    public int GetCompletedToursCountByTourist(long touristId)
+    {
+        return _executionRepository.GetCompletedToursCountByTourist(touristId);
     }
 }
 

@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="UseCases\Administration\" />
-    <Folder Include="UseCases\Author\" />
   </ItemGroup>
 
   <ItemGroup>

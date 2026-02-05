@@ -20,11 +20,16 @@ namespace Explorer.Tours.Infrastructure.Database
         public DbSet<TourPoint> TourPoints { get; set; }
         public DbSet<TourExecution> TourExecutions { get; set; }
         public DbSet<TourReview> TourReviews { get; set; }
+        public DbSet<FavoriteTour> FavoriteTours { get; set; }
         public DbSet<Bundle> Bundles { get; set; }
 
         public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
         public DbSet<MysteryTourOffer> MysteryTourOffers { get; set; }
         public DbSet<Sale> Sales { get; set; }
+        public DbSet<Guide> Guides { get; set; }
+        public DbSet<GuideTour> GuideTours { get; set; }
+        public DbSet<GuideAssignment> GuideAssignments { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -87,6 +92,17 @@ namespace Explorer.Tours.Infrastructure.Database
                         v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null) ?? new List<string>()
                         );
 
+            modelBuilder.Entity<FavoriteTour>(b =>
+            {
+                b.ToTable("FavoriteTours");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.TouristId).IsRequired();
+                b.Property(x => x.TourId).IsRequired();
+                b.Property(x => x.AddedAt).IsRequired();
+                b.HasIndex(x => new { x.TouristId, x.TourId }).IsUnique();
+                b.HasIndex(x => x.TouristId);
+            });
+
             modelBuilder.Entity<MysteryTourOffer>(b =>
             {
                 b.ToTable("MysteryTourOffers");
@@ -129,6 +145,37 @@ namespace Explorer.Tours.Infrastructure.Database
                         .HasForeignKey("BundleId")
                         .OnDelete(DeleteBehavior.Cascade)
                 );
+
+            modelBuilder.Entity<Guide>(b =>
+            {
+                b.ToTable("Guides");
+                b.Property(x => x.Languages).HasColumnType("text[]");
+            });
+
+            modelBuilder.Entity<GuideTour>(b =>
+            {
+                b.ToTable("GuideTours");
+                b.HasKey(x => new { x.GuideId, x.TourId });
+
+                b.HasOne(x => x.Guide)
+                    .WithMany(g => g.Tours)
+                    .HasForeignKey(x => x.GuideId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+            });
+
+            modelBuilder.Entity<GuideAssignment>(b =>
+            {
+                b.ToTable("GuideAssignments");
+                b.HasOne(x => x.Guide)
+                    .WithMany()
+                    .HasForeignKey(x => x.GuideId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(x => x.TourExecutionId);
+                b.HasIndex(x => x.GuideId);
+
+            });
 
             base.OnModelCreating(modelBuilder);
 

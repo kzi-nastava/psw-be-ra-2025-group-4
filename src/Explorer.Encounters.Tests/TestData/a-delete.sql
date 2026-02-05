@@ -1,5 +1,6 @@
-﻿DELETE FROM encounters."Encounters";
+﻿DELETE FROM encounters."Encounters" CASCADE;
 DELETE FROM encounters."SocialEncounters";
 DELETE FROM encounters."HiddenLocationEncounters";
-DELETE FROM encounters."SocialEncounterParticipants";
+DELETE FROM encounters."QuizEncounters";
 DELETE FROM encounters."EncounterParticipants";
+DELETE FROM encounters."EncounterExecutions" CASCADE;

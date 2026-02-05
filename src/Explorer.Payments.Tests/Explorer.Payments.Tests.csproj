@@ -22,12 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Integration\Administration\" />
-    <Folder Include="Integration\Author\" />
-    <Folder Include="TestData\" />
-  </ItemGroup>
-
-  <ItemGroup>
 	  <ProjectReference Include="..\Explorer.API\Explorer.API.csproj" />
 	  <ProjectReference Include="..\Explorer.Payments.API\Explorer.Payments.API.csproj" />
 	  <ProjectReference Include="..\Explorer.Payments.Core\Explorer.Payments.Core.csproj" />

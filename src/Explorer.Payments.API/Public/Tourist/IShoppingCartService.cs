@@ -1,4 +1,4 @@
-﻿using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Dtos;
 
 namespace Explorer.Payments.API.Public.Tourist
 {
@@ -11,5 +11,6 @@ namespace Explorer.Payments.API.Public.Tourist
         ShoppingCartDto RemoveBundleFromCart(int touristId, int bundleId);
         ShoppingCartDto ClearCart(int touristId);
         ShoppingCartDto AddToCartWithPrice(int touristId, int tourId, decimal finalPrice);
+        ShoppingCartDto SetGiftRecipient(int touristId, int tourId, string recipientUsername);
     }
 }

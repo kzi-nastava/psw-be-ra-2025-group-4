@@ -15,9 +15,7 @@ public class EncountersContext : DbContext
 
     public DbSet<Encounter> Encounters { get; set; } = null!;
     public DbSet<EncounterExecution> EncounterExecutions { get; set; }
-    public DbSet<HiddenLocationEncounter> HiddenLocationEncounters { get; set; }
-
-    public DbSet<SocialEncounterParticipant> SocialEncounterParticipant { get; set; }
+    public DbSet<QuizEncounter> QuizEncounters { get; set;} = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,30 +49,41 @@ public class EncountersContext : DbContext
 
         modelBuilder.Entity<HiddenLocationEncounter>()
             .Property(h => h.PhotoPoint)
-            .HasColumnType("jsonb")
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<Location>(v, (JsonSerializerOptions?)null)!
-            );
+               .HasColumnType("jsonb")
+               .HasConversion(
+                   v => JsonSerializer.Serialize(v, new JsonSerializerOptions
+                   {
+                       PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                   }),
+                   v => JsonSerializer.Deserialize<Location>(v, new JsonSerializerOptions
+                   {
+                       PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                   })
+               );
 
         modelBuilder.Entity<SocialEncounter>()
             .ToTable("SocialEncounters");
 
-        modelBuilder.Entity<SocialEncounterParticipant>()
-            .ToTable("SocialEncounterParticipants")
-            .HasKey(p => p.Id);
-
-        modelBuilder.Entity<SocialEncounterParticipant>()
-            .HasOne(p => p.SocialEncounter)
-            .WithMany(e => e.Participants)
-            .HasForeignKey(p => p.SocialEncounterId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<SocialEncounterParticipant>()
-            .HasIndex(p => p.LastSeenAt);
-
         modelBuilder.Entity<EncounterParticipant>()
             .ToTable("EncounterParticipants")
-            .HasKey(p => p.Id);            
+            .HasKey(p => p.Id);
+
+        modelBuilder.Entity<QuizEncounter>()
+            .ToTable("QuizEncounters")
+            .HasMany(e => e.Questions)
+            .WithOne()
+            .HasForeignKey(q => q.QuizEncounterId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<QuizAnswer>()
+            .ToTable("QuizAnswers");
+
+        modelBuilder.Entity<QuizQuestion>()
+            .ToTable("QuizQuestions")
+            .HasMany(q => q.Answers)
+            .WithOne()
+            .HasForeignKey(a => a.QuizQuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

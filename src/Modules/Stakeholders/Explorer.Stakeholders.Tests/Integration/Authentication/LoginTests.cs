@@ -61,6 +61,7 @@ public class LoginTests : BaseStakeholdersIntegrationTest
     {
         return new AuthenticationController(
             scope.ServiceProvider.GetRequiredService<IAuthenticationService>(),
-            scope.ServiceProvider.GetRequiredService<Explorer.Payments.API.Public.Administration.IWalletAdministrationService>());
+            scope.ServiceProvider.GetRequiredService<Explorer.Payments.API.Public.Administration.IWalletAdministrationService>(),
+            scope.ServiceProvider.GetRequiredService<Explorer.Payments.API.Public.Tourist.ITouristReferralInviteService>());
     }
 }

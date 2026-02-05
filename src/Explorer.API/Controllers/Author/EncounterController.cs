@@ -22,7 +22,7 @@ namespace Explorer.API.Controllers.Author
         }
 
         [HttpGet]
-        public ActionResult<PagedResult<EncounterDto>> GetPaged(
+        public ActionResult<PagedResult<EncounterViewDto>> GetPaged(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 50)
         {
@@ -32,7 +32,7 @@ namespace Explorer.API.Controllers.Author
 
 
         [HttpGet("by-tour/{tourId:int}")]
-        public ActionResult<List<EncounterDto>> GetByTourId(int tourId)
+        public ActionResult<List<EncounterViewDto>> GetByTourId(int tourId)
         {
             var tour = _tourService.GetById(tourId);
             if (tour == null)
@@ -94,6 +94,27 @@ namespace Explorer.API.Controllers.Author
 
             if (dto.TourPointId != null)
                 _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion);
+
+            return Ok(result);
+        }
+
+        [HttpPost("quiz")]
+        public ActionResult<QuizEncounterDto> CreateQuiz([FromBody] QuizEncounterDto dto)
+        {
+            var result = _encounterService.CreateQuiz(dto, false);
+            if (dto.TourPointId != null)
+                _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion ?? false);
+
+            return Ok(result);
+        }
+
+        [HttpPut("quiz/{id:int}")]
+        public ActionResult<QuizEncounterDto> UpdateQuiz([FromBody] QuizEncounterDto dto, int id)
+        {
+            var result = _encounterService.UpdateQuiz(dto, id);
+
+            if (dto.TourPointId != null)
+                _encounterService.AddEncounterToTourPoint(result.Id, (long)dto.TourPointId, dto.IsRequiredForPointCompletion ?? false);
 
             return Ok(result);
         }

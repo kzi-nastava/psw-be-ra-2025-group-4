@@ -216,5 +216,36 @@ namespace Explorer.Encounters.Tests.Unit
             Should.Throw<InvalidOperationException>(() => encounter.Decline());
         }
 
+        [Fact]
+        public void Approving_a_declined_encounter_throws()
+        {
+            var encounter = new Encounter(
+                "Name",
+                "Desc",
+                new Location(19.8335, 45.2671),
+                100,
+                EncounterType.Social,
+                EncounterApprovalStatus.DECLINED
+            );
+
+            Should.Throw<InvalidOperationException>(() => encounter.Approve());
+        }
+
+        [Fact]
+        public void Declining_an_approved_encounter_throws()
+        {
+            var encounter = new Encounter(
+                "Name",
+                "Desc",
+                new Location(19.8335, 45.2671),
+                100,
+                EncounterType.Social,
+                EncounterApprovalStatus.APPROVED
+            );
+
+            Should.Throw<InvalidOperationException>(() => encounter.Decline());
+        }
+
+
     }
 }

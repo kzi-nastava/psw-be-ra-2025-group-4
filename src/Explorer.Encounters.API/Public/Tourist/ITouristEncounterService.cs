@@ -12,10 +12,13 @@ namespace Explorer.Encounters.API.Public.Tourist
     public interface ITouristEncounterService
     {
         void StartEncounter(long touristId, long encounterId);
-        void CompleteEncounter(long touristId, long encounterId);
-        void UpdateLocation (long touristId, long encounterId, LocationDto touristLocation);
         List<EncounterViewDto> GetByTourPoint(long touristId, int tourPointId, LocationDto touristLocation);
-        int UpdateTouristLocation(long encounterId, long touristId, double lat, double lng);
+        EncounterUpdateResultDto UpdateSocialEncounter(long touristId, long encounterId, LocationDto touristLocation);
+        EncounterUpdateResultDto UpdateLocationHiddenEncounter(long touristId, long encounterId, LocationDto touristLocation);
+        EncounterUpdateResultDto CompleteEncounter(long touristId, long encounterId);
+        EncounterUpdateResultDto SubmitQuizAnswer(long touristId, long encounterId, List<QuizAnswerSubmitDto> answerDto);
+        EncounterUpdateResultDto FailQuiz(long touristId, long encounterId);
         IEnumerable<EncounterViewDto> GetByTourist(long touristId);
+        bool IsEncounterCompleted(long tourPointId, long touristId);
     }
 }

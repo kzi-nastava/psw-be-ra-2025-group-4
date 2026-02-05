@@ -38,9 +38,11 @@ namespace Explorer.Tours.Core.UseCases.Internal
             {
                 TourId = (int)tour.Id,
                 Name = tour.Name,
-                Price = finalPrice, // Price with discount if on sale
+                Price = finalPrice, 
+                AuthorId = tour.AuthorId,   
                 Status = MapStatus(tour.Status)
             };
+
         }
 
         private static TourLifecycleStatus MapStatus(TourStatus status)

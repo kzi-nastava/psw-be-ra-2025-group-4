@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Internal;
 using Explorer.Payments.API.Public.Tourist;
@@ -16,12 +16,14 @@ namespace Explorer.Payments.Core.UseCases.Tourist
         private static readonly Random _rng = new Random();
         private readonly ITourInfoService _tourInfoService;
         private readonly IBundleInfoService _bundleService;
+        private readonly IUserInfoService _userInfoService;
 
-        public ShoppingCartService(IShoppingCartRepository cartRepository, ITourInfoService tourInfoService, IBundleInfoService bundleService, IMapper mapper)
+        public ShoppingCartService(IShoppingCartRepository cartRepository, ITourInfoService tourInfoService, IBundleInfoService bundleService, IUserInfoService userInfoService, IMapper mapper)
         {
             _cartRepository = cartRepository;
             _tourInfoService = tourInfoService;
             _bundleService = bundleService;
+            _userInfoService = userInfoService;
             _mapper = mapper;
         }
 
@@ -184,6 +186,42 @@ namespace Explorer.Payments.Core.UseCases.Tourist
 
             cart.RemoveBundleItem(bundleId);
 
+            cart = _cartRepository.Update(cart);
+            return _mapper.Map<ShoppingCartDto>(cart);
+        }
+
+        public ShoppingCartDto SetGiftRecipient(int touristId, int tourId, string? recipientUsername)
+        {
+            var cart = _cartRepository.GetByTouristId(touristId);
+            if (cart == null)
+            {
+                throw new NotFoundException("Shopping cart not found.");
+            }
+
+            if (string.IsNullOrWhiteSpace(recipientUsername))
+            {
+                cart.SetRecipientForItem(tourId, null);
+                cart = _cartRepository.Update(cart);
+                return _mapper.Map<ShoppingCartDto>(cart);
+            }
+
+            var recipientUser = _userInfoService.GetUserByUsername(recipientUsername);
+            if (recipientUser == null)
+            {
+                throw new EntityValidationException("Recipient user not found.");
+            }
+
+            if (!recipientUser.IsActive)
+            {
+                throw new EntityValidationException("Recipient user is blocked.");
+            }
+
+            if (recipientUser.Id == touristId)
+            {
+                throw new EntityValidationException("Cannot gift a tour to yourself.");
+            }
+
+            cart.SetRecipientForItem(tourId, (int)recipientUser.Id);
             cart = _cartRepository.Update(cart);
             return _mapper.Map<ShoppingCartDto>(cart);
         }

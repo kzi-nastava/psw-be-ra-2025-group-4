@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Internal;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
@@ -77,27 +79,20 @@ namespace Explorer.Payments.Tests.Unit
             }
 
             public bool ExistsForBundle(int touristId, int bundleId)
-            {
-                return Store.Any(pr => pr.TouristId == touristId && pr.BundleId == bundleId);
-            }
+                => Store.Any(pr => pr.TouristId == touristId && pr.BundleId == bundleId);
         }
 
         private class BundlePurchaseServiceStub : IBundlePurchaseService
         {
             public List<TourPurchaseTokenDto> PurchaseBundle(int touristId, int bundleId)
-            {
-                return new List<TourPurchaseTokenDto>();
-            }
+                => new List<TourPurchaseTokenDto>();
         }
 
         private class TourInfoServiceStub : ITourInfoService
         {
             private readonly Dictionary<int, decimal> _tourPrices = new();
 
-            public void SetTourPrice(int tourId, decimal price)
-            {
-                _tourPrices[tourId] = price;
-            }
+            public void SetTourPrice(int tourId, decimal price) => _tourPrices[tourId] = price;
 
             public TourInfoDto Get(int tourId)
             {
@@ -112,6 +107,99 @@ namespace Explorer.Payments.Tests.Unit
             }
         }
 
+        private class GroupTravelRequestRepoStub : IGroupTravelRequestRepository
+        {
+            public List<GroupTravelRequest> GetByOrganizerId(int organizerId) => new();
+            public List<GroupTravelRequest> GetByParticipantId(int participantId) => new();
+            public GroupTravelRequest? GetById(int id) => null;
+            public GroupTravelRequest? GetPendingByParticipantAndTour(int participantId, int tourId) => null;
+            public GroupTravelRequest Create(GroupTravelRequest request) => request;
+            public GroupTravelRequest Update(GroupTravelRequest request) => request;
+        }
+
+        private class NotificationServiceStub : INotificationServiceInternal
+        {
+            public readonly List<(int userId, int actorId, string actorUsername, string content, string? resourceUrl)> Notifications = new();
+
+            public void CreateMessageNotification(int userId, int actorId, string actorUsername, string content, string? resourceUrl)
+            {
+                Notifications.Add((userId, actorId, actorUsername, content, resourceUrl));
+            }
+        }
+
+        private class UserInfoServiceStub : IUserInfoService
+        {
+            private readonly Dictionary<long, UserInfo> _users = new();
+            private readonly Dictionary<string, UserInfo> _usersByUsername = new();
+
+            public void AddUser(long id, string username, bool isAdministrator = false)
+            {
+                var user = new UserInfo
+                {
+                    Id = id,
+                    Username = username,
+                    IsAdministrator = isAdministrator
+                };
+                _users[id] = user;
+                _usersByUsername[username] = user;
+            }
+
+            public UserInfo? GetUser(long userId)
+                => _users.TryGetValue(userId, out var u) ? u : null;
+
+            public UserInfo? GetUserByUsername(string username)
+                => _usersByUsername.TryGetValue(username, out var u) ? u : null;
+
+            public long? GetPersonIdByUsername(string username)
+                => null;
+
+            public bool IsAdministrator(long userId)
+                => _users.TryGetValue(userId, out var u) && u.IsAdministrator;
+        }
+
+
+        private class AffiliateCodeRepoStub : IAffiliateCodeRepository
+        {
+            public readonly List<AffiliateCode> Store = new();
+
+            public AffiliateCode Create(AffiliateCode code)
+            {
+                Store.Add(code);
+                return code;
+            }
+
+            public IEnumerable<AffiliateCode> GetByAuthor(int authorId, int? tourId = null)
+            {
+                var q = Store.Where(x => x.AuthorId == authorId);
+                if (tourId.HasValue) q = q.Where(x => x.TourId == tourId.Value);
+                return q.ToList();
+            }
+
+            public AffiliateCode? GetById(int id) => Store.FirstOrDefault(x => x.Id == id);
+
+            public void SaveChanges() { }
+
+            public bool CodeExists(string code) => Store.Any(x => x.Code == code);
+
+            public AffiliateCode? GetByCode(string code) => Store.FirstOrDefault(x => x.Code == code);
+        }
+
+        private class AffiliateRedemptionRepoStub : IAffiliateRedemptionRepository
+        {
+            public readonly List<AffiliateRedemption> Store = new();
+
+            public AffiliateRedemption Create(AffiliateRedemption redemption)
+            {
+                Store.Add(redemption);
+                return redemption;
+            }
+
+            public IQueryable<AffiliateRedemption> Query()
+            {
+                return Store.AsQueryable();
+            }
+        }
+
         private static IMapper Mapper()
         {
             var cfg = new MapperConfiguration(c =>
@@ -119,6 +207,87 @@ namespace Explorer.Payments.Tests.Unit
                 c.CreateMap<TourPurchaseToken, TourPurchaseTokenDto>().ReverseMap();
             });
             return cfg.CreateMapper();
+        }
+
+        private static CheckoutService CreateSut(
+            CartRepoStub cartRepo,
+            TokenRepoStub tokenRepo,
+            WalletRepoStub walletRepo,
+            PaymentRecordRepoStub paymentRecordRepo,
+            TourInfoServiceStub tourInfoService)
+        {
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+            var affiliateRedemptionRepo = new AffiliateRedemptionRepoStub();
+
+            return new CheckoutService(
+                cartRepo,
+                tokenRepo,
+                walletRepo,
+                paymentRecordRepo,
+                tourInfoService,
+                bundlePurchaseService,
+                groupTravelRequestRepo,
+                notificationService,
+                userInfoService,
+                affiliateCodeRepo,
+                Mapper(),
+                affiliateRedemptionRepo
+            );
+        }
+
+        [Fact]
+        public void Checkout_creates_token_for_gift_recipient_and_sends_notification()
+        {
+            var cartRepo = new CartRepoStub { Cart = new ShoppingCart(123) };
+            cartRepo.Cart!.AddItem(10, "Tour A", 20m);
+            cartRepo.Cart.SetRecipientForItem(10, 456);
+
+            var tokenRepo = new TokenRepoStub();
+            var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
+            walletRepo.Wallet.AddBalance(100m);
+            var paymentRecordRepo = new PaymentRecordRepoStub();
+            var tourInfoService = new TourInfoServiceStub();
+            tourInfoService.SetTourPrice(10, 20m);
+            var bundlePurchaseService = new BundlePurchaseServiceStub();
+            var groupTravelRequestRepo = new GroupTravelRequestRepoStub();
+            var notificationService = new NotificationServiceStub();
+            var userInfoService = new UserInfoServiceStub();
+            userInfoService.AddUser(123, "buyer");
+            var affiliateCodeRepo = new AffiliateCodeRepoStub();
+            
+            var affiliateRedemptionRepo = new AffiliateRedemptionRepoStub();
+            var svc = new CheckoutService(
+                cartRepo,
+                tokenRepo,
+                walletRepo,
+                paymentRecordRepo,
+                tourInfoService,
+                bundlePurchaseService,
+                groupTravelRequestRepo,
+                notificationService,
+                userInfoService,
+                affiliateCodeRepo,
+                Mapper(),
+                affiliateRedemptionRepo
+            );
+
+
+            var result = svc.Checkout(123);
+
+            result.Count.ShouldBe(1);
+            tokenRepo.Store.Count.ShouldBe(1);
+            tokenRepo.Store.Single().TouristId.ShouldBe(456);
+
+            notificationService.Notifications.Count.ShouldBe(1);
+            var n = notificationService.Notifications.Single();
+            n.userId.ShouldBe(456);
+            n.actorId.ShouldBe(123);
+            n.actorUsername.ShouldBe("buyer");
+            n.content.ShouldContain("has gifted you the tour");
         }
 
         [Fact]
@@ -133,8 +302,8 @@ namespace Explorer.Payments.Tests.Unit
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
-            var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+
+            var svc = CreateSut(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService);
 
             var result = svc.Checkout(123);
 
@@ -152,10 +321,10 @@ namespace Explorer.Payments.Tests.Unit
             var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
-            var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
 
-            Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
+            var svc = CreateSut(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService);
+
+            Should.Throw<InvalidOperationException>(() => svc.Checkout(123));
         }
 
         [Fact]
@@ -170,12 +339,13 @@ namespace Explorer.Payments.Tests.Unit
 
             var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
             walletRepo.Wallet.AddBalance(100m);
+
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
             tourInfoService.SetTourPrice(11, 30m);
-            var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+
+            var svc = CreateSut(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService);
 
             var result = svc.Checkout(123);
 
@@ -190,15 +360,17 @@ namespace Explorer.Payments.Tests.Unit
             cartRepo.Cart!.AddItem(10, "Tour A", 100m);
 
             var tokenRepo = new TokenRepoStub();
+
             var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
             walletRepo.Wallet.AddBalance(50m);
+
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 100m);
-            var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
 
-            Should.Throw<System.InvalidOperationException>(() => svc.Checkout(123));
+            var svc = CreateSut(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService);
+
+            Should.Throw<InvalidOperationException>(() => svc.Checkout(123));
         }
 
         [Fact]
@@ -211,12 +383,13 @@ namespace Explorer.Payments.Tests.Unit
             var tokenRepo = new TokenRepoStub();
             var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
             walletRepo.Wallet.AddBalance(100m);
+
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
             tourInfoService.SetTourPrice(11, 30m);
-            var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+
+            var svc = CreateSut(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService);
 
             svc.Checkout(123);
 
@@ -234,13 +407,15 @@ namespace Explorer.Payments.Tests.Unit
             cartRepo.Cart!.AddItem(10, "Tour A", 20m);
 
             var tokenRepo = new TokenRepoStub();
+
             var walletRepo = new WalletRepoStub { Wallet = new Wallet(123) };
             walletRepo.Wallet.AddBalance(100m);
+
             var paymentRecordRepo = new PaymentRecordRepoStub();
             var tourInfoService = new TourInfoServiceStub();
             tourInfoService.SetTourPrice(10, 20m);
-            var bundlePurchaseService = new BundlePurchaseServiceStub();
-            var svc = new CheckoutService(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService, bundlePurchaseService, Mapper());
+
+            var svc = CreateSut(cartRepo, tokenRepo, walletRepo, paymentRecordRepo, tourInfoService);
 
             svc.Checkout(123);
 
