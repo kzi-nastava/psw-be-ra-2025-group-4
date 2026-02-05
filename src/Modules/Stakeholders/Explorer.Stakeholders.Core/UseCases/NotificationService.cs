@@ -119,7 +119,7 @@ namespace Explorer.Stakeholders.Core.UseCases
             var created = _repo.Create(notif);
             return _mapper.Map<NotificationDto>(created);
         }
-        public NotificationDto CreateAffiliateCodeAssignedNotification( long partnerUserId, long actorId, string? actorUsername, string content, string? resourceUrl)
+        public NotificationDto CreateAffiliateCodeAssignedNotification(long partnerUserId, long actorId, string? actorUsername, string content, string? resourceUrl)
         {
             var notif = new Notification(
                 userId: partnerUserId,
@@ -128,6 +128,18 @@ namespace Explorer.Stakeholders.Core.UseCases
                 resourceUrl: resourceUrl,
                 actorId: actorId,
                 actorUsername: actorUsername
+            );
+
+            var created = _repo.Create(notif);
+            return _mapper.Map<NotificationDto>(created);
+        }
+
+        public NotificationDto SendAchievementNotification(long userId)
+        {
+            var notif = new Notification(
+                userId: userId,
+                content: "You unlocked a new Achievement!",
+                type: NotificationType.AchievementUnlocked
             );
 
             var created = _repo.Create(notif);

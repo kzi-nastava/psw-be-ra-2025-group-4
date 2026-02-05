@@ -8,6 +8,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Explorer.Stakeholders.API.Public;
 
 namespace Explorer.API.Controllers.Tourist.Execution;
 
@@ -18,11 +19,13 @@ public class TourExecutionController : ControllerBase
 {
     private readonly ITourExecutionService _tourExecutionService;
     private readonly ITouristEncounterService _touristEncounterService;
+    private readonly IUserAchievementService _achievementService;
 
-    public TourExecutionController(ITourExecutionService tourExecutionService, ITouristEncounterService touristEncounterService)
+    public TourExecutionController(ITourExecutionService tourExecutionService, ITouristEncounterService touristEncounterService, IUserAchievementService achievementService)
     {
         _tourExecutionService = tourExecutionService;
         _touristEncounterService = touristEncounterService;
+        _achievementService = achievementService;
     }
 
     [HttpPost("start")]
@@ -58,6 +61,7 @@ public class TourExecutionController : ControllerBase
         {
             long touristId = GetTouristId();
             var result = _tourExecutionService.Complete(executionId, touristId);
+            _achievementService.EvaluateTourAchievements(touristId, _tourExecutionService.GetCompletedToursCountByTourist(touristId));
             return Ok(result);
         }
         catch (InvalidOperationException ex)

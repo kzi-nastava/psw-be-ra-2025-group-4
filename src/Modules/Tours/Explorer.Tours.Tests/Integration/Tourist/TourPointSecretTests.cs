@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Encounters.API.Public.Tourist;
+using Explorer.Stakeholders.API.Public;
 
 namespace Explorer.Tours.Tests.Integration.Tourist;
 
@@ -200,7 +201,7 @@ public class TourPointSecretTests : BaseToursIntegrationTest
     private static Explorer.API.Controllers.Tourist.Execution.TourExecutionController CreateTrackController(IServiceScope scope)
     {
         return new Explorer.API.Controllers.Tourist.Execution.TourExecutionController(
-            scope.ServiceProvider.GetRequiredService<Explorer.Tours.API.Public.Tourist.ITourExecutionService>(), scope.ServiceProvider.GetRequiredService<ITouristEncounterService>())
+            scope.ServiceProvider.GetRequiredService<Explorer.Tours.API.Public.Tourist.ITourExecutionService>(), scope.ServiceProvider.GetRequiredService<ITouristEncounterService>(), scope.ServiceProvider.GetRequiredService<IUserAchievementService>())
         {
             ControllerContext = BuildContext("-1")
         };

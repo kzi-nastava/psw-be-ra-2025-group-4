@@ -196,5 +196,10 @@ public class TourExecutionService : ITourExecutionService
 
         return dto;
     }
+
+    public int GetCompletedToursCountByTourist(long touristId)
+    {
+        return _executionRepository.GetCompletedToursCountByTourist(touristId);
+    }
 }
 
