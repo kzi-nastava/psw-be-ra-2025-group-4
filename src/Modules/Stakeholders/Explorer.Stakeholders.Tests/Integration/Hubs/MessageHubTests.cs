@@ -198,6 +198,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Hubs
         public void MarkConversationAsRead(long userId, long actorId) => throw new NotImplementedException();
         public NotificationDto CreateFollowNotification(long userId, long actorId, string actorUsername, string resourceUrl) => throw new NotImplementedException();
         public NotificationDto CreateAffiliateCodeAssignedNotification(long partnerUserId, long actorId, string? actorUsername, string content, string? resourceUrl) => throw new NotImplementedException();
+        public NotificationDto SendAchievementNotification(long userId) => throw new NotImplementedException();
     }
 
     internal sealed class ClientProxyStub : IClientProxy
