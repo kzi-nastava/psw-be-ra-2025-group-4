@@ -60,6 +60,40 @@ namespace Explorer.Encounters.Tests.Integration.Administration
         }
 
         [Fact]
+        public void Creates_hidden_location_encounter()
+        {
+            using var scope = Factory.Services.CreateScope();
+            var controller = CreateController(scope);
+
+            var dto = new HiddenLocationEncounterDto
+            {
+                Name = "Hidden Encounter",
+                Description = "Hidden test",
+                ExperiencePoints = 150,
+                Location = new LocationDto
+                {
+                    Latitude = 45.1,
+                    Longitude = 19.9
+                },
+                ImageUrl = "https://example.com/img.jpg",
+                PhotoPoint = new LocationDto
+                {
+                    Latitude = 45.11,
+                    Longitude = 19.91
+                },
+                ActivationRadiusMeters = 100
+            };
+
+            var actionResult = controller.CreateHidden(dto);
+            var objectResult = actionResult.Result as ObjectResult;
+
+            objectResult.ShouldNotBeNull();
+            var created = objectResult!.Value as HiddenLocationEncounterDto;
+            created.ShouldNotBeNull();
+            created!.Name.ShouldBe("Hidden Encounter");
+        }
+
+        [Fact]
         public void Updates_existing_encounter()
         {
             using var scope = Factory.Services.CreateScope();
