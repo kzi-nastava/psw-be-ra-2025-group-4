@@ -41,7 +41,7 @@ namespace Explorer.Tours.Tests.Integration.Tourist
             var dto = result!.Value as TourReviewDTO;
             dto.ShouldNotBeNull();
             dto.Id.ShouldBe(-1);
-            dto.Comment.ShouldBe("Odlièna tura, preporuèujem svima!");
+            dto.Comment.ShouldBe("OdliÄna tura, preporuÄujem svima!");
         }
 
         private static PublicTourReviewController CreateController(IServiceScope scope)
