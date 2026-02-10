@@ -9,7 +9,7 @@ namespace Explorer.Encounters.Core.Domain
         public double ActivationRadiusMeters { get; private set; }
 
         public double CompletionRadiusMeters => 500.0;
-        public int CompletionHoldSeconds => 30;
+        public int CompletionHoldSeconds => 10;
 
         protected HiddenLocationEncounter() { }
 
